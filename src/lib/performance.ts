@@ -1,18 +1,27 @@
-// Stub performance monitoring — no-ops in dev / Expo Go.
-// TODO: Wire up Firebase Performance once using a dev build.
+// Firebase Performance — commented out for demo (requires google-services.json / GoogleService-Info.plist)
+// import perf from '@react-native-firebase/perf';
 
-export async function startTrace(_name: string) {
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+export function startTrace(_name: string) {
   return {
-    stop: () => Promise.resolve(),
+    start: () => {},
+    stop: () => {},
+    putMetric: (_key: string, _value: number) => {},
     putAttribute: (_key: string, _value: string) => {},
-    incrementMetric: (_name: string, _amount?: number) => {},
-  }
+  };
 }
 
 export async function measureAsync<T>(_name: string, fn: () => Promise<T>): Promise<T> {
-  return fn()
+  return fn();
 }
 
 export function createHttpMetric(_url: string, _method: string) {
-  return null
+  return {
+    start: async () => {},
+    stop: async () => {},
+    setHttpResponseCode: (_code: number) => {},
+    setResponseContentType: (_type: string) => {},
+    setResponsePayloadSize: (_bytes: number) => {},
+  };
 }

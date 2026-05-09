@@ -30,6 +30,7 @@
         "foregroundImage": "./assets/android-adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "usesCleartextTraffic": true,
       "edgeToEdgeEnabled": true,
       "package": "com.mfl.app",
       "permissions": [
@@ -59,9 +60,10 @@
             "image": "./assets/splash-icon-dark.png",
             "backgroundColor": "#151718"
           },
-          "imageWidth": 120
+          "imageWidth": 200
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "extra": {
       "router": {

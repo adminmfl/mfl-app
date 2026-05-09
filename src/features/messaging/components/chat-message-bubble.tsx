@@ -1,0 +1,276 @@
+import Feather from '@expo/vector-icons/Feather';
+import { Image, Pressable, View } from 'react-native';
+
+import { AppText } from '../../../components/app-text';
+import { mflColors } from '../../../constants/colors';
+import type { ChatMessage } from '../types/messaging.model';
+import {
+  formatRelativeMessageTime,
+  getDeepLinkLabel,
+  getInitial,
+  getRoleLabel,
+} from '../utils/messaging-format';
+import { renderMessageContent } from '../utils/render-message-content';
+import { MessagingChip } from './messaging-chip';
+
+const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '💪', '🔥'];
+
+interface ChatMessageBubbleProps {
+  message: ChatMessage;
+  isOwn: boolean;
+  currentUserId?: string;
+  onReply: (message: ChatMessage) => void;
+  onReact: (messageId: string, emoji: string) => void;
+  onOpenDeepLink: (path: string) => void;
+}
+
+export function ChatMessageBubble({
+  message,
+  isOwn,
+  currentUserId,
+  onReply,
+  onReact,
+  onOpenDeepLink,
+}: ChatMessageBubbleProps) {
+  const isAnnouncement = message.messageType === 'announcement';
+  const isSystem = message.messageType === 'system';
+  const roleColor = getRoleColor(message.senderRole);
+
+  if (isSystem) {
+    return (
+      <View className="items-center py-1">
+        <View className="rounded-full px-3 py-1" style={{ backgroundColor: mflColors.surface }}>
+          <AppText className="text-xs italic text-muted">{message.content}</AppText>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View className={isOwn ? 'items-end' : 'items-start'}>
+      <View
+        className="mb-2 flex-row"
+        style={{
+          maxWidth: '86%',
+          alignSelf: isOwn ? 'flex-end' : 'flex-start',
+        }}
+      >
+        {!isOwn ? (
+          <View
+            className="mr-2 mt-1 h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: mflColors.brandLight }}
+          >
+            <AppText className="text-xs font-bold" style={{ color: mflColors.brand }}>
+              {getInitial(message.senderUsername)}
+            </AppText>
+          </View>
+        ) : null}
+
+        <Pressable
+          onLongPress={() => onReply(message)}
+          className="rounded-2xl px-3 py-2"
+          style={[
+            isAnnouncement
+              ? {
+                  backgroundColor: mflColors.amberLight,
+                  borderWidth: 1,
+                  borderColor: '#FCD34D',
+                }
+              : isOwn
+                ? {
+                    backgroundColor: mflColors.brand,
+                    borderBottomRightRadius: 5,
+                  }
+                : {
+                    backgroundColor: mflColors.card,
+                    borderBottomLeftRadius: 5,
+                    borderWidth: 1,
+                    borderColor: mflColors.border,
+                  },
+          ]}
+        >
+          {!isOwn ? (
+            <View className="mb-1 flex-row items-center gap-2">
+              <AppText className="text-xs font-semibold" style={{ color: roleColor }}>
+                {message.senderName || message.senderUsername}
+              </AppText>
+              <View
+                className="rounded-full px-1.5 py-0.5"
+                style={{ backgroundColor: mflColors.surface }}
+              >
+                <AppText className="text-[10px] font-semibold" style={{ color: roleColor }}>
+                  {getRoleLabel(message.senderRole)}
+                </AppText>
+              </View>
+            </View>
+          ) : null}
+
+          {isAnnouncement ? (
+            <View className="mb-1 flex-row items-center gap-1.5">
+              <Feather name="radio" size={13} color={mflColors.amber} />
+              <AppText className="text-xs font-bold" style={{ color: mflColors.amber }}>
+                Announcement
+              </AppText>
+            </View>
+          ) : null}
+
+          {message.isImportant && !isAnnouncement ? (
+            <View className="mb-1 flex-row items-center gap-1.5">
+              <Feather name="alert-triangle" size={12} color={mflColors.danger} />
+              <AppText className="text-[10px] font-bold" style={{ color: mflColors.danger }}>
+                Important
+              </AppText>
+            </View>
+          ) : null}
+
+          {message.parentMessage ? (
+            <View
+              className="mb-2 rounded-lg border-l-2 px-2 py-1"
+              style={{
+                backgroundColor: isOwn ? 'rgba(255,255,255,0.12)' : mflColors.surface,
+                borderLeftColor: isOwn ? mflColors.white : mflColors.brand,
+              }}
+            >
+              <AppText
+                className="text-[11px] font-semibold"
+                style={{ color: isOwn ? mflColors.white : mflColors.brand }}
+              >
+                {message.parentMessage.senderUsername}
+              </AppText>
+              <AppText
+                className="text-[11px]"
+                numberOfLines={2}
+                style={{ color: isOwn ? 'rgba(255,255,255,0.72)' : mflColors.textSub }}
+              >
+                {message.parentMessage.content}
+              </AppText>
+            </View>
+          ) : null}
+
+          {message.photoUrl ? (
+            <Image
+              source={{ uri: message.photoUrl }}
+              className="mb-2 rounded-xl"
+              style={{ width: 220, height: 170, backgroundColor: mflColors.surface }}
+              resizeMode="cover"
+            />
+          ) : null}
+
+          {message.content ? (
+            <AppText
+              className="text-sm"
+              style={{
+                color: isOwn && !isAnnouncement ? mflColors.white : mflColors.text,
+              }}
+            >
+              {renderMessageContent(
+                message.content,
+                isOwn && !isAnnouncement ? mflColors.white : mflColors.text,
+              )}
+            </AppText>
+          ) : null}
+
+          {message.deepLink ? (
+            <Pressable
+              onPress={() => onOpenDeepLink(message.deepLink!)}
+              className="mt-2 flex-row items-center gap-2 rounded-lg border px-3 py-2"
+              style={{
+                backgroundColor: isOwn ? 'rgba(255,255,255,0.13)' : mflColors.surface,
+                borderColor: isOwn ? 'rgba(255,255,255,0.25)' : mflColors.border,
+              }}
+            >
+              <Feather
+                name="external-link"
+                size={14}
+                color={isOwn ? mflColors.white : mflColors.brand}
+              />
+              <AppText
+                className="flex-1 text-xs font-semibold"
+                numberOfLines={1}
+                style={{ color: isOwn ? mflColors.white : mflColors.text }}
+              >
+                {getDeepLinkLabel(message.deepLink)}
+              </AppText>
+            </Pressable>
+          ) : null}
+
+          <View className="mt-1 flex-row items-center justify-end gap-1.5">
+            {message.visibility === 'captains_only' ? (
+              <View className="flex-row items-center gap-0.5">
+                <Feather name="shield" size={10} color={isOwn ? mflColors.white : mflColors.blue} />
+                <AppText
+                  className="text-[10px]"
+                  style={{ color: isOwn ? 'rgba(255,255,255,0.72)' : mflColors.blue }}
+                >
+                  Captains
+                </AppText>
+              </View>
+            ) : null}
+            {message.editedAt ? (
+              <AppText
+                className="text-[10px]"
+                style={{
+                  color: isOwn && !isAnnouncement ? 'rgba(255,255,255,0.72)' : mflColors.textMuted,
+                }}
+              >
+                edited
+              </AppText>
+            ) : null}
+            <AppText
+              className="text-[10px]"
+              style={{
+                color: isOwn && !isAnnouncement ? 'rgba(255,255,255,0.72)' : mflColors.textMuted,
+              }}
+            >
+              {formatRelativeMessageTime(message.createdAt)}
+            </AppText>
+            {isOwn ? (
+              <Feather
+                name={message.isRead ? 'check-circle' : 'check'}
+                size={12}
+                color={message.isRead ? mflColors.blue : 'rgba(255,255,255,0.72)'}
+              />
+            ) : null}
+          </View>
+        </Pressable>
+      </View>
+
+      <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+        <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
+        {QUICK_EMOJIS.map((emoji) => (
+          <MessagingChip
+            key={emoji}
+            label={emoji}
+            selected={message.reactions.some(
+              (reaction) =>
+                reaction.emoji === emoji &&
+                !!currentUserId &&
+                reaction.userIds.includes(currentUserId),
+            )}
+            onPress={() => onReact(message.messageId, emoji)}
+          />
+        ))}
+      </View>
+
+      {message.reactions.length > 0 ? (
+        <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+          {message.reactions.map((reaction) => (
+            <MessagingChip
+              key={reaction.emoji}
+              label={`${reaction.emoji} ${reaction.userIds.length}`}
+              selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
+              onPress={() => onReact(message.messageId, reaction.emoji)}
+            />
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function getRoleColor(role: string | null): string {
+  if (role === 'host') return mflColors.danger;
+  if (role === 'governor') return '#7C3AED';
+  if (role === 'captain' || role === 'vice_captain') return mflColors.blue;
+  return mflColors.textSub;
+}
