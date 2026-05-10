@@ -53,6 +53,7 @@ export default function SubmissionValidationScreen() {
   const [rejectionType, setRejectionType] = useState<RejectionType>('rejected_resubmit');
   const [rejectionReason, setRejectionReason] = useState('');
   const [suspiciousProof, setSuspiciousProof] = useState(false);
+  const [reviewerNotes, setReviewerNotes] = useState('');
   const [validatingId, setValidatingId] = useState<SubmissionId | null>(null);
 
   const data = submissionsQuery.data;
@@ -102,7 +103,7 @@ export default function SubmissionValidationScreen() {
     (
       submission: SubmissionForValidation,
       status: ValidateSubmissionRequestDTO['status'],
-      options?: { rejectionReason?: string; suspiciousProof?: boolean },
+      options?: { rejectionReason?: string; suspiciousProof?: boolean; reviewerNotes?: string },
     ) => {
       if (!leagueId) return;
 
@@ -120,6 +121,9 @@ export default function SubmissionValidationScreen() {
         }
         dataToSend.rejection_reason = reason;
         dataToSend.suspicious_proof = options?.suspiciousProof ?? false;
+        if (options?.reviewerNotes?.trim()) {
+          dataToSend.reviewer_notes = options.reviewerNotes.trim();
+        }
       }
 
       setValidatingId(submission.id);
@@ -135,6 +139,7 @@ export default function SubmissionValidationScreen() {
             setRejectSubmission(null);
             setRejectionReason('');
             setSuspiciousProof(false);
+            setReviewerNotes('');
             Alert.alert(
               status === 'approved' ? 'Submission Approved' : 'Submission Rejected',
               status === 'approved'
@@ -167,6 +172,7 @@ export default function SubmissionValidationScreen() {
     setRejectionType('rejected_resubmit');
     setRejectionReason('');
     setSuspiciousProof(false);
+    setReviewerNotes('');
   }, []);
 
   const confirmReject = useCallback(() => {
@@ -174,8 +180,9 @@ export default function SubmissionValidationScreen() {
     submitValidation(rejectSubmission, rejectionType, {
       rejectionReason,
       suspiciousProof,
+      reviewerNotes,
     });
-  }, [rejectSubmission, rejectionReason, rejectionType, submitValidation, suspiciousProof]);
+  }, [rejectSubmission, rejectionReason, rejectionType, reviewerNotes, submitValidation, suspiciousProof]);
 
   if (!activeLeague) {
     return (
@@ -293,10 +300,13 @@ export default function SubmissionValidationScreen() {
             rejectionType={rejectionType}
             rejectionReason={rejectionReason}
             suspiciousProof={suspiciousProof}
+            reviewerNotes={reviewerNotes}
+            isPrivileged={isHost || isGovernor}
             isValidating={String(validatingId) === String(rejectSubmission.id)}
             onTypeChange={setRejectionType}
             onReasonChange={setRejectionReason}
             onSuspiciousProofChange={setSuspiciousProof}
+            onReviewerNotesChange={setReviewerNotes}
             onCancel={() => setRejectSubmission(null)}
             onConfirm={confirmReject}
           />

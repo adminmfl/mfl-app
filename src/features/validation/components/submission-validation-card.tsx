@@ -138,6 +138,21 @@ export function SubmissionValidationCard({
         </Pressable>
       ) : null}
 
+      {submission.plausibilityScore != null && submission.plausibilityScore < 50 ? (
+        <View
+          className="flex-row items-center gap-2 rounded-xl px-3 py-2"
+          style={{ backgroundColor: mflColors.dangerLight }}
+        >
+          <Feather name="alert-triangle" size={14} color={mflColors.danger} />
+          <AppText className="text-[10px] font-semibold flex-1" style={{ color: mflColors.danger }}>
+            Plausibility {submission.plausibilityScore}/100
+            {submission.reviewTier && submission.reviewTier !== 'none'
+              ? ` · Flagged for ${submission.reviewTier}`
+              : ''}
+          </AppText>
+        </View>
+      ) : null}
+
       {submission.notes ? (
         <View className="rounded-xl p-3 bg-default-100">
           <AppText className="text-[10px] font-semibold text-muted uppercase">Notes</AppText>

@@ -26,6 +26,12 @@ export interface SubmissionEntryDTO {
   custom_field_value?: string | null;
   custom_field_value_2?: string | null;
   outcome?: string | null;
+  hr_avg?: number | null;
+  calories_burned?: number | null;
+  plausibility_score?: number | null;
+  review_tier?: 'none' | 'captain' | 'governor' | null;
+  plausibility_reason?: string | null;
+  reviewer_notes?: string | null;
 }
 
 export interface SubmissionStatsDTO {

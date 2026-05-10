@@ -28,6 +28,12 @@ export interface SubmissionForValidationDTO {
   modified_date: string | null;
   reupload_of: SubmissionIdDTO | null;
   outcome?: string | null;
+  hr_avg?: number | null;
+  calories_burned?: number | null;
+  plausibility_score?: number | null;
+  review_tier?: 'none' | 'captain' | 'governor' | null;
+  plausibility_reason?: string | null;
+  reviewer_notes?: string | null;
   member: {
     user_id: string;
     username: string;
@@ -63,6 +69,7 @@ export interface SubmissionsResponseDTO {
 export interface ValidateSubmissionRequestDTO {
   status: 'approved' | 'rejected' | 'rejected_resubmit' | 'rejected_permanent';
   rejection_reason?: string;
+  reviewer_notes?: string;
   awarded_points?: number;
   suspicious_proof?: boolean;
 }

@@ -111,6 +111,8 @@ export function getSubmissionMetrics(submission: SubmissionForValidation) {
     { label: 'Distance', value: formatMetric(submission.distance, 'km') },
     { label: 'Steps', value: formatMetric(submission.steps, 'steps') },
     { label: 'Holes', value: formatMetric(submission.holes, 'holes') },
+    { label: 'Avg HR', value: formatMetric(submission.hrAvg, 'bpm') },
+    { label: 'Calories', value: formatMetric(submission.caloriesBurned, 'kcal') },
   ].filter((metric): metric is { label: string; value: string } => Boolean(metric.value));
 }
 

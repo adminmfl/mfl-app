@@ -26,10 +26,13 @@ interface RejectSubmissionPanelProps {
   rejectionType: RejectionType;
   rejectionReason: string;
   suspiciousProof: boolean;
+  reviewerNotes?: string;
+  isPrivileged?: boolean;
   isValidating: boolean;
   onTypeChange: (value: RejectionType) => void;
   onReasonChange: (value: string) => void;
   onSuspiciousProofChange: (value: boolean) => void;
+  onReviewerNotesChange?: (value: string) => void;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -39,10 +42,13 @@ export function RejectSubmissionPanel({
   rejectionType,
   rejectionReason,
   suspiciousProof,
+  reviewerNotes = '',
+  isPrivileged = false,
   isValidating,
   onTypeChange,
   onReasonChange,
   onSuspiciousProofChange,
+  onReviewerNotesChange,
   onCancel,
   onConfirm,
 }: RejectSubmissionPanelProps) {
@@ -112,6 +118,22 @@ export function RejectSubmissionPanel({
           </AppText>
         </View>
       </Pressable>
+
+      {isPrivileged && onReviewerNotesChange ? (
+        <View className="gap-2">
+          <AppText className="text-xs font-semibold text-muted uppercase">
+            Reviewer Notes (Internal Only)
+          </AppText>
+          <TextInput
+            style={{ ...reasonInputStyle, minHeight: 64 }}
+            value={reviewerNotes}
+            onChangeText={onReviewerNotesChange}
+            placeholder="Internal notes visible only to host/governor..."
+            placeholderTextColor={mflColors.textMuted}
+            multiline
+          />
+        </View>
+      ) : null}
 
       {isPermanent ? (
         <View className="rounded-xl p-3" style={{ backgroundColor: mflColors.dangerLight }}>

@@ -27,6 +27,12 @@ export interface TeamSubmissionDTO {
   custom_field_value_2?: string | null;
   outcome?: string | null;
   rejection_reason?: string | null;
+  hr_avg?: number | null;
+  calories_burned?: number | null;
+  plausibility_score?: number | null;
+  review_tier?: 'none' | 'captain' | 'governor' | null;
+  plausibility_reason?: string | null;
+  reviewer_notes?: string | null;
   member: {
     user_id: string;
     username: string;

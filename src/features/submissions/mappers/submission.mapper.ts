@@ -26,6 +26,12 @@ export function toSubmissionEntry(dto: SubmissionEntryDTO): SubmissionEntry {
     customFieldValue: dto.custom_field_value ?? null,
     customFieldValue2: dto.custom_field_value_2 ?? null,
     outcome: dto.outcome ?? null,
+    hrAvg: dto.hr_avg ?? null,
+    caloriesBurned: dto.calories_burned ?? null,
+    plausibilityScore: dto.plausibility_score ?? null,
+    reviewTier: dto.review_tier ?? null,
+    plausibilityReason: dto.plausibility_reason ?? null,
+    reviewerNotes: dto.reviewer_notes ?? null,
   };
 }
 
@@ -35,6 +41,10 @@ export function toMySubmissionsData(dto: MySubmissionsResponseDTO): MySubmission
     stats: dto.data.stats,
     leagueMemberId: dto.data.leagueMemberId,
     teamId: dto.data.teamId,
+    suspiciousProofStrikes: dto.data.suspiciousProofStrikes ?? 0,
+    suspiciousProofLastStrikeAt: dto.data.suspiciousProofLastStrikeAt ?? null,
+    suspiciousProofWarningThreshold: dto.data.suspiciousProofWarningThreshold ?? 2,
+    suspiciousProofRejectionThreshold: dto.data.suspiciousProofRejectionThreshold ?? 3,
   };
 }
 
