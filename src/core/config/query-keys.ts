@@ -43,6 +43,7 @@ export const queryKeys = {
     sponsors: (id: string) => [...queryKeys.leagues.all, id, 'sponsors'] as const,
     wearableConnections: (id: string) => [...queryKeys.leagues.all, id, 'wearable-connections'] as const,
     pendingConfirmations: (id: string) => [...queryKeys.leagues.all, id, 'pending-confirmations'] as const,
+    ceremonyPhotos: (id: string) => [...queryKeys.leagues.all, id, 'ceremony-photos'] as const,
   },
   dashboard: {
     all: ['dashboard'] as const,
@@ -66,5 +67,10 @@ export const queryKeys = {
   invites: {
     validate: (code: string) => ['invites', code] as const,
     validateTeam: (code: string) => ['invites', 'team', code] as const,
+  },
+  conversion: {
+    all: ['conversion'] as const,
+    candidate: (sourceLeagueId: string) =>
+      ['conversion', 'candidate', sourceLeagueId] as const,
   },
 } as const;

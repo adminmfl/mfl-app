@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, TextInput, Pressable, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button, Card, Spinner } from 'heroui-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppText } from '../../components/app-text';
@@ -16,6 +16,8 @@ import { recommendTier } from '../../features/leagues/types/tier';
 import { queryKeys } from '../../core/config';
 import type { CreateLeagueInput } from '../../features/leagues/types/league-management.model';
 import type { PriceBreakdown, TierConfig, TierValidationResult } from '../../features/leagues/types/tier';
+import { fetchLeagueDetail } from '../../features/leagues/services/league.service';
+import { trackConversionEvent } from '../../features/conversion/services/conversion.service';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -274,6 +276,8 @@ export default function CreateLeagueScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const createMutation = useCreateLeague();
+  const params = useLocalSearchParams<{ source_league_id?: string }>();
+  const sourceLeagueId = params.source_league_id;
 
   // Wizard step: 0=Basic, 1=Config, 2=Review, 'success'=done
   const [step, setStep] = useState<number | 'success'>(0);
@@ -313,6 +317,34 @@ export default function CreateLeagueScreen() {
     if (maxParticipantsNum > 0) return maxParticipantsNum;
     return numTeams * 5;
   }, [maxParticipantsNum, numTeams]);
+
+  // Prefill from source league (Run Your Own conversion flow)
+  useEffect(() => {
+    if (!sourceLeagueId) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const detail = await fetchLeagueDetail(sourceLeagueId);
+        if (!mounted || !detail?.data) return;
+        const src = detail.data;
+        setLeagueName(`Run your own: ${src.league_name}`);
+        setNumTeams(src.num_teams || 4);
+        setRrFormula(src.rr_config?.formula || 'standard');
+        setIsPublic(src.is_public ?? false);
+        setIsExclusive(src.is_exclusive ?? true);
+        if (src.start_date && src.end_date) {
+          const s = new Date(src.start_date);
+          const e = new Date(src.end_date);
+          const msPerDay = 24 * 60 * 60 * 1000;
+          const days = Math.max(1, Math.round((e.getTime() - s.getTime()) / msPerDay) + 1);
+          setDuration(String(days));
+        }
+      } catch {
+        // Non-fatal — user can fill manually
+      }
+    })();
+    return () => { mounted = false; };
+  }, [sourceLeagueId]);
 
   // Tier recommendation
   const recommendation = useMemo(() => {
@@ -455,6 +487,9 @@ export default function CreateLeagueScreen() {
 
         await createMutation.mutateAsync(input);
         await queryClient.invalidateQueries({ queryKey: queryKeys.user.leagues() });
+        if (sourceLeagueId) {
+          trackConversionEvent('created', sourceLeagueId).catch(() => {});
+        }
         setStep('success');
         setSubmitting(false);
         return;
@@ -486,6 +521,7 @@ export default function CreateLeagueScreen() {
     createMutation,
     queryClient,
     router,
+    sourceLeagueId,
   ]);
 
   // ── Success State ──────────────────────────────────────────────────────────
