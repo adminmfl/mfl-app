@@ -89,6 +89,7 @@ function getDrawerNavSections(
       { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
       { label: 'AI Manager', icon: 'cpu', route: 'ai-coach' },
       { label: 'AI Usage', icon: 'activity', route: 'ai-usage' },
+      { label: 'Manage Sponsors', icon: 'speaker', route: 'sponsors' },
     );
 
     sections.push({
@@ -400,6 +401,7 @@ export default function AppLayout() {
           <Stack.Screen name="communities" />
           <Stack.Screen name="mfl-rules" />
           <Stack.Screen name="quick-start-league" />
+          <Stack.Screen name="sponsors" />
         </Stack>
       </DrawerLayout>
     </DrawerContext.Provider>

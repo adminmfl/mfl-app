@@ -10,6 +10,11 @@ import { useChallenges } from '../../features/challenges/hooks/use-challenges';
 import { ChallengeListCard } from '../../features/challenges/components/challenge-list-card';
 import { ChallengesHeader } from '../../features/challenges/components/challenges-header';
 import type { Challenge } from '../../features/challenges/types/challenge.model';
+import {
+  useLeagueSponsors,
+  getChallengeSponsor,
+  SponsorBanner,
+} from '../../features/sponsors';
 
 const TABS_LIST = ['Active', 'Completed'] as const;
 type Tab = (typeof TABS_LIST)[number];
@@ -22,6 +27,7 @@ export default function ChallengesScreen() {
   const [activeTab, setActiveTab] = useState<Tab>('Active');
 
   const { data: challenges, isLoading, isError, refetch } = useChallenges(leagueId);
+  const { data: sponsorSlots } = useLeagueSponsors(leagueId);
 
   const handleRefresh = useCallback(async () => {
     await refetch();
@@ -134,14 +140,26 @@ export default function ChallengesScreen() {
             />
           ) : (
             <View>
-              {filtered.map((challenge) => (
-                <ChallengeListCard
-                  key={challenge.challengeId}
-                  challenge={challenge}
-                  onPress={() => handleCardPress(challenge)}
-                  onSubmitProof={() => handleSubmitProof(challenge)}
-                />
-              ))}
+              {filtered.map((challenge) => {
+                const challengeSponsor = getChallengeSponsor(
+                  sponsorSlots ?? [],
+                  challenge.challengeId,
+                );
+                return (
+                  <View key={challenge.challengeId}>
+                    <ChallengeListCard
+                      challenge={challenge}
+                      onPress={() => handleCardPress(challenge)}
+                      onSubmitProof={() => handleSubmitProof(challenge)}
+                    />
+                    {challengeSponsor && (
+                      <View className="mb-3 -mt-1 px-1">
+                        <SponsorBanner slot={challengeSponsor} />
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </View>
           )}
         </Animated.View>

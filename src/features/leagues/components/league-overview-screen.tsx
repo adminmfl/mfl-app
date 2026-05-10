@@ -16,6 +16,11 @@ import { useLeaguePhase } from '../hooks/use-league-phase';
 import { isLeagueEnded } from '../utils/league-status';
 import { PHASE_LABELS, type LeaguePhase } from '../types/league-phase.model';
 import { mflColors } from '../../../constants/colors';
+import {
+  useLeagueSponsors,
+  getTitleSponsor,
+  TitleSponsorHeader,
+} from '../../sponsors';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -60,6 +65,7 @@ export function LeagueOverviewScreen() {
   const leagueId = activeLeague?.leagueId ?? '';
   const detailQuery = useLeagueDetail(leagueId);
   const phaseQuery = useLeaguePhase(leagueId);
+  const { data: sponsorSlots } = useLeagueSponsors(leagueId);
 
   const league = detailQuery.data;
   const phaseInfo = phaseQuery.data;
@@ -77,6 +83,10 @@ export function LeagueOverviewScreen() {
   }, [league?.startDate, league?.endDate]);
 
   const isChallengesOnly = league?.leagueMode === 'challenges_only';
+  const titleSponsor = useMemo(
+    () => getTitleSponsor(sponsorSlots ?? []),
+    [sponsorSlots],
+  );
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([detailQuery.refetch(), phaseQuery.refetch()]);
@@ -165,6 +175,9 @@ export function LeagueOverviewScreen() {
             </Pressable>
           )}
         </Card>
+
+        {/* ── Title Sponsor ─────────────────────────────────────── */}
+        {titleSponsor && <TitleSponsorHeader slot={titleSponsor} />}
 
         {/* ── League Ended Banner ────────────────────────────────── */}
         {ended && (
@@ -377,6 +390,11 @@ export function LeagueOverviewScreen() {
                 icon="user-plus"
                 label="Team Management"
                 onPress={() => router.push('/(app)/team-management' as any)}
+              />
+              <ActionRow
+                icon="speaker"
+                label="Manage Sponsors"
+                onPress={() => router.push('/(app)/sponsors' as any)}
               />
             </Card>
           </View>
