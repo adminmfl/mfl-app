@@ -63,6 +63,7 @@ function getDrawerNavSections(
         { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
         { label: 'Leaderboard', icon: 'bar-chart-2', route: '(tabs)/leaderboard' },
         { label: 'Rules', icon: 'book-open', route: 'league-rules' },
+        { label: 'Wearables', icon: 'watch', route: 'wearables' },
       ],
     });
   }
@@ -403,6 +404,7 @@ export default function AppLayout() {
           <Stack.Screen name="mfl-rules" />
           <Stack.Screen name="quick-start-league" />
           <Stack.Screen name="sponsors" />
+          <Stack.Screen name="wearables" />
         </Stack>
       </DrawerLayout>
     </DrawerContext.Provider>

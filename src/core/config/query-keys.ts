@@ -41,6 +41,8 @@ export const queryKeys = {
     teamView: (id: string, teamId: string) => [...queryKeys.leagues.all, id, 'team-view', teamId] as const,
     teamSummary: (id: string) => [...queryKeys.leagues.all, id, 'my-team-summary'] as const,
     sponsors: (id: string) => [...queryKeys.leagues.all, id, 'sponsors'] as const,
+    wearableConnections: (id: string) => [...queryKeys.leagues.all, id, 'wearable-connections'] as const,
+    pendingConfirmations: (id: string) => [...queryKeys.leagues.all, id, 'pending-confirmations'] as const,
   },
   dashboard: {
     all: ['dashboard'] as const,
