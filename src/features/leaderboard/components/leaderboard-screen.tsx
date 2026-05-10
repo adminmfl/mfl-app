@@ -16,6 +16,7 @@ import {
 } from './leaderboard-filter-bar';
 import { OverallLeaderboard } from './overall-leaderboard';
 import { ChallengeLeaderboardSection } from './challenge-leaderboard-section';
+import { RankBanner } from './rank-banner';
 import {
   calculateWeekPresets,
   formatDateRange,
@@ -62,6 +63,18 @@ export function LeaderboardScreen() {
     if (!league?.start_date || !league?.end_date) return [];
     return calculateWeekPresets(league.start_date, league.end_date);
   }, [league?.start_date, league?.end_date]);
+
+  const userTeamId = activeLeague?.teamId ?? null;
+  const userTeamRanking = useMemo(() => {
+    if (!userTeamId || !data?.teams) return null;
+    return data.teams.find((t) => t.team_id === userTeamId) ?? null;
+  }, [data?.teams, userTeamId]);
+
+  const nextRankPoints = useMemo(() => {
+    if (!userTeamRanking || userTeamRanking.rank === 1 || !data?.teams) return undefined;
+    const nextTeam = data.teams.find((t) => t.rank === userTeamRanking.rank - 1);
+    return nextTeam?.total_points;
+  }, [data?.teams, userTeamRanking]);
 
   const roleLabel = isHost
     ? 'Host'
@@ -225,6 +238,21 @@ export function LeaderboardScreen() {
           </Animated.View>
         ) : (
           <>
+            {userTeamRanking && activeTab === 'teams' ? (
+              <Animated.View entering={FadeInDown.duration(250).delay(50)}>
+                <RankBanner
+                  rank={userTeamRanking.rank}
+                  totalTeams={data.teams.length}
+                  points={userTeamRanking.total_points}
+                  teamName={userTeamRanking.team_name}
+                  nextRankPoints={nextRankPoints}
+                  primaryColor={
+                    activeLeague?.branding?.primary_color as string | undefined
+                  }
+                />
+              </Animated.View>
+            ) : null}
+
             <Animated.View entering={FadeInDown.duration(250).delay(60)}>
               <LeaderboardFilterBar
                 activeTab={activeTab}

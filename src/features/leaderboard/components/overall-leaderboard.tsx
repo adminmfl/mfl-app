@@ -5,6 +5,7 @@ import { SectionLabel } from '../../../components/section-label';
 import type { LeaderboardDataDTO } from '../types/leaderboard.dto';
 import { TeamRankingCard, IndividualRankingCard } from './ranking-cards';
 import { LeaderboardStatsBar } from './leaderboard-stats-bar';
+import { TiebreakerInfo } from './tiebreaker-info';
 
 export function OverallLeaderboard({
   data,
@@ -50,6 +51,7 @@ export function OverallLeaderboard({
             ))}
           </View>
         )}
+        {showAvgRR ? <TiebreakerInfo /> : null}
       </View>
 
       <View className="gap-3">

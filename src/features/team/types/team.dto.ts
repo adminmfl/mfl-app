@@ -73,3 +73,18 @@ export interface TeamSummaryResponseDTO {
   success: boolean;
   data: TeamSummaryDTO;
 }
+
+// GET /api/leagues/[id]/balance
+export interface BalanceBreakdownDTO {
+  fitnessScore: number;
+  genderScore: number;
+  ageScore: number;
+  departmentScore: number;
+  overallScore: number;
+}
+
+export interface TeamBalanceResponseDTO {
+  success: boolean;
+  score: BalanceBreakdownDTO;
+  error?: string;
+}

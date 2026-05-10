@@ -10,7 +10,7 @@ export function useUnreadChatCount(leagueId: string) {
       return dto.data.unread ?? dto.data.count;
     },
     enabled: !!leagueId,
-    staleTime: 30 * 1000,
-    refetchInterval: 30 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 10 * 1000,
   });
 }

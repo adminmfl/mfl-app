@@ -5,4 +5,5 @@ export { useMyTeamView } from './hooks/use-my-team-view';
 export { useUnallocatedMembers } from './hooks/use-unallocated-members';
 export { useAssignMember } from './hooks/use-assign-member';
 export { useTeamSubmissions } from './hooks/use-team-submissions';
+export { useTeamBalance } from './hooks/use-team-balance';
 export type { LeagueMember, Team, TeamMember, MyTeamStats, TeamViewStats, TeamViewData } from './types/team.model';

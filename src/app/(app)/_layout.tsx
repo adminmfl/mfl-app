@@ -89,6 +89,7 @@ function getDrawerNavSections(
       { label: 'Approve Donations', icon: 'heart', route: 'rest-day-donations' },
       { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
       { label: 'AI Manager', icon: 'cpu', route: 'ai-manager' },
+      { label: 'Engagement', icon: 'trending-up', route: 'engagement-dashboard' },
       { label: 'AI Usage', icon: 'activity', route: 'ai-usage' },
       { label: 'Manage Sponsors', icon: 'speaker', route: 'sponsors' },
     );
@@ -106,6 +107,7 @@ function getDrawerNavSections(
       items: [
         { label: 'Team Overview', icon: 'users', route: '(tabs)/my-team' },
         { label: 'Team Activities', icon: 'clipboard', route: 'submission-validation' },
+        { label: 'Captain Engagement', icon: 'shield', route: 'captain-engagement' },
         { label: 'Approve Donations', icon: 'heart', route: 'rest-day-donations' },
       ],
     });
@@ -405,6 +407,8 @@ export default function AppLayout() {
           <Stack.Screen name="quick-start-league" />
           <Stack.Screen name="sponsors" />
           <Stack.Screen name="wearables" />
+          <Stack.Screen name="engagement-dashboard" />
+          <Stack.Screen name="captain-engagement" />
         </Stack>
       </DrawerLayout>
     </DrawerContext.Provider>
