@@ -1,5 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Image, Pressable, View } from 'react-native';
+import { useState } from 'react';
+import { Dimensions, Image, Modal, Pressable, View } from 'react-native';
 
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
@@ -13,12 +14,13 @@ import {
 import { renderMessageContent } from '../utils/render-message-content';
 import { MessagingChip } from './messaging-chip';
 
-const QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '💪', '🔥'];
+const QUICK_EMOJIS = ['\u{1F44D}', '\u{1F525}', '\u{1F4AA}', '\u{1F602}', '\u{2764}\u{FE0F}', '\u{1F440}'];
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   isOwn: boolean;
   currentUserId?: string;
+  isGrouped?: boolean;
   onReply: (message: ChatMessage) => void;
   onReact: (messageId: string, emoji: string) => void;
   onOpenDeepLink: (path: string) => void;
@@ -28,12 +30,20 @@ export function ChatMessageBubble({
   message,
   isOwn,
   currentUserId,
+  isGrouped = false,
   onReply,
   onReact,
   onOpenDeepLink,
 }: ChatMessageBubbleProps) {
-  const isAnnouncement = message.messageType === 'announcement';
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   const isSystem = message.messageType === 'system';
+  const isCaptainBoost =
+    message.messageType === 'announcement' &&
+    message.visibility === 'captains_only';
+  const isAnnouncement =
+    message.messageType === 'announcement' &&
+    message.visibility !== 'captains_only';
   const roleColor = getRoleColor(message.senderRole);
 
   if (isSystem) {
@@ -46,24 +56,88 @@ export function ChatMessageBubble({
     );
   }
 
+  // Captain boost: announcement + captains_only = golden card (matches web)
+  if (isCaptainBoost) {
+    return (
+      <View className={isGrouped ? 'mt-1' : 'mt-3'}>
+        <Pressable
+          onLongPress={() => onReply(message)}
+          className="rounded-xl px-4 py-3"
+          style={{
+            backgroundColor: mflColors.amberLight,
+            borderWidth: 1,
+            borderColor: '#FCD34D',
+          }}
+        >
+          <AppText className="text-[15px] text-foreground">
+            {renderMessageContent(message.content, mflColors.text)}
+          </AppText>
+          <View className="mt-2 flex-row items-center gap-2">
+            <AppText className="text-[10px] font-semibold" style={{ color: mflColors.amber }}>
+              {message.senderName || message.senderUsername}
+            </AppText>
+            <AppText className="text-[10px] text-muted">
+              {formatRelativeMessageTime(message.createdAt)}
+            </AppText>
+          </View>
+        </Pressable>
+
+        {message.reactions.length > 0 ? (
+          <View className="mt-1 flex-row flex-wrap gap-1">
+            {message.reactions.map((reaction) => (
+              <MessagingChip
+                key={reaction.emoji}
+                label={`${reaction.emoji} ${reaction.userIds.length}`}
+                selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
+                onPress={() => onReact(message.messageId, reaction.emoji)}
+              />
+            ))}
+          </View>
+        ) : null}
+
+        <View className="mt-1 flex-row flex-wrap gap-1">
+          <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
+          {QUICK_EMOJIS.map((emoji) => (
+            <MessagingChip
+              key={emoji}
+              label={emoji}
+              selected={message.reactions.some(
+                (reaction) =>
+                  reaction.emoji === emoji &&
+                  !!currentUserId &&
+                  reaction.userIds.includes(currentUserId),
+              )}
+              onPress={() => onReact(message.messageId, emoji)}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  }
+
+  const screenWidth = Dimensions.get('window').width;
+
   return (
     <View className={isOwn ? 'items-end' : 'items-start'}>
       <View
-        className="mb-2 flex-row"
+        className={`flex-row ${isGrouped ? 'mt-1' : 'mt-3'}`}
         style={{
           maxWidth: '86%',
           alignSelf: isOwn ? 'flex-end' : 'flex-start',
         }}
       >
-        {!isOwn ? (
+        {/* Avatar — hide for own messages; show spacer when grouped */}
+        {!isOwn && !isGrouped ? (
           <View
-            className="mr-2 mt-1 h-8 w-8 items-center justify-center rounded-full"
+            className="mr-2 mt-1 h-7 w-7 items-center justify-center rounded-full"
             style={{ backgroundColor: mflColors.brandLight }}
           >
-            <AppText className="text-xs font-bold" style={{ color: mflColors.brand }}>
+            <AppText className="text-[10px] font-bold" style={{ color: mflColors.brand }}>
               {getInitial(message.senderUsername)}
             </AppText>
           </View>
+        ) : !isOwn && isGrouped ? (
+          <View className="mr-2 h-7 w-7" />
         ) : null}
 
         <Pressable
@@ -89,14 +163,20 @@ export function ChatMessageBubble({
                   },
           ]}
         >
-          {!isOwn ? (
+          {/* Name + role badge — hide when grouped or own */}
+          {!isOwn && !isGrouped ? (
             <View className="mb-1 flex-row items-center gap-2">
               <AppText className="text-xs font-semibold" style={{ color: roleColor }}>
                 {message.senderName || message.senderUsername}
               </AppText>
               <View
                 className="rounded-full px-1.5 py-0.5"
-                style={{ backgroundColor: mflColors.surface }}
+                style={{
+                  backgroundColor: mflColors.surface,
+                  ...(message.senderRole === 'player'
+                    ? { borderWidth: 1, borderColor: mflColors.border }
+                    : {}),
+                }}
               >
                 <AppText className="text-[10px] font-semibold" style={{ color: roleColor }}>
                   {getRoleLabel(message.senderRole)}
@@ -148,12 +228,14 @@ export function ChatMessageBubble({
           ) : null}
 
           {message.photoUrl ? (
-            <Image
-              source={{ uri: message.photoUrl }}
-              className="mb-2 rounded-xl"
-              style={{ width: 220, height: 170, backgroundColor: mflColors.surface }}
-              resizeMode="cover"
-            />
+            <Pressable onPress={() => setLightboxOpen(true)}>
+              <Image
+                source={{ uri: message.photoUrl }}
+                className="mb-2 rounded-xl"
+                style={{ width: 220, height: 170, backgroundColor: mflColors.surface }}
+                resizeMode="cover"
+              />
+            </Pressable>
           ) : null}
 
           {message.content ? (
@@ -225,11 +307,14 @@ export function ChatMessageBubble({
               {formatRelativeMessageTime(message.createdAt)}
             </AppText>
             {isOwn ? (
-              <Feather
-                name={message.isRead ? 'check-circle' : 'check'}
-                size={12}
-                color={message.isRead ? mflColors.blue : 'rgba(255,255,255,0.72)'}
-              />
+              message.isRead ? (
+                <View className="flex-row" style={{ marginLeft: -2 }}>
+                  <Feather name="check" size={12} color={mflColors.blue} />
+                  <Feather name="check" size={12} color={mflColors.blue} style={{ marginLeft: -6 }} />
+                </View>
+              ) : (
+                <Feather name="check" size={12} color="rgba(255,255,255,0.72)" />
+              )
             ) : null}
           </View>
         </Pressable>
@@ -263,6 +348,38 @@ export function ChatMessageBubble({
             />
           ))}
         </View>
+      ) : null}
+
+      {/* Photo lightbox */}
+      {message.photoUrl ? (
+        <Modal
+          visible={lightboxOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setLightboxOpen(false)}
+        >
+          <Pressable
+            onPress={() => setLightboxOpen(false)}
+            className="flex-1 items-center justify-center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}
+          >
+            <Pressable
+              onPress={() => setLightboxOpen(false)}
+              className="absolute right-4 top-14 z-10 rounded-full p-2"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+            >
+              <Feather name="x" size={22} color={mflColors.white} />
+            </Pressable>
+            <Image
+              source={{ uri: message.photoUrl }}
+              style={{
+                width: screenWidth - 32,
+                height: (screenWidth - 32) * 0.75,
+              }}
+              resizeMode="contain"
+            />
+          </Pressable>
+        </Modal>
       ) : null}
     </View>
   );

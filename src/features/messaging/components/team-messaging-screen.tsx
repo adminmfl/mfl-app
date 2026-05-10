@@ -1,10 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   RefreshControl,
   View,
   type ListRenderItemInfo,
@@ -17,6 +18,7 @@ import { ScreenState } from '../../../components/screen-state';
 import { mflColors } from '../../../constants/colors';
 import { useAuth } from '../../../core/auth';
 import { useRole } from '../../../contexts/role-context';
+import { useUserProfile } from '../../profile/hooks/use-user-profile';
 import type { UserLeague } from '../../leagues/types/league.model';
 import { useChatMessages } from '../hooks/use-chat-messages';
 import { useChatTeams } from '../hooks/use-chat-teams';
@@ -56,6 +58,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const leagueId = league.leagueId;
   const isLeader = isHost || isGovernor;
   const isCaptainRole = isCaptain || isViceCaptain;
+  const profileQuery = useUserProfile();
 
   const teamsQuery = useChatTeams(leagueId, isLeader);
   const teams = teamsQuery.data ?? [];
@@ -92,6 +95,12 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const reactionMutation = useToggleChatReaction();
 
   const messages = messagesQuery.data ?? [];
+  const flatListRef = useRef<FlatList<ChatMessage>>(null);
+
+  const pinnedMessage = useMemo(
+    () => messages.find((m) => m.messageType === 'announcement' && m.isImportant),
+    [messages],
+  );
 
   useEffect(() => {
     const unreadIds = messages
@@ -147,23 +156,65 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
     [router],
   );
 
+  const activeQueryKey = useMemo(
+    () =>
+      messagingQueryKeys.messages(leagueId, {
+        teamId: channelTeamId ?? null,
+        filter,
+        adminView: isLeader && !!selectedTeamId && adminView,
+      }),
+    [leagueId, channelTeamId, filter, isLeader, selectedTeamId, adminView],
+  );
+
+  const handleOptimisticMessage = useCallback(
+    (optimistic: ChatMessage) => {
+      queryClient.setQueryData<ChatMessage[]>(activeQueryKey, (old) => [
+        optimistic,
+        ...(old ?? []),
+      ]);
+    },
+    [activeQueryKey, queryClient],
+  );
+
+  const handleSendFailed = useCallback(
+    (msgId: string) => {
+      queryClient.setQueryData<ChatMessage[]>(activeQueryKey, (old) =>
+        (old ?? []).filter((m) => m.messageId !== msgId),
+      );
+    },
+    [activeQueryKey, queryClient],
+  );
+
   const renderMessage = useCallback(
-    ({ item }: ListRenderItemInfo<ChatMessage>) => (
-      <ChatMessageBubble
-        message={item}
-        isOwn={item.senderId === user?.id}
-        currentUserId={user?.id}
-        onReply={setReplyTo}
-        onReact={(messageId, emoji) => {
-          reactionMutation.mutate(
-            { leagueId, messageId, emoji },
-            { onSuccess: () => messagesQuery.refetch() },
-          );
-        }}
-        onOpenDeepLink={openDeepLink}
-      />
-    ),
-    [leagueId, messagesQuery, openDeepLink, reactionMutation, user?.id],
+    ({ item, index }: ListRenderItemInfo<ChatMessage>) => {
+      // In inverted FlatList, data[0] = newest (bottom). The message visually
+      // above item[index] is item[index+1]. Group if same sender within 5 min.
+      const above = messages[index + 1];
+      const isGrouped =
+        !!above &&
+        above.senderId === item.senderId &&
+        Math.abs(
+          new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime(),
+        ) < 5 * 60 * 1000;
+
+      return (
+        <ChatMessageBubble
+          message={item}
+          isOwn={item.senderId === user?.id}
+          currentUserId={user?.id}
+          isGrouped={isGrouped}
+          onReply={setReplyTo}
+          onReact={(messageId, emoji) => {
+            reactionMutation.mutate(
+              { leagueId, messageId, emoji },
+              { onSuccess: () => messagesQuery.refetch() },
+            );
+          }}
+          onOpenDeepLink={openDeepLink}
+        />
+      );
+    },
+    [leagueId, messages, messagesQuery, openDeepLink, reactionMutation, user?.id],
   );
 
   const keyExtractor = useCallback((item: ChatMessage) => item.messageId, []);
@@ -230,6 +281,33 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         </View>
       </View>
 
+      {pinnedMessage ? (
+        <Pressable
+          onPress={() => {
+            const idx = messages.findIndex((m) => m.messageId === pinnedMessage.messageId);
+            if (idx >= 0) {
+              flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+            }
+          }}
+          className="mx-4 mb-2 flex-row items-center gap-3 rounded-xl border px-4 py-3"
+          style={{
+            backgroundColor: mflColors.amberLight,
+            borderColor: 'rgba(245,158,11,0.2)',
+          }}
+        >
+          <AppText className="text-sm">📌</AppText>
+          <AppText
+            className="flex-1 text-[13px] text-foreground"
+            numberOfLines={1}
+          >
+            {pinnedMessage.content}
+          </AppText>
+          <AppText className="text-[11px] font-medium" style={{ color: mflColors.amber }}>
+            View
+          </AppText>
+        </Pressable>
+      ) : null}
+
       <View className="flex-1">
         {messagesQuery.isLoading ? (
           <ScreenState screen="team-chat" state="loading" />
@@ -243,6 +321,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
           />
         ) : (
           <FlatList
+            ref={flatListRef}
             data={messages}
             renderItem={renderMessage}
             keyExtractor={keyExtractor}
@@ -296,6 +375,10 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
               messagesQuery.refetch();
               unreadQuery.refetch();
             }}
+            senderId={user?.id}
+            senderUsername={profileQuery.data?.username}
+            onOptimisticMessage={handleOptimisticMessage}
+            onSendFailed={handleSendFailed}
           />
         </View>
       )}
