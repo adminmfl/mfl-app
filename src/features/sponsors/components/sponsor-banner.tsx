@@ -1,6 +1,5 @@
 import { View, Image, Pressable, Linking } from 'react-native';
 import { AppText } from '../../../components/app-text';
-import { mflColors } from '../../../constants/colors';
 import type { LeagueSponsorSlot } from '../types/sponsor.model';
 
 interface SponsorBannerProps {

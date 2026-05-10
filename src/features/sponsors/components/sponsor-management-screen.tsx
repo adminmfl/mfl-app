@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useState } from 'react';
-import { Alert, Image, Linking, Pressable, View } from 'react-native';
-import { Card, Chip, Spinner, Switch } from 'heroui-native';
+import { Alert, Image, Linking, Pressable, Switch, View } from 'react-native';
+import { Card, Chip, Spinner } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { ScreenScrollView } from '../../../components/screen-scroll-view';
 import { ScreenState } from '../../../components/screen-state';
@@ -129,7 +129,8 @@ function SlotCard({
               value={slot.enabled}
               onValueChange={() => onToggle(slot)}
               disabled={slot.lockedByAdmin}
-              size="sm"
+              trackColor={{ false: mflColors.border, true: mflColors.brand }}
+              thumbColor={mflColors.white}
             />
           )}
         </View>
