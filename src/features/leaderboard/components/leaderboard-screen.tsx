@@ -28,6 +28,7 @@ import {
   getGrandFinaleSponsor,
   SponsorBanner,
 } from '../../sponsors';
+import { GrandeFinaleCelebration } from './grande-finale-celebration';
 
 export function LeaderboardScreen() {
   const { activeLeague } = useLeagueContext();
@@ -200,7 +201,7 @@ export function LeaderboardScreen() {
             </View>
           </View>
 
-          {archived ? (
+          {archived && !isPostLeague(league?.end_date) ? (
             <View className="gap-2">
               <View
                 className="flex-row items-start gap-2 rounded-lg p-3"
@@ -215,7 +216,7 @@ export function LeaderboardScreen() {
             </View>
           ) : null}
 
-          {!showAvgRR ? (
+          {!showAvgRR && !archived ? (
             <View className="rounded-lg p-3" style={{ backgroundColor: mflColors.surface }}>
               <AppText className="text-xs text-muted">
                 This league uses points-only scoring, so RR columns are hidden.
@@ -224,46 +225,61 @@ export function LeaderboardScreen() {
           ) : null}
         </Animated.View>
 
-        {userTeamRanking && activeTab === 'teams' ? (
-          <Animated.View entering={FadeInDown.duration(250).delay(50)}>
-            <RankBanner
-              rank={userTeamRanking.rank}
-              totalTeams={data.teams.length}
-              points={userTeamRanking.total_points}
-              teamName={userTeamRanking.team_name}
-              nextRankPoints={nextRankPoints}
-              primaryColor={
-                activeLeague?.branding?.primary_color as string | undefined
-              }
+        {archived && isPostLeague(league?.end_date) && league ? (
+          <Animated.View entering={FadeInDown.duration(250).delay(60)}>
+            <SponsorBanner slot={grandFinaleSponsor} />
+            <GrandeFinaleCelebration
+              leagueId={leagueId}
+              leagueName={league.league_name}
+              leagueEndDate={league.end_date}
+              teams={data.teams}
+              individuals={data.individuals}
             />
           </Animated.View>
-        ) : null}
+        ) : (
+          <>
+            {userTeamRanking && activeTab === 'teams' ? (
+              <Animated.View entering={FadeInDown.duration(250).delay(50)}>
+                <RankBanner
+                  rank={userTeamRanking.rank}
+                  totalTeams={data.teams.length}
+                  points={userTeamRanking.total_points}
+                  teamName={userTeamRanking.team_name}
+                  nextRankPoints={nextRankPoints}
+                  primaryColor={
+                    activeLeague?.branding?.primary_color as string | undefined
+                  }
+                />
+              </Animated.View>
+            ) : null}
 
-        <Animated.View entering={FadeInDown.duration(250).delay(60)}>
-          <LeaderboardFilterBar
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            selectedWeek={selectedWeek}
-            weekPresets={weekPresets}
-            onWeekSelect={handleWeekSelect}
-            customStart={customStart}
-            customEnd={customEnd}
-            onCustomStartChange={setCustomStart}
-            onCustomEndChange={setCustomEnd}
-            onApplyCustomRange={handleApplyCustomRange}
-            onReset={handleReset}
-            onRefresh={handleRefresh}
-            isRefreshing={leaderboardQuery.isFetching}
-          />
-        </Animated.View>
+            <Animated.View entering={FadeInDown.duration(250).delay(60)}>
+              <LeaderboardFilterBar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                selectedWeek={selectedWeek}
+                weekPresets={weekPresets}
+                onWeekSelect={handleWeekSelect}
+                customStart={customStart}
+                customEnd={customEnd}
+                onCustomStartChange={setCustomStart}
+                onCustomEndChange={setCustomEnd}
+                onApplyCustomRange={handleApplyCustomRange}
+                onReset={handleReset}
+                onRefresh={handleRefresh}
+                isRefreshing={leaderboardQuery.isFetching}
+              />
+            </Animated.View>
 
-        <Animated.View entering={FadeInDown.duration(250).delay(120)}>
-          {activeTab === 'teams' ? (
-            <OverallLeaderboard data={data} showAvgRR={showAvgRR} />
-          ) : (
-            <ChallengeLeaderboardSection leagueId={leagueId} />
-          )}
-        </Animated.View>
+            <Animated.View entering={FadeInDown.duration(250).delay(120)}>
+              {activeTab === 'teams' ? (
+                <OverallLeaderboard data={data} showAvgRR={showAvgRR} />
+              ) : (
+                <ChallengeLeaderboardSection leagueId={leagueId} />
+              )}
+            </Animated.View>
+          </>
+        )}
       </View>
     </ScreenScrollView>
   );
