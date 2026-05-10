@@ -87,7 +87,7 @@ function getDrawerNavSections(
       { label: 'Manual Workout Entry', icon: 'user-check', route: 'manual-entry' },
       { label: 'Approve Donations', icon: 'heart', route: 'rest-day-donations' },
       { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
-      { label: 'AI Manager', icon: 'cpu', route: 'ai-coach' },
+      { label: 'AI Manager', icon: 'cpu', route: 'ai-manager' },
       { label: 'AI Usage', icon: 'activity', route: 'ai-usage' },
     );
 
@@ -372,6 +372,7 @@ export default function AppLayout() {
           <Stack.Screen name="challenges" />
           <Stack.Screen name="challenges/[challengeId]" />
           <Stack.Screen name="ai-coach" />
+          <Stack.Screen name="ai-manager" />
           <Stack.Screen name="ai-usage" />
           <Stack.Screen name="analytics" />
           <Stack.Screen name="governor" />
