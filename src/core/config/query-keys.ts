@@ -43,6 +43,9 @@ export const queryKeys = {
     sponsors: (id: string) => [...queryKeys.leagues.all, id, 'sponsors'] as const,
     wearableConnections: (id: string) => [...queryKeys.leagues.all, id, 'wearable-connections'] as const,
     pendingConfirmations: (id: string) => [...queryKeys.leagues.all, id, 'pending-confirmations'] as const,
+    engagement: (id: string) => [...queryKeys.leagues.all, id, 'engagement'] as const,
+    captainAtRisk: (id: string) => [...queryKeys.leagues.all, id, 'captain-at-risk'] as const,
+    milestoneDrafts: (id: string) => [...queryKeys.leagues.all, id, 'milestone-drafts'] as const,
   },
   dashboard: {
     all: ['dashboard'] as const,
