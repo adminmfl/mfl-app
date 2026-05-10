@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -48,6 +48,10 @@ interface ChatComposerProps {
   replyTo: ChatMessage | null;
   onCancelReply: () => void;
   onSent: () => void;
+  senderId?: string;
+  senderUsername?: string;
+  onOptimisticMessage?: (message: ChatMessage) => void;
+  onSendFailed?: (messageId: string) => void;
 }
 
 export function ChatComposer({
@@ -59,6 +63,10 @@ export function ChatComposer({
   replyTo,
   onCancelReply,
   onSent,
+  senderId,
+  senderUsername,
+  onOptimisticMessage,
+  onSendFailed,
 }: ChatComposerProps) {
   const sendMutation = useSendChatMessage();
   const [content, setContent] = useState('');
@@ -149,6 +157,8 @@ export function ChatComposer({
     }
   };
 
+  const optimisticIdRef = useRef<string | null>(null);
+
   const handleSend = async () => {
     if (!canSend || isBusy) return;
 
@@ -172,6 +182,36 @@ export function ChatComposer({
       setUploadingPhoto(false);
     }
 
+    // Build and inject optimistic message immediately
+    if (onOptimisticMessage && senderId) {
+      const optimisticId = `optimistic-${Date.now()}`;
+      optimisticIdRef.current = optimisticId;
+      const optimistic: ChatMessage = {
+        messageId: optimisticId,
+        leagueId,
+        teamId: teamId ?? null,
+        senderId,
+        senderName: senderUsername ?? null,
+        senderUsername: senderUsername ?? 'You',
+        senderRole: currentRole,
+        content: content.trim() || (photoUrl ? 'Photo' : ''),
+        messageType: isAnnouncement ? 'announcement' : 'chat',
+        visibility,
+        isImportant,
+        parentMessageId: replyTo?.messageId ?? null,
+        parentMessage: replyTo
+          ? { senderUsername: replyTo.senderUsername, content: replyTo.content }
+          : null,
+        deepLink: deepLink ?? null,
+        photoUrl: photoUrl ?? (photo ? photo.uri : null),
+        createdAt: new Date().toISOString(),
+        editedAt: null,
+        isRead: true,
+        reactions: [],
+      };
+      onOptimisticMessage(optimistic);
+    }
+
     sendMutation.mutate(
       {
         leagueId,
@@ -186,6 +226,7 @@ export function ChatComposer({
       },
       {
         onSuccess: () => {
+          optimisticIdRef.current = null;
           setContent('');
           setVisibility('all');
           setIsAnnouncement(false);
@@ -196,6 +237,10 @@ export function ChatComposer({
           onSent();
         },
         onError: (error) => {
+          if (optimisticIdRef.current && onSendFailed) {
+            onSendFailed(optimisticIdRef.current);
+          }
+          optimisticIdRef.current = null;
           Alert.alert('Send Failed', error.message);
         },
       },
@@ -266,7 +311,7 @@ export function ChatComposer({
             ) : null}
             {visibility === 'captains_only' ? (
               <MessagingChip
-                label={currentRole === 'player' ? 'DM Captain' : 'Captains Only'}
+                label={currentRole === 'player' ? 'DM to Captain' : 'Captains Only'}
                 icon="shield"
                 selected
                 onPress={() => setVisibility('all')}
