@@ -44,3 +44,32 @@ export interface Intervention {
   status: string;
   createdAt: string;
 }
+
+export interface CannedMessage {
+  id: string;
+  title: string;
+  content: string;
+  roleTarget: string;
+  isSystem: boolean;
+  category?: string | null;
+}
+
+export interface ChallengeTemplate {
+  id: string;
+  title: string;
+  description: string | null;
+  challengeType: string;
+  durationDays: number;
+  totalPoints: number | null;
+  commTemplates?: unknown[] | null;
+  rules?: Array<{ ruleText: string; isMandatory: boolean }> | null;
+  scoringLogic?: Record<string, any> | null;
+}
+
+export interface AiManagerChallenge {
+  id: string;
+  name: string;
+  challengeType: string;
+  status: string;
+  endDate?: string | null;
+}

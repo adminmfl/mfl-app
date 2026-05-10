@@ -14,6 +14,11 @@ import { useRole } from '../../contexts/role-context';
 import { useDigest } from '../../features/ai-manager/hooks/use-digest';
 import { useDrafts } from '../../features/ai-manager/hooks/use-drafts';
 import { useInterventions } from '../../features/ai-manager/hooks/use-interventions';
+import { useCannedMessages } from '../../features/ai-manager/hooks/use-canned-messages';
+import {
+  useAiManagerChallenges,
+  useChallengeTemplates,
+} from '../../features/ai-manager/hooks/use-challenge-templates';
 import {
   useRunScan,
   useMarkDigestRead,
@@ -24,27 +29,34 @@ import {
   useDismissDraft,
   useDeleteDraft,
   useEditDraft,
+  useCreateDraftFromTemplate,
+  useCreateCannedMessage,
+  useDeleteCannedMessage,
+  useDeployChallengeTemplate,
   useDismissIntervention,
   useGenerateDraftFromIntervention,
 } from '../../features/ai-manager/hooks/use-ai-manager-actions';
 
 import { DashboardSection } from '../../features/ai-manager/components/dashboard-section';
 import { CommunicationSection } from '../../features/ai-manager/components/communication-section';
+import { ChallengesSection } from '../../features/ai-manager/components/challenges-section';
 
 // ─── Tab Switcher ────────────────────────────────────────────────────────────
 
-type Tab = 'dashboard' | 'communication';
+type Tab = 'dashboard' | 'communication' | 'challenges';
 
 function TabBar({
   activeTab,
   onTabChange,
   pendingCount,
   draftCount,
+  challengeCount,
 }: {
   activeTab: Tab;
   onTabChange: (t: Tab) => void;
   pendingCount: number;
   draftCount: number;
+  challengeCount: number;
 }) {
   return (
     <View className="flex-row rounded-lg overflow-hidden mb-4" style={{ backgroundColor: mflColors.inkLight }}>
@@ -59,6 +71,12 @@ function TabBar({
         badge={draftCount}
         active={activeTab === 'communication'}
         onPress={() => onTabChange('communication')}
+      />
+      <TabButton
+        label="Challenges"
+        badge={challengeCount}
+        active={activeTab === 'challenges'}
+        onPress={() => onTabChange('challenges')}
       />
     </View>
   );
@@ -168,10 +186,16 @@ function AiManagerContent({
   const digestQ = useDigest(leagueId);
   const draftsQ = useDrafts(leagueId);
   const interventionsQ = useInterventions(leagueId);
+  const cannedMessagesQ = useCannedMessages(leagueId);
+  const templatesQ = useChallengeTemplates(leagueId);
+  const challengesQ = useAiManagerChallenges(leagueId);
 
   const digestItems = digestQ.data ?? [];
   const drafts = draftsQ.data ?? [];
   const interventions = interventionsQ.data ?? [];
+  const cannedMessages = cannedMessagesQ.data ?? [];
+  const templates = templatesQ.data ?? [];
+  const challenges = challengesQ.data ?? [];
 
   const isLoading = digestQ.isLoading || draftsQ.isLoading || interventionsQ.isLoading;
 
@@ -185,6 +209,10 @@ function AiManagerContent({
   const dismissDraftMutation = useDismissDraft(leagueId);
   const deleteDraftMutation = useDeleteDraft(leagueId);
   const editDraftMutation = useEditDraft(leagueId);
+  const createTemplateDraftMutation = useCreateDraftFromTemplate(leagueId);
+  const createCannedMessageMutation = useCreateCannedMessage(leagueId);
+  const deleteCannedMessageMutation = useDeleteCannedMessage(leagueId);
+  const deployChallengeMutation = useDeployChallengeTemplate(leagueId);
   const dismissIntMutation = useDismissIntervention(leagueId);
   const generateDraftMutation = useGenerateDraftFromIntervention(leagueId);
 
@@ -200,9 +228,16 @@ function AiManagerContent({
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([digestQ.refetch(), draftsQ.refetch(), interventionsQ.refetch()]);
+    await Promise.all([
+      digestQ.refetch(),
+      draftsQ.refetch(),
+      interventionsQ.refetch(),
+      cannedMessagesQ.refetch(),
+      templatesQ.refetch(),
+      challengesQ.refetch(),
+    ]);
     setRefreshing(false);
-  }, [digestQ, draftsQ, interventionsQ]);
+  }, [cannedMessagesQ, challengesQ, digestQ, draftsQ, interventionsQ, templatesQ]);
 
   // ── Action handlers ──
   const handleRunScan = () => {
@@ -260,11 +295,57 @@ function AiManagerContent({
     );
   };
 
+  const handleCreateTemplate = (body: { title: string; content: string }) => {
+    createCannedMessageMutation.mutate(body, {
+      onSuccess: () => Alert.alert('Created', 'Template created.'),
+      onError: () => Alert.alert('Error', 'Failed to create template'),
+    });
+  };
+
+  const handleCreateDraftFromTemplate = (body: { title: string; content: string }) => {
+    createTemplateDraftMutation.mutate(body, {
+      onSuccess: () => Alert.alert('Draft Created', 'Check the drafts list above.'),
+      onError: () => Alert.alert('Error', 'Failed to create draft'),
+    });
+  };
+
+  const handleDeleteTemplate = (id: string) => {
+    deleteCannedMessageMutation.mutate(id, {
+      onSuccess: () => Alert.alert('Deleted', 'Template deleted.'),
+      onError: () => Alert.alert('Error', 'Failed to delete template'),
+    });
+  };
+
+  const handleDeployTemplate = (
+    body: { templateId: string; startDate: string; customName?: string },
+    onDone: () => void,
+  ) => {
+    deployChallengeMutation.mutate(body, {
+      onSuccess: (data) => {
+        onDone();
+        Alert.alert(
+          'Challenge Deployed',
+          data.commCount != null
+            ? `${data.commCount} communications scheduled.`
+            : 'Challenge deployed.',
+        );
+      },
+      onError: (err: any) =>
+        Alert.alert(
+          'Deploy Failed',
+          err?.response?.data?.error || err?.message || 'Failed to deploy challenge',
+        ),
+    });
+  };
+
   // ── Counts ──
   const pendingAlerts = interventions.filter((i) => i.status === 'pending').length;
   const unreadDigest = digestItems.filter((d) => d.status === 'unread').length;
   const activeDrafts = drafts.filter(
     (d) => d.status === 'pending' || d.status === 'edited' || d.status === 'scheduled',
+  ).length;
+  const activeChallenges = challenges.filter(
+    (challenge) => challenge.status !== 'closed' && challenge.status !== 'published',
   ).length;
 
   if (isLoading) {
@@ -316,6 +397,7 @@ function AiManagerContent({
         onTabChange={setActiveTab}
         pendingCount={pendingAlerts + unreadDigest}
         draftCount={activeDrafts}
+        challengeCount={activeChallenges}
       />
 
       {/* Tab Content */}
@@ -329,11 +411,20 @@ function AiManagerContent({
           onGenerateDraft={handleGenerateDraft}
           onDismissIntervention={(ids) => dismissIntMutation.mutate(ids)}
         />
-      ) : (
+      ) : activeTab === 'communication' ? (
         <CommunicationSection
           drafts={drafts}
+          cannedMessages={cannedMessages}
+          cannedMessagesLoading={cannedMessagesQ.isLoading}
           sendingDraftId={sendDraftMutation.isPending ? (sendDraftMutation.variables ?? null) : null}
           schedulingDraftId={scheduleDraftMutation.isPending ? (scheduleDraftMutation.variables ?? null) : null}
+          creatingTemplate={createCannedMessageMutation.isPending}
+          creatingDraftFromTemplate={createTemplateDraftMutation.isPending}
+          deletingTemplateId={
+            deleteCannedMessageMutation.isPending
+              ? (deleteCannedMessageMutation.variables ?? null)
+              : null
+          }
           editSaving={editDraftMutation.isPending}
           onSendDraft={handleSendDraft}
           onScheduleDraft={handleScheduleDraft}
@@ -341,6 +432,18 @@ function AiManagerContent({
           onDismissDraft={(id) => dismissDraftMutation.mutate(id)}
           onDeleteDraft={(id) => deleteDraftMutation.mutate(id)}
           onEditDraft={handleEditDraft}
+          onCreateTemplate={handleCreateTemplate}
+          onCreateDraftFromTemplate={handleCreateDraftFromTemplate}
+          onDeleteTemplate={handleDeleteTemplate}
+        />
+      ) : (
+        <ChallengesSection
+          challenges={challenges}
+          templates={templates}
+          isLoadingChallenges={challengesQ.isLoading}
+          isLoadingTemplates={templatesQ.isLoading}
+          deploying={deployChallengeMutation.isPending}
+          onDeployTemplate={handleDeployTemplate}
         />
       )}
     </ScrollView>
