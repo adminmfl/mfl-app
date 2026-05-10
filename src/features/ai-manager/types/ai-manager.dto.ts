@@ -49,3 +49,44 @@ export interface AiScanResponseDTO {
   digestCount: number;
   interventionCount: number;
 }
+
+export interface CannedMessageDTO {
+  canned_message_id: string;
+  title: string;
+  content: string;
+  role_target: string;
+  is_system: boolean;
+  category?: string | null;
+}
+
+export interface CannedMessagesResponseDTO {
+  success?: boolean;
+  data?: CannedMessageDTO[];
+}
+
+export interface ChallengeTemplateDTO {
+  id: string;
+  title: string;
+  description: string | null;
+  challenge_type: string;
+  duration_days: number;
+  total_points: number | null;
+  comm_templates?: unknown[] | null;
+  rules?: Array<{ rule_text: string; is_mandatory: boolean }> | null;
+  scoring_logic?: Record<string, any> | null;
+}
+
+export interface AiManagerChallengeDTO {
+  id: string;
+  name: string;
+  challenge_type: string;
+  status: string;
+  end_date?: string | null;
+}
+
+export interface ChallengeDeployResponseDTO {
+  success?: boolean;
+  challengeId?: string;
+  commCount?: number;
+  error?: string;
+}

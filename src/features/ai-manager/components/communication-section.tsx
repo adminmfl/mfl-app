@@ -5,12 +5,18 @@ import { AppText } from '../../../components/app-text';
 import { SectionLabel } from '../../../components/section-label';
 import { DraftCard } from './draft-card';
 import { EditDraftModal } from './edit-draft-modal';
-import type { Draft } from '../types/ai-manager.model';
+import { PrecastLibrary } from './precast-library';
+import type { CannedMessage, Draft } from '../types/ai-manager.model';
 
 interface CommunicationSectionProps {
   drafts: Draft[];
+  cannedMessages: CannedMessage[];
+  cannedMessagesLoading: boolean;
   sendingDraftId: string | null;
   schedulingDraftId: string | null;
+  creatingTemplate: boolean;
+  creatingDraftFromTemplate: boolean;
+  deletingTemplateId: string | null;
   editSaving: boolean;
   onSendDraft: (id: string) => void;
   onScheduleDraft: (id: string) => void;
@@ -18,12 +24,20 @@ interface CommunicationSectionProps {
   onDismissDraft: (id: string) => void;
   onDeleteDraft: (id: string) => void;
   onEditDraft: (draftId: string, content: string) => void;
+  onCreateTemplate: (body: { title: string; content: string }) => void;
+  onCreateDraftFromTemplate: (body: { title: string; content: string }) => void;
+  onDeleteTemplate: (id: string) => void;
 }
 
 export function CommunicationSection({
   drafts,
+  cannedMessages,
+  cannedMessagesLoading,
   sendingDraftId,
   schedulingDraftId,
+  creatingTemplate,
+  creatingDraftFromTemplate,
+  deletingTemplateId,
   editSaving,
   onSendDraft,
   onScheduleDraft,
@@ -31,6 +45,9 @@ export function CommunicationSection({
   onDismissDraft,
   onDeleteDraft,
   onEditDraft,
+  onCreateTemplate,
+  onCreateDraftFromTemplate,
+  onDeleteTemplate,
 }: CommunicationSectionProps) {
   const [editingDraft, setEditingDraft] = useState<Draft | null>(null);
 
@@ -71,6 +88,17 @@ export function CommunicationSection({
           }
         }}
         onClose={() => setEditingDraft(null)}
+      />
+
+      <PrecastLibrary
+        messages={cannedMessages}
+        isLoading={cannedMessagesLoading}
+        creating={creatingTemplate}
+        drafting={creatingDraftFromTemplate}
+        deletingId={deletingTemplateId}
+        onCreateTemplate={onCreateTemplate}
+        onCreateDraft={onCreateDraftFromTemplate}
+        onDeleteTemplate={onDeleteTemplate}
       />
     </View>
   );
