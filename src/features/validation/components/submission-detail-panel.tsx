@@ -135,6 +135,56 @@ export function SubmissionDetailPanel({
         </View>
       ) : null}
 
+      {submission.plausibilityScore != null ? (
+        <View
+          className="rounded-xl p-3 gap-2"
+          style={{
+            backgroundColor: submission.plausibilityScore < 50 ? mflColors.dangerLight : mflColors.surface,
+            borderWidth: 1,
+            borderColor: submission.plausibilityScore < 50 ? mflColors.danger + '30' : mflColors.border,
+          }}
+        >
+          <View className="flex-row items-center justify-between">
+            <AppText className="text-xs font-semibold text-foreground">Plausibility Score</AppText>
+            <View
+              className="px-2.5 py-0.5 rounded-full"
+              style={{
+                backgroundColor: submission.plausibilityScore < 50 ? mflColors.danger : mflColors.brand,
+              }}
+            >
+              <AppText className="text-[10px] font-bold" style={{ color: '#fff' }}>
+                {submission.plausibilityScore}/100
+              </AppText>
+            </View>
+          </View>
+          {submission.plausibilityReason ? (
+            <AppText className="text-xs text-muted">{submission.plausibilityReason}</AppText>
+          ) : null}
+          {(submission.reviewTier === 'captain' || submission.reviewTier === 'governor') ? (
+            <AppText className="text-xs font-semibold" style={{ color: mflColors.danger }}>
+              Flagged for {submission.reviewTier} review
+            </AppText>
+          ) : null}
+        </View>
+      ) : null}
+
+      {submission.reviewerNotes ? (
+        <View
+          className="rounded-xl p-3"
+          style={{ backgroundColor: mflColors.amberLight, borderWidth: 1, borderColor: mflColors.amber + '30' }}
+        >
+          <View className="flex-row items-center gap-1.5 mb-1">
+            <Feather name="shield" size={14} color={mflColors.amber} />
+            <AppText className="text-[10px] font-bold uppercase" style={{ color: mflColors.amber }}>
+              Reviewer Notes (Internal)
+            </AppText>
+          </View>
+          <AppText className="text-xs" style={{ color: mflColors.amber }}>
+            {submission.reviewerNotes}
+          </AppText>
+        </View>
+      ) : null}
+
       {submission.rejectionReason ? (
         <View className="rounded-xl p-3" style={{ backgroundColor: mflColors.dangerLight }}>
           <AppText className="text-xs font-semibold" style={{ color: mflColors.danger }}>

@@ -26,6 +26,12 @@ function toSubmissionForValidation(dto: TeamSubmissionDTO): SubmissionForValidat
     modifiedDate: dto.modified_date,
     reuploadOf: dto.reupload_of,
     outcome: dto.outcome ?? null,
+    hrAvg: dto.hr_avg ?? null,
+    caloriesBurned: dto.calories_burned ?? null,
+    plausibilityScore: dto.plausibility_score ?? null,
+    reviewTier: dto.review_tier ?? null,
+    plausibilityReason: dto.plausibility_reason ?? null,
+    reviewerNotes: dto.reviewer_notes ?? null,
     member: {
       userId: dto.member.user_id,
       username: dto.member.username,

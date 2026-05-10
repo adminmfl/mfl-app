@@ -36,6 +36,12 @@ export interface SubmissionForValidation {
   modifiedDate: string | null;
   reuploadOf: SubmissionId | null;
   outcome: string | null;
+  hrAvg: number | null;
+  caloriesBurned: number | null;
+  plausibilityScore: number | null;
+  reviewTier: 'none' | 'captain' | 'governor' | null;
+  plausibilityReason: string | null;
+  reviewerNotes: string | null;
   member: SubmissionMember;
 }
 

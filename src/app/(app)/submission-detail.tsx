@@ -325,6 +325,14 @@ export default function SubmissionDetailScreen() {
               <MetricRow icon="target" label="Holes" value={submission.holes} />
             </View>
           </View>
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <MetricRow icon="heart" label="Avg HR" value={submission.hrAvg} unit="bpm" />
+            </View>
+            <View className="flex-1">
+              <MetricRow icon="zap" label="Calories" value={submission.caloriesBurned} unit="kcal" />
+            </View>
+          </View>
         </View>
       )}
 
@@ -412,6 +420,43 @@ export default function SubmissionDetailScreen() {
           </View>
         )}
       </View>
+
+      {/* Plausibility Details */}
+      {submission.plausibilityScore != null && (
+        <View className="gap-2">
+          <AppText className="text-sm font-medium text-foreground">Plausibility Details</AppText>
+          <View
+            className="p-3 rounded-lg"
+            style={{
+              backgroundColor: submission.plausibilityScore < 50 ? mflColors.dangerLight : mflColors.surface,
+              borderWidth: 1,
+              borderColor: submission.plausibilityScore < 50 ? mflColors.danger + '30' : mflColors.border,
+            }}
+          >
+            <View className="flex-row items-center justify-between mb-2">
+              <AppText className="text-sm font-semibold text-foreground">Plausibility Score</AppText>
+              <View
+                className="px-2.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: submission.plausibilityScore < 50 ? mflColors.danger : mflColors.brand,
+                }}
+              >
+                <AppText className="text-[10px] font-bold" style={{ color: '#fff' }}>
+                  {submission.plausibilityScore}/100
+                </AppText>
+              </View>
+            </View>
+            {submission.plausibilityReason ? (
+              <AppText className="text-xs text-muted">{submission.plausibilityReason}</AppText>
+            ) : null}
+            {(submission.reviewTier === 'captain' || submission.reviewTier === 'governor') ? (
+              <AppText className="text-xs font-semibold mt-2" style={{ color: mflColors.danger }}>
+                Flagged for {submission.reviewTier} review
+              </AppText>
+            ) : null}
+          </View>
+        </View>
+      )}
 
       {/* Notes */}
       {submission.notes && !isExemption && (

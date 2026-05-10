@@ -22,6 +22,12 @@ export interface SubmissionEntry {
   customFieldValue?: string | null;
   customFieldValue2?: string | null;
   outcome?: string | null;
+  hrAvg?: number | null;
+  caloriesBurned?: number | null;
+  plausibilityScore?: number | null;
+  reviewTier?: 'none' | 'captain' | 'governor' | null;
+  plausibilityReason?: string | null;
+  reviewerNotes?: string | null;
 }
 
 export interface SubmissionStats {
@@ -36,6 +42,10 @@ export interface MySubmissionsData {
   stats: SubmissionStats;
   leagueMemberId: string;
   teamId: string | null;
+  suspiciousProofStrikes: number;
+  suspiciousProofLastStrikeAt: string | null;
+  suspiciousProofWarningThreshold: number;
+  suspiciousProofRejectionThreshold: number;
 }
 
 export interface RRPreview {
