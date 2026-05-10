@@ -13,6 +13,8 @@ import { StatCard } from '../../../components/stat-card';
 import { mflColors } from '../../../constants/colors';
 import { useUpsertEntry, usePreviewRR } from '../../submissions';
 import { useProofUpload } from '../hooks/use-proof-upload';
+import { useProofOcr, getAutoFillFields } from '../hooks/use-proof-ocr';
+import { OcrSuggestionPanel } from './ocr-suggestion-panel';
 import {
   validateWorkoutForm,
   todayISO,
@@ -50,6 +52,12 @@ export function WorkoutSubmission({
   const upsert = useUpsertEntry();
   const preview = usePreviewRR();
   const proofUpload = useProofUpload(leagueId);
+  const proofOcr = useProofOcr();
+  const ocrFill = useMemo(
+    () => (proofOcr.extraction ? getAutoFillFields(proofOcr.extraction) : null),
+    [proofOcr.extraction],
+  );
+  const ocrProcessing = proofOcr.status === 'processing';
 
   // RR display config
   const rrFormula = (league.rrConfig as any)?.formula || 'standard';
@@ -563,7 +571,7 @@ export function WorkoutSubmission({
               contentFit="cover"
             />
             <Pressable
-              onPress={() => proofUpload.removeImage(1)}
+              onPress={() => { proofUpload.removeImage(1); proofOcr.reset(); }}
               className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 items-center justify-center"
             >
               <Feather name="x" size={18} color="white" />
@@ -571,13 +579,44 @@ export function WorkoutSubmission({
           </View>
         ) : (
           <Pressable
-            onPress={() => proofUpload.pickImage(1)}
+            onPress={async () => {
+              const img = await proofUpload.pickImage(1);
+              if (img) {
+                const extraction = await proofOcr.extract(img);
+                if (extraction) {
+                  const fill = getAutoFillFields(extraction);
+                  if (fill.autoFilledFields.length > 0) {
+                    if (fill.duration !== undefined) setDuration(fill.duration);
+                    if (fill.distance !== undefined) setDistance(fill.distance);
+                    if (fill.steps !== undefined) setSteps(fill.steps);
+                    setRRPreview(null);
+                    Alert.alert('Auto-filled', `Auto-filled: ${fill.autoFilledFields.join(', ')}`);
+                  }
+                }
+              }
+            }}
+            disabled={ocrProcessing}
             className="border-2 border-dashed border-default-300 rounded-xl p-6 items-center justify-center gap-2"
           >
             <Feather name="camera" size={28} color={mflColors.textMuted} />
             <AppText className="text-sm text-muted">Tap to select proof image</AppText>
           </Pressable>
         )}
+        {/* OCR Suggestion Panel */}
+        <OcrSuggestionPanel
+          extraction={proofOcr.extraction}
+          status={proofOcr.status}
+          error={proofOcr.error}
+          autoFilledFields={ocrFill?.autoFilledFields ?? []}
+          suggestedFields={ocrFill?.suggestedFields ?? []}
+          onApplySuggestion={(field, value) => {
+            if (field === 'duration') setDuration(value);
+            else if (field === 'distance') setDistance(value);
+            else if (field === 'steps') setSteps(value);
+            setRRPreview(null);
+            Alert.alert('Applied', `Applied ${field}: ${value}`);
+          }}
+        />
         {/* Second proof image (only if activity allows 2+ images) */}
         {proofUpload.proof && !proofUpload.proof2 && (selectedActivity?.max_images ?? 1) >= 2 && (
           <Pressable
