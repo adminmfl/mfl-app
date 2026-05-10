@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { View, Pressable } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
@@ -124,6 +124,15 @@ export function MyTeamViewScreen() {
   const stats = viewData?.stats;
   const captain = members.find((m) => m.isCaptain);
 
+  const membersWithPoints = useMemo(
+    () => members.filter((m) => m.points > 0).length,
+    [members],
+  );
+  const membersAtRisk = useMemo(
+    () => members.filter((m) => m.points === 0).length,
+    [members],
+  );
+
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
       <View className="py-4 gap-4">
@@ -153,6 +162,83 @@ export function MyTeamViewScreen() {
           </AppText>
         </Pressable>
 
+        {/* Team Health Banner — active member count (matches web Zone 1) */}
+        {members.length > 0 && (
+          <View
+            className="rounded-2xl p-4"
+            style={{ borderWidth: 1, borderColor: mflColors.border, backgroundColor: mflColors.card }}
+          >
+            <View className="flex-row items-baseline gap-3 mb-2">
+              <AppText
+                className="text-[11px] uppercase"
+                style={{ color: mflColors.textMuted, letterSpacing: 1 }}
+              >
+                {teamName?.toUpperCase() ?? 'TEAM'}
+              </AppText>
+              <AppText
+                className="text-[40px] font-extrabold leading-none"
+                style={{ color: mflColors.amber }}
+              >
+                {stats?.teamRank ?? '#--'}
+              </AppText>
+            </View>
+            <View className="flex-row items-center">
+              <AppText
+                className="text-[13px] font-bold"
+                style={{ color: mflColors.brand }}
+              >
+                {membersWithPoints}
+              </AppText>
+              <AppText className="text-[13px] text-muted">
+                {' '}of {members.length} members with points
+              </AppText>
+            </View>
+          </View>
+        )}
+
+        {/* Captain Action Bar (matches web Zone 4) */}
+        {isCaptain && members.length > 0 && (
+          <View
+            className="rounded-2xl p-4"
+            style={{
+              borderLeftWidth: 4,
+              borderLeftColor: mflColors.amber,
+              borderWidth: 1,
+              borderColor: mflColors.border,
+              backgroundColor: mflColors.card,
+            }}
+          >
+            <AppText
+              className="text-[13px] font-bold mb-2"
+              style={{ color: mflColors.amber }}
+            >
+              Captain's Dashboard
+            </AppText>
+            <View className="flex-row items-center gap-3 flex-wrap">
+              <View className="flex-row items-center gap-1">
+                <AppText className="font-bold" style={{ color: mflColors.danger }}>
+                  {membersAtRisk}
+                </AppText>
+                <AppText className="text-xs text-muted">at risk</AppText>
+              </View>
+              <AppText className="text-xs text-muted">·</AppText>
+              <View className="flex-row items-center gap-1">
+                <AppText className="font-bold" style={{ color: mflColors.brand }}>
+                  {membersWithPoints}
+                </AppText>
+                <AppText className="text-xs text-muted">with points</AppText>
+              </View>
+              <AppText className="text-xs text-muted">·</AppText>
+              <View className="flex-row items-center gap-1">
+                <AppText className="font-bold" style={{ color: mflColors.blue }}>
+                  {members.length}
+                </AppText>
+                <AppText className="text-xs text-muted">total active</AppText>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* Stats Grid */}
         {stats && (
           <TeamViewStats
@@ -168,6 +254,7 @@ export function MyTeamViewScreen() {
           members={members}
           showRR={showRR}
           showRestDays={showRestDays}
+          isCaptain={isCaptain}
         />
       </View>
     </ScreenScrollView>
