@@ -1,5 +1,5 @@
 import { api } from '../../../core/api';
-import type { LeagueMembersResponseDTO, TeamsResponseDTO, TeamMembersResponseDTO, TeamSummaryResponseDTO } from '../types/team.dto';
+import type { LeagueMembersResponseDTO, TeamsResponseDTO, TeamMembersResponseDTO, TeamSummaryResponseDTO, TeamBalanceResponseDTO } from '../types/team.dto';
 
 export async function fetchLeagueMembers(leagueId: string): Promise<LeagueMembersResponseDTO> {
   const res = await api.get<LeagueMembersResponseDTO>(`/api/leagues/${leagueId}/members`);
@@ -38,5 +38,14 @@ export async function assignMemberToTeam(
   const res = await api.post(`/api/leagues/${leagueId}/teams/${teamId}/members`, {
     league_member_id: leagueMemberId,
   });
+  return res.data;
+}
+
+export async function fetchTeamBalance(
+  leagueId: string,
+): Promise<TeamBalanceResponseDTO> {
+  const res = await api.get<TeamBalanceResponseDTO>(
+    `/api/leagues/${leagueId}/balance`,
+  );
   return res.data;
 }

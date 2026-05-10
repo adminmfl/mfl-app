@@ -8,6 +8,7 @@ import { ScreenState } from '../../../components/screen-state';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
 import { useMyTeamView } from '../hooks/use-my-team-view';
+import { useTeamBalance } from '../hooks/use-team-balance';
 import { mflColors } from '../../../constants/colors';
 import {
   useLeagueSponsors,
@@ -17,6 +18,7 @@ import {
 import { TeamViewHeader } from './team-view-header';
 import { TeamViewStats } from './team-view-stats';
 import { TeamViewRoster } from './team-view-roster';
+import { TeamBalanceCard } from './team-balance-card';
 
 export function MyTeamViewScreen() {
   const { activeLeague } = useLeagueContext();
@@ -40,6 +42,7 @@ export function MyTeamViewScreen() {
 
   const { data: sponsorSlots } = useLeagueSponsors(leagueId);
   const teamSponsor = teamId ? getTeamSponsor(sponsorSlots ?? [], teamId) : null;
+  const { data: balanceData } = useTeamBalance(leagueId);
 
   const canViewTeam = isPlayer || isCaptain || isViceCaptain;
 
@@ -248,6 +251,9 @@ export function MyTeamViewScreen() {
             showRestDays={showRestDays}
           />
         )}
+
+        {/* Team Balance Score */}
+        {balanceData && <TeamBalanceCard balance={balanceData} />}
 
         {/* Roster */}
         <TeamViewRoster

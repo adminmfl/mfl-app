@@ -39,6 +39,7 @@ export const queryKeys = {
     teamSubmissions: (id: string) => [...queryKeys.leagues.all, id, 'team-submissions'] as const,
     partnerActivity: (id: string, teamId?: string) => [...queryKeys.leagues.all, id, 'partner-activity', teamId] as const,
     teamView: (id: string, teamId: string) => [...queryKeys.leagues.all, id, 'team-view', teamId] as const,
+    teamBalance: (id: string) => [...queryKeys.leagues.all, id, 'team-balance'] as const,
     teamSummary: (id: string) => [...queryKeys.leagues.all, id, 'my-team-summary'] as const,
     sponsors: (id: string) => [...queryKeys.leagues.all, id, 'sponsors'] as const,
     wearableConnections: (id: string) => [...queryKeys.leagues.all, id, 'wearable-connections'] as const,
