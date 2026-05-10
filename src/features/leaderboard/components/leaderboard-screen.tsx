@@ -22,6 +22,11 @@ import {
   isPostLeague,
   isValidYmd,
 } from '../utils/leaderboard-format';
+import {
+  useLeagueSponsors,
+  getGrandFinaleSponsor,
+  SponsorBanner,
+} from '../../sponsors';
 
 export function LeaderboardScreen() {
   const { activeLeague } = useLeagueContext();
@@ -38,6 +43,11 @@ export function LeaderboardScreen() {
   const [customEnd, setCustomEnd] = useState('');
 
   const leaderboardQuery = useMobileLeaderboard(leagueId, dateFilter);
+  const { data: sponsorSlots } = useLeagueSponsors(leagueId);
+  const grandFinaleSponsor = useMemo(
+    () => getGrandFinaleSponsor(sponsorSlots ?? []),
+    [sponsorSlots],
+  );
 
   const handleRefresh = useCallback(async () => {
     await leaderboardQuery.refetch();
@@ -178,14 +188,17 @@ export function LeaderboardScreen() {
           </View>
 
           {archived ? (
-            <View
-              className="flex-row items-start gap-2 rounded-lg p-3"
-              style={{ backgroundColor: mflColors.inkLight }}
-            >
-              <Feather name="lock" size={16} color={mflColors.textSub} />
-              <AppText className="flex-1 text-xs text-muted">
-                Archived: this league is in read-only mode.
-              </AppText>
+            <View className="gap-2">
+              <View
+                className="flex-row items-start gap-2 rounded-lg p-3"
+                style={{ backgroundColor: mflColors.inkLight }}
+              >
+                <Feather name="lock" size={16} color={mflColors.textSub} />
+                <AppText className="flex-1 text-xs text-muted">
+                  Archived: this league is in read-only mode.
+                </AppText>
+              </View>
+              <SponsorBanner slot={grandFinaleSponsor} />
             </View>
           ) : null}
 

@@ -40,6 +40,7 @@ export const queryKeys = {
     partnerActivity: (id: string, teamId?: string) => [...queryKeys.leagues.all, id, 'partner-activity', teamId] as const,
     teamView: (id: string, teamId: string) => [...queryKeys.leagues.all, id, 'team-view', teamId] as const,
     teamSummary: (id: string) => [...queryKeys.leagues.all, id, 'my-team-summary'] as const,
+    sponsors: (id: string) => [...queryKeys.leagues.all, id, 'sponsors'] as const,
   },
   dashboard: {
     all: ['dashboard'] as const,

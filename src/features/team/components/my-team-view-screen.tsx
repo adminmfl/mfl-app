@@ -9,6 +9,11 @@ import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
 import { useMyTeamView } from '../hooks/use-my-team-view';
 import { mflColors } from '../../../constants/colors';
+import {
+  useLeagueSponsors,
+  getTeamSponsor,
+  SponsorBanner,
+} from '../../sponsors';
 import { TeamViewHeader } from './team-view-header';
 import { TeamViewStats } from './team-view-stats';
 import { TeamViewRoster } from './team-view-roster';
@@ -32,6 +37,9 @@ export function MyTeamViewScreen() {
     (activeLeague?.rrConfig as Record<string, any>)?.formula ?? 'standard';
   const showRR = rrFormula === 'standard';
   const showRestDays = (activeLeague?.restDays ?? 1) > 0;
+
+  const { data: sponsorSlots } = useLeagueSponsors(leagueId);
+  const teamSponsor = teamId ? getTeamSponsor(sponsorSlots ?? [], teamId) : null;
 
   const canViewTeam = isPlayer || isCaptain || isViceCaptain;
 
@@ -126,6 +134,9 @@ export function MyTeamViewScreen() {
           captainName={captain?.username ?? null}
           memberCount={members.length}
         />
+
+        {/* Team Sponsor */}
+        <SponsorBanner slot={teamSponsor} />
 
         {/* Team Chat Button */}
         <Pressable
