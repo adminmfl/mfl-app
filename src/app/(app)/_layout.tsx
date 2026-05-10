@@ -388,7 +388,7 @@ export default function AppLayout() {
           <Stack.Screen name="join-league" />
           <Stack.Screen name="create-league" />
           <Stack.Screen name="league-overview" />
-          <Stack.Screen name="league-settings" />
+          <Stack.Screen name="league-settings" options={{ headerShown: false }} />
           <Stack.Screen name="league-rules" />
           <Stack.Screen name="edit-profile" />
           <Stack.Screen name="payment-checkout" />
