@@ -12,11 +12,11 @@ export function useProofUpload(leagueId: string) {
   const [proof2, setProof2] = useState<ProofImage | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const pickImage = useCallback(async (slot: 1 | 2 = 1) => {
+  const pickImage = useCallback(async (slot: 1 | 2 = 1): Promise<ProofImage | null> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Please allow access to your photo library.');
-      return;
+      return null;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -25,7 +25,7 @@ export function useProofUpload(leagueId: string) {
       allowsEditing: false,
     });
 
-    if (result.canceled || !result.assets?.[0]) return;
+    if (result.canceled || !result.assets?.[0]) return null;
 
     const asset = result.assets[0] as {
       uri: string;
@@ -38,17 +38,18 @@ export function useProofUpload(leagueId: string) {
 
     if (!ALLOWED_TYPES.includes(mimeType)) {
       Alert.alert('Invalid File', 'Allowed: JPG, PNG, GIF, WebP');
-      return;
+      return null;
     }
 
     if (asset.fileSize && asset.fileSize > MAX_SIZE_MB * 1024 * 1024) {
       Alert.alert('File Too Large', `Maximum size is ${MAX_SIZE_MB}MB`);
-      return;
+      return null;
     }
 
     const img: ProofImage = { uri: asset.uri, name: fileName, type: mimeType };
     if (slot === 1) setProof(img);
     else setProof2(img);
+    return img;
   }, []);
 
   const removeImage = useCallback((slot: 1 | 2 = 1) => {
