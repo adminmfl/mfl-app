@@ -206,7 +206,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
           onReply={setReplyTo}
           onReact={(messageId, emoji) => {
             reactionMutation.mutate(
-              { leagueId, messageId, emoji },
+              { leagueId, messageId, emoji, userId: user?.id },
               { onSuccess: () => messagesQuery.refetch() },
             );
           }}

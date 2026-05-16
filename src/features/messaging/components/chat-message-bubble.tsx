@@ -36,6 +36,7 @@ export function ChatMessageBubble({
   onOpenDeepLink,
 }: ChatMessageBubbleProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const isSystem = message.messageType === 'system';
   const isCaptainBoost =
@@ -83,34 +84,87 @@ export function ChatMessageBubble({
         </Pressable>
 
         {message.reactions.length > 0 ? (
-          <View className="mt-1 flex-row flex-wrap gap-1">
-            {message.reactions.map((reaction) => (
-              <MessagingChip
-                key={reaction.emoji}
-                label={`${reaction.emoji} ${reaction.userIds.length}`}
-                selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
-                onPress={() => onReact(message.messageId, reaction.emoji)}
-              />
-            ))}
+          <View className="mt-1 flex-row items-center">
+            {message.reactions.map((reaction, index) => {
+              const isUserReaction = !!currentUserId && reaction.userIds.includes(currentUserId);
+              return (
+                <Pressable
+                  key={reaction.emoji}
+                  onPress={() => onReact(message.messageId, reaction.emoji)}
+                  className="items-center justify-center rounded-full"
+                  style={{
+                    backgroundColor: isUserReaction ? '#FFFFFF' : mflColors.card,
+                    borderWidth: isUserReaction ? 0 : 2,
+                    borderColor: mflColors.surface,
+                    width: 32,
+                    height: 32,
+                    marginLeft: index > 0 ? -8 : 0,
+                    zIndex: message.reactions.length - index,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 1 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 2,
+                    elevation: 2,
+                  }}
+                >
+                  <AppText className="text-base">{reaction.emoji}</AppText>
+                  {reaction.userIds.length > 1 ? (
+                    <View
+                      className="absolute -bottom-1 -right-1 items-center justify-center rounded-full"
+                      style={{
+                        backgroundColor: isUserReaction ? mflColors.brand : mflColors.surface,
+                        borderWidth: 1.5,
+                        borderColor: mflColors.surface,
+                        minWidth: 16,
+                        height: 16,
+                        paddingHorizontal: 3,
+                      }}
+                    >
+                      <AppText 
+                        className="text-[9px] font-bold"
+                        style={{ 
+                          color: isUserReaction ? mflColors.white : mflColors.text
+                        }}
+                      >
+                        {reaction.userIds.length}
+                      </AppText>
+                    </View>
+                  ) : null}
+                </Pressable>
+              );
+            })}
           </View>
         ) : null}
 
         <View className="mt-1 flex-row flex-wrap gap-1">
           <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-          {QUICK_EMOJIS.map((emoji) => (
-            <MessagingChip
-              key={emoji}
-              label={emoji}
-              selected={message.reactions.some(
-                (reaction) =>
-                  reaction.emoji === emoji &&
-                  !!currentUserId &&
-                  reaction.userIds.includes(currentUserId),
-              )}
-              onPress={() => onReact(message.messageId, emoji)}
-            />
-          ))}
+          <MessagingChip 
+            label="React" 
+            icon="plus" 
+            onPress={() => setShowEmojiPicker(!showEmojiPicker)} 
+          />
         </View>
+
+        {showEmojiPicker ? (
+          <View className="mt-1 flex-row flex-wrap gap-1">
+            {QUICK_EMOJIS.map((emoji) => (
+              <MessagingChip
+                key={emoji}
+                label={emoji}
+                selected={message.reactions.some(
+                  (reaction) =>
+                    reaction.emoji === emoji &&
+                    !!currentUserId &&
+                    reaction.userIds.includes(currentUserId),
+                )}
+                onPress={() => {
+                  onReact(message.messageId, emoji);
+                  setShowEmojiPicker(false);
+                }}
+              />
+            ))}
+          </View>
+        ) : null}
       </View>
     );
   }
@@ -320,31 +374,90 @@ export function ChatMessageBubble({
         </Pressable>
       </View>
 
+      {/* Reactions display - overlapped style */}
+      {message.reactions.length > 0 ? (
+        <View 
+          className={`mb-2 flex-row items-center ${isOwn ? 'justify-end' : 'justify-start'}`}
+          style={{ marginLeft: isOwn ? 0 : 36 }}
+        >
+          {message.reactions.map((reaction, index) => {
+            const isUserReaction = !!currentUserId && reaction.userIds.includes(currentUserId);
+            return (
+              <Pressable
+                key={reaction.emoji}
+                onPress={() => onReact(message.messageId, reaction.emoji)}
+                className="items-center justify-center rounded-full"
+                style={{
+                  backgroundColor: isUserReaction ? '#FFFFFF' : mflColors.card,
+                  borderWidth: isUserReaction ? 0 : 2,
+                  borderColor: mflColors.surface,
+                  width: 32,
+                  height: 32,
+                  marginLeft: index > 0 ? -8 : 0,
+                  zIndex: message.reactions.length - index,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 2,
+                  elevation: 2,
+                }}
+              >
+                <AppText className="text-base">{reaction.emoji}</AppText>
+                {reaction.userIds.length > 1 ? (
+                  <View
+                    className="absolute -bottom-1 -right-1 items-center justify-center rounded-full"
+                    style={{
+                      backgroundColor: isUserReaction ? mflColors.brand : mflColors.surface,
+                      borderWidth: 1.5,
+                      borderColor: mflColors.surface,
+                      minWidth: 16,
+                      height: 16,
+                      paddingHorizontal: 3,
+                    }}
+                  >
+                    <AppText 
+                      className="text-[9px] font-bold"
+                      style={{ 
+                        color: isUserReaction ? mflColors.white : mflColors.text
+                      }}
+                    >
+                      {reaction.userIds.length}
+                    </AppText>
+                  </View>
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      ) : null}
+
+      {/* Action buttons - Reply and React */}
       <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
         <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-        {QUICK_EMOJIS.map((emoji) => (
-          <MessagingChip
-            key={emoji}
-            label={emoji}
-            selected={message.reactions.some(
-              (reaction) =>
-                reaction.emoji === emoji &&
-                !!currentUserId &&
-                reaction.userIds.includes(currentUserId),
-            )}
-            onPress={() => onReact(message.messageId, emoji)}
-          />
-        ))}
+        <MessagingChip 
+          label="React" 
+          icon="plus" 
+          onPress={() => setShowEmojiPicker(!showEmojiPicker)} 
+        />
       </View>
 
-      {message.reactions.length > 0 ? (
+      {/* Emoji picker - shown when React button is pressed */}
+      {showEmojiPicker ? (
         <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-          {message.reactions.map((reaction) => (
+          {QUICK_EMOJIS.map((emoji) => (
             <MessagingChip
-              key={reaction.emoji}
-              label={`${reaction.emoji} ${reaction.userIds.length}`}
-              selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
-              onPress={() => onReact(message.messageId, reaction.emoji)}
+              key={emoji}
+              label={emoji}
+              selected={message.reactions.some(
+                (reaction) =>
+                  reaction.emoji === emoji &&
+                  !!currentUserId &&
+                  reaction.userIds.includes(currentUserId),
+              )}
+              onPress={() => {
+                onReact(message.messageId, emoji);
+                setShowEmojiPicker(false);
+              }}
             />
           ))}
         </View>
