@@ -339,9 +339,11 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             ListEmptyComponent={
               <View
                 className="flex-1 items-center justify-center py-12"
-                style={{ transform: [{ scaleY: -1 }] }}
               >
-                <AppText className="text-sm text-muted text-center">
+                <AppText 
+                  className="text-sm text-muted text-center"
+                  style={{ writingDirection: 'ltr' }}
+                >
                   {filter === 'all'
                     ? 'No messages yet.'
                     : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}
