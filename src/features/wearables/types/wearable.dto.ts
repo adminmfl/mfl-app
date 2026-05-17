@@ -1,6 +1,12 @@
+export type WearableProvider =
+  | 'health_connect'
+  | 'healthkit'
+  | 'strava'
+  | 'google_health';
+
 export interface WearableConnectionDTO {
   connection_id: string;
-  provider: 'health_connect' | 'strava' | 'google_health';
+  provider: WearableProvider;
   status: 'active' | 'disconnected' | 'expired';
   device_name: string | null;
   last_synced_at: string | null;
@@ -14,20 +20,24 @@ export interface WearableConnectionsResponseDTO {
   };
 }
 
-export interface RegisterHealthConnectResponseDTO {
+export interface RegisterWearableResponseDTO {
   success: boolean;
   data: {
     connection_id: string;
   };
 }
 
-export interface SyncHealthConnectResponseDTO {
+export interface SyncWearableResponseDTO {
   success: boolean;
   data: {
     imported: number;
     duplicates: number;
   };
 }
+
+// Backwards-compatible aliases for existing imports.
+export type RegisterHealthConnectResponseDTO = RegisterWearableResponseDTO;
+export type SyncHealthConnectResponseDTO = SyncWearableResponseDTO;
 
 export interface PendingWorkoutDTO {
   workout_id: string;
@@ -64,7 +74,7 @@ export interface RejectWorkoutResponseDTO {
 }
 
 export interface NormalizedActivityDTO {
-  provider: 'health_connect';
+  provider: 'health_connect' | 'healthkit';
   provider_activity_id: string;
   activity_type: string;
   started_at: string;

@@ -1,6 +1,12 @@
+export type WearableProvider =
+  | 'health_connect'
+  | 'healthkit'
+  | 'strava'
+  | 'google_health';
+
 export interface WearableConnection {
   connectionId: string;
-  provider: 'health_connect' | 'strava' | 'google_health';
+  provider: WearableProvider;
   status: 'active' | 'disconnected' | 'expired';
   deviceName: string | null;
   lastSyncedAt: string | null;
@@ -37,4 +43,9 @@ export type HealthConnectStatus =
   | 'not_installed'
   | 'not_connected'
   | 'permission_needed'
+  | 'connected';
+
+export type HealthKitStatus =
+  | 'unsupported'
+  | 'not_connected'
   | 'connected';

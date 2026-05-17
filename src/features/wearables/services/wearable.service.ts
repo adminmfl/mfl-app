@@ -1,8 +1,8 @@
 import { api } from '../../../core/api';
 import type {
   WearableConnectionsResponseDTO,
-  RegisterHealthConnectResponseDTO,
-  SyncHealthConnectResponseDTO,
+  RegisterWearableResponseDTO,
+  SyncWearableResponseDTO,
   PendingConfirmationsResponseDTO,
   ConfirmWorkoutResponseDTO,
   RejectWorkoutResponseDTO,
@@ -20,10 +20,21 @@ export async function fetchWearableConnections(
 
 export async function registerHealthConnect(
   leagueId: string,
-  data: { deviceName?: string; androidVersion?: string },
-): Promise<RegisterHealthConnectResponseDTO> {
-  const res = await api.post<RegisterHealthConnectResponseDTO>(
+  data: { deviceName?: string; androidVersion?: string; device_name?: string },
+): Promise<RegisterWearableResponseDTO> {
+  const res = await api.post<RegisterWearableResponseDTO>(
     `/api/leagues/${leagueId}/wearables/health-connect/register`,
+    data,
+  );
+  return res.data;
+}
+
+export async function registerHealthKit(
+  leagueId: string,
+  data: { deviceName?: string; iosVersion?: string; device_name?: string },
+): Promise<RegisterWearableResponseDTO> {
+  const res = await api.post<RegisterWearableResponseDTO>(
+    `/api/leagues/${leagueId}/wearables/healthkit/register`,
     data,
   );
   return res.data;
@@ -42,10 +53,27 @@ export async function deleteWearableConnection(
 export async function syncHealthConnect(
   leagueId: string,
   activities: NormalizedActivityDTO[],
-): Promise<SyncHealthConnectResponseDTO> {
-  const res = await api.post<SyncHealthConnectResponseDTO>(
+  connectionId?: string | null,
+): Promise<SyncWearableResponseDTO> {
+  const res = await api.post<SyncWearableResponseDTO>(
     `/api/leagues/${leagueId}/wearables/health-connect/sync`,
-    { activities },
+    connectionId
+      ? { activities, connection_id: connectionId }
+      : { activities },
+  );
+  return res.data;
+}
+
+export async function syncHealthKit(
+  leagueId: string,
+  activities: NormalizedActivityDTO[],
+  connectionId?: string | null,
+): Promise<SyncWearableResponseDTO> {
+  const res = await api.post<SyncWearableResponseDTO>(
+    `/api/leagues/${leagueId}/wearables/healthkit/sync`,
+    connectionId
+      ? { activities, connection_id: connectionId }
+      : { activities },
   );
   return res.data;
 }

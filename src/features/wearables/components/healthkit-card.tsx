@@ -2,11 +2,13 @@ import Feather from '@expo/vector-icons/Feather';
 import { Alert, Pressable, View } from 'react-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
-import type { HealthConnectStatus } from '../types/wearable.model';
-import type { WearableConnection } from '../types/wearable.model';
+import type {
+  HealthKitStatus,
+  WearableConnection,
+} from '../types/wearable.model';
 
-interface HealthConnectCardProps {
-  status: HealthConnectStatus;
+interface HealthKitCardProps {
+  status: HealthKitStatus;
   connection: WearableConnection | null;
   isInitializing: boolean;
   isSyncing: boolean;
@@ -17,17 +19,27 @@ interface HealthConnectCardProps {
 }
 
 const STATUS_CONFIG: Record<
-  HealthConnectStatus,
+  HealthKitStatus,
   { label: string; color: string; icon: keyof typeof Feather.glyphMap }
 > = {
-  unsupported: { label: 'Not Available', color: mflColors.textMuted, icon: 'x-circle' },
-  not_installed: { label: 'Not Installed', color: mflColors.amber, icon: 'download' },
-  not_connected: { label: 'Not Connected', color: mflColors.textMuted, icon: 'link' },
-  permission_needed: { label: 'Permission Needed', color: mflColors.amber, icon: 'shield' },
-  connected: { label: 'Connected', color: mflColors.brand, icon: 'check-circle' },
+  unsupported: {
+    label: 'Not Available',
+    color: mflColors.textMuted,
+    icon: 'x-circle',
+  },
+  not_connected: {
+    label: 'Not Connected',
+    color: mflColors.textMuted,
+    icon: 'link',
+  },
+  connected: {
+    label: 'Connected',
+    color: mflColors.brand,
+    icon: 'check-circle',
+  },
 };
 
-export function HealthConnectCard({
+export function HealthKitCard({
   status,
   connection,
   isInitializing,
@@ -36,13 +48,13 @@ export function HealthConnectCard({
   onConnect,
   onSync,
   onDisconnect,
-}: HealthConnectCardProps) {
+}: HealthKitCardProps) {
   const config = STATUS_CONFIG[status];
 
   const handleDisconnect = () => {
     Alert.alert(
-      'Disconnect Health Connect',
-      'This will revoke all Health Connect permissions and remove the connection.',
+      'Disconnect Apple Health',
+      'This will remove the MFL connection. You can manage HealthKit data access for MFL anytime from iOS Settings > Privacy > Health.',
       [
         { text: 'Cancel', style: 'cancel' },
         { text: 'Disconnect', style: 'destructive', onPress: onDisconnect },
@@ -60,7 +72,9 @@ export function HealthConnectCard({
           <Feather name="heart" size={20} color={config.color} />
         </View>
         <View className="flex-1">
-          <AppText className="text-base font-semibold text-foreground">Health Connect</AppText>
+          <AppText className="text-base font-semibold text-foreground">
+            Apple Health
+          </AppText>
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <Feather name={config.icon} size={12} color={config.color} />
             <AppText className="text-xs" style={{ color: config.color }}>
@@ -72,14 +86,15 @@ export function HealthConnectCard({
 
       {status === 'unsupported' && (
         <AppText className="text-xs text-muted mb-3">
-          Health Connect is not supported on this device. Android 13+ with Health Connect app
-          or Android 14+ is required.
+          Apple Health is only available on iPhone. iPad and other devices are
+          not supported.
         </AppText>
       )}
 
-      {status === 'not_installed' && (
-        <AppText className="text-xs text-muted mb-3">
-          Health Connect needs to be updated. Please update the Health Connect app from the Play Store.
+      {status === 'connected' && (
+        <AppText className="text-[11px] text-muted mb-2">
+          HealthKit data stays on this device. You can manage MFL&apos;s data
+          access from iOS Settings &gt; Privacy &amp; Security &gt; Health.
         </AppText>
       )}
 
@@ -90,15 +105,19 @@ export function HealthConnectCard({
       )}
 
       {lastSyncCount !== null && lastSyncCount > 0 && (
-        <AppText className="text-xs mb-3" style={{ color: mflColors.brand }}>
-          {lastSyncCount} workout{lastSyncCount !== 1 ? 's' : ''} imported from last sync
+        <AppText
+          className="text-xs mb-3"
+          style={{ color: mflColors.brand }}
+        >
+          {lastSyncCount} workout{lastSyncCount !== 1 ? 's' : ''} imported from
+          last sync
         </AppText>
       )}
 
       <View className="flex-row gap-2 mt-1">
-        {(status === 'not_connected' || status === 'permission_needed') && (
+        {status === 'not_connected' && (
           <ActionButton
-            label={isInitializing ? 'Connecting...' : 'Connect Health Connect'}
+            label={isInitializing ? 'Connecting...' : 'Connect Apple Health'}
             icon="link"
             color={mflColors.brand}
             disabled={isInitializing}
