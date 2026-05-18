@@ -49,6 +49,53 @@ function formatTimestamp(iso: string): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+// ─── Lightweight Markdown Renderer ──────────────────────────────────────────
+
+function renderMarkdown(text: string): React.ReactNode[] {
+  const lines = text.split('\n');
+  return lines.map((line, lineIndex) => {
+    // Parse inline bold (**text**) and italic (*text*)
+    const parts: React.ReactNode[] = [];
+    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(line)) !== null) {
+      // Text before match
+      if (match.index > lastIndex) {
+        parts.push(line.slice(lastIndex, match.index));
+      }
+      if (match[0].startsWith('**')) {
+        // Bold
+        parts.push(
+          <AppText key={`b-${lineIndex}-${match.index}`} style={{ fontWeight: '700' }}>
+            {match[2]}
+          </AppText>
+        );
+      } else {
+        // Italic
+        parts.push(
+          <AppText key={`i-${lineIndex}-${match.index}`} style={{ fontStyle: 'italic' }}>
+            {match[3]}
+          </AppText>
+        );
+      }
+      lastIndex = match.index + match[0].length;
+    }
+    // Remaining text
+    if (lastIndex < line.length) {
+      parts.push(line.slice(lastIndex));
+    }
+
+    const isLastLine = lineIndex === lines.length - 1;
+    return (
+      <AppText key={lineIndex} style={{ marginBottom: isLastLine ? 0 : line === '' ? 6 : 2 }}>
+        {parts.length > 0 ? parts : line}
+      </AppText>
+    );
+  });
+}
+
 // ─── Message Bubble ──────────────────────────────────────────────────────────
 
 function CoachBubble({ message }: { message: AiCoachMessage }) {
@@ -74,7 +121,7 @@ function CoachBubble({ message }: { message: AiCoachMessage }) {
           className={`text-sm ${isAssistant ? 'text-foreground' : ''}`}
           style={isAssistant ? undefined : { color: '#FFFFFF' }}
         >
-          {message.content}
+          {isAssistant ? renderMarkdown(message.content) : message.content}
         </AppText>
         <AppText
           className={`text-xs mt-1 ${isAssistant ? 'text-muted' : 'text-right'}`}
