@@ -205,16 +205,13 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
           isGrouped={isGrouped}
           onReply={setReplyTo}
           onReact={(messageId, emoji) => {
-            reactionMutation.mutate(
-              { leagueId, messageId, emoji },
-              { onSuccess: () => messagesQuery.refetch() },
-            );
+            reactionMutation.mutate({ leagueId, messageId, emoji });
           }}
           onOpenDeepLink={openDeepLink}
         />
       );
     },
-    [leagueId, messages, messagesQuery, openDeepLink, reactionMutation, user?.id],
+    [leagueId, messages, openDeepLink, reactionMutation, user?.id],
   );
 
   const keyExtractor = useCallback((item: ChatMessage) => item.messageId, []);

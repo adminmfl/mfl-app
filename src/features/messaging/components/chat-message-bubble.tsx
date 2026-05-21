@@ -16,6 +16,63 @@ import { MessagingChip } from './messaging-chip';
 
 const QUICK_EMOJIS = ['\u{1F44D}', '\u{1F525}', '\u{1F4AA}', '\u{1F602}', '\u{2764}\u{FE0F}', '\u{1F440}'];
 
+// ─── Shared reaction bar ─────────────────────────────────────────────────────
+// Renders the quick-emoji picker row + active reaction count chips.
+// Used by both the captain-boost card and the standard bubble to avoid duplication.
+
+interface ReactionBarProps {
+  message: ChatMessage;
+  currentUserId?: string;
+  align?: 'start' | 'end';
+  onReply: (message: ChatMessage) => void;
+  onReact: (messageId: string, emoji: string) => void;
+}
+
+function ReactionBar({
+  message,
+  currentUserId,
+  align = 'start',
+  onReply,
+  onReact,
+}: ReactionBarProps) {
+  const justifyClass = align === 'end' ? 'justify-end' : 'justify-start';
+  return (
+    <>
+      <View className={`mb-2 flex-row flex-wrap gap-1 ${justifyClass}`}>
+        <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
+        {QUICK_EMOJIS.map((emoji) => (
+          <MessagingChip
+            key={emoji}
+            label={emoji}
+            selected={message.reactions.some(
+              (reaction) =>
+                reaction.emoji === emoji &&
+                !!currentUserId &&
+                reaction.userIds.includes(currentUserId),
+            )}
+            onPress={() => onReact(message.messageId, emoji)}
+          />
+        ))}
+      </View>
+
+      {message.reactions.length > 0 ? (
+        <View className={`mb-2 flex-row flex-wrap gap-1 ${justifyClass}`}>
+          {message.reactions.map((reaction) => (
+            <MessagingChip
+              key={reaction.emoji}
+              label={`${reaction.emoji} ${reaction.userIds.length}`}
+              selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
+              onPress={() => onReact(message.messageId, reaction.emoji)}
+            />
+          ))}
+        </View>
+      ) : null}
+    </>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   isOwn: boolean;
@@ -82,35 +139,13 @@ export function ChatMessageBubble({
           </View>
         </Pressable>
 
-        {message.reactions.length > 0 ? (
-          <View className="mt-1 flex-row flex-wrap gap-1">
-            {message.reactions.map((reaction) => (
-              <MessagingChip
-                key={reaction.emoji}
-                label={`${reaction.emoji} ${reaction.userIds.length}`}
-                selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
-                onPress={() => onReact(message.messageId, reaction.emoji)}
-              />
-            ))}
-          </View>
-        ) : null}
-
-        <View className="mt-1 flex-row flex-wrap gap-1">
-          <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-          {QUICK_EMOJIS.map((emoji) => (
-            <MessagingChip
-              key={emoji}
-              label={emoji}
-              selected={message.reactions.some(
-                (reaction) =>
-                  reaction.emoji === emoji &&
-                  !!currentUserId &&
-                  reaction.userIds.includes(currentUserId),
-              )}
-              onPress={() => onReact(message.messageId, emoji)}
-            />
-          ))}
-        </View>
+        <ReactionBar
+          message={message}
+          currentUserId={currentUserId}
+          align="start"
+          onReply={onReply}
+          onReact={onReact}
+        />
       </View>
     );
   }
@@ -320,35 +355,13 @@ export function ChatMessageBubble({
         </Pressable>
       </View>
 
-      <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-        <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-        {QUICK_EMOJIS.map((emoji) => (
-          <MessagingChip
-            key={emoji}
-            label={emoji}
-            selected={message.reactions.some(
-              (reaction) =>
-                reaction.emoji === emoji &&
-                !!currentUserId &&
-                reaction.userIds.includes(currentUserId),
-            )}
-            onPress={() => onReact(message.messageId, emoji)}
-          />
-        ))}
-      </View>
-
-      {message.reactions.length > 0 ? (
-        <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-          {message.reactions.map((reaction) => (
-            <MessagingChip
-              key={reaction.emoji}
-              label={`${reaction.emoji} ${reaction.userIds.length}`}
-              selected={!!currentUserId && reaction.userIds.includes(currentUserId)}
-              onPress={() => onReact(message.messageId, reaction.emoji)}
-            />
-          ))}
-        </View>
-      ) : null}
+      <ReactionBar
+        message={message}
+        currentUserId={currentUserId}
+        align={isOwn ? 'end' : 'start'}
+        onReply={onReply}
+        onReact={onReact}
+      />
 
       {/* Photo lightbox */}
       {message.photoUrl ? (

@@ -14,9 +14,12 @@ export function useToggleChatReaction() {
   return useMutation<{ success: boolean }, Error, ToggleChatReactionVars>({
     mutationFn: ({ leagueId, messageId, emoji }) =>
       toggleChatReaction(leagueId, messageId, emoji),
-    onSuccess: (_data, variables) => {
+    onSettled: (_data, _error, variables) => {
+      // Extract before any conditional so TypeScript keeps the narrowed type
+      // inside closures (fixes re-widening to string | undefined in .map()).
+      const { leagueId } = variables;
       queryClient.invalidateQueries({
-        queryKey: messagingQueryKeys.messagesRoot(variables.leagueId),
+        queryKey: messagingQueryKeys.messagesRoot(leagueId),
       });
     },
   });
