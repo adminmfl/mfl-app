@@ -187,7 +187,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
 
   const renderMessage = useCallback(
     ({ item, index }: ListRenderItemInfo<ChatMessage>) => {
-      // In inverted FlatList, data[0] = newest (bottom). The message visually
+      // With manual scaleY flip, data[0] = newest (bottom). The message visually
       // above item[index] is item[index+1]. Group if same sender within 5 min.
       const above = messages[index + 1];
       const isGrouped =
@@ -198,20 +198,22 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         ) < 5 * 60 * 1000;
 
       return (
-        <ChatMessageBubble
-          message={item}
-          isOwn={item.senderId === user?.id}
-          currentUserId={user?.id}
-          isGrouped={isGrouped}
-          onReply={setReplyTo}
-          onReact={(messageId, emoji) => {
-            reactionMutation.mutate(
-              { leagueId, messageId, emoji },
-              { onSuccess: () => messagesQuery.refetch() },
-            );
-          }}
-          onOpenDeepLink={openDeepLink}
-        />
+        <View style={{ transform: [{ scaleY: -1 }] }}>
+          <ChatMessageBubble
+            message={item}
+            isOwn={item.senderId === user?.id}
+            currentUserId={user?.id}
+            isGrouped={isGrouped}
+            onReply={setReplyTo}
+            onReact={(messageId, emoji) => {
+              reactionMutation.mutate(
+                { leagueId, messageId, emoji },
+                { onSuccess: () => messagesQuery.refetch() },
+              );
+            }}
+            onOpenDeepLink={openDeepLink}
+          />
+        </View>
       );
     },
     [leagueId, messages, messagesQuery, openDeepLink, reactionMutation, user?.id],
@@ -325,7 +327,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             data={messages}
             renderItem={renderMessage}
             keyExtractor={keyExtractor}
-            inverted
+            style={{ transform: [{ scaleY: -1 }] }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={refresh} />
             }
@@ -338,15 +340,24 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View
-                className="flex-1 items-center justify-center py-12"
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  paddingVertical: 48,
+                  transform: [{ scaleY: -1 }],
+                }}
               >
-                <AppText 
-                  className="text-sm text-muted text-center"
-                  style={{ writingDirection: 'ltr' }}
+                <AppText
+                  style={{
+                    fontSize: 14,
+                    textAlign: 'center',
+                    writingDirection: 'ltr',
+                  }}
                 >
                   {filter === 'all'
                     ? 'No messages yet.'
-                    : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}
+                    : `No ${FILTER_OPTIONS.find((o) => o.value === filter)?.label.toLowerCase()} messages.`}
                 </AppText>
               </View>
             }
