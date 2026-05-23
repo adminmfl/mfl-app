@@ -7,14 +7,23 @@ import { ChallengeSubmitForm } from '../../features/challenges/components/challe
 
 export default function ChallengeSubmitScreen() {
   const router = useRouter();
-  const { challengeId } = useLocalSearchParams<{ challengeId: string }>();
+  const { challengeId: challengeIdParam } = useLocalSearchParams<{
+    challengeId: string | string[];
+  }>();
   const { activeLeague } = useLeagueContext();
   const leagueId = activeLeague?.leagueId ?? '';
 
+  const challengeId = Array.isArray(challengeIdParam)
+    ? challengeIdParam[0]
+    : challengeIdParam;
+
   const { data: challenges } = useChallenges(leagueId);
   const challenge = useMemo(
-    () => challenges?.find((c) => c.challengeId === challengeId) ?? null,
-    [challenges, challengeId],
+    () =>
+      challenges?.find(
+        (c) => c.challengeId === challengeId && c.leagueId === leagueId,
+      ) ?? null,
+    [challenges, challengeId, leagueId],
   );
 
   if (!activeLeague) {
@@ -33,5 +42,5 @@ export default function ChallengeSubmitScreen() {
     return <ScreenState screen="challenge-submit" state="loading" />;
   }
 
-  return <ChallengeSubmitForm challenge={challenge} leagueId={leagueId} />;
+  return <ChallengeSubmitForm challenge={challenge} />;
 }

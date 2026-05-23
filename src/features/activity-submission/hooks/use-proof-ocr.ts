@@ -5,7 +5,8 @@
  * results with confidence scores.
  */
 import { useState, useCallback } from 'react';
-import { api } from '../../../core/api';
+import { api, getInMemoryAccessToken } from '../../../core/api';
+import { env } from '../../../core/config/env';
 import type { OcrExtraction } from '../../../lib/ocr/types';
 import { CONFIDENCE_THRESHOLD } from '../../../lib/ocr/types';
 import type { ProofImage } from '../types';
@@ -32,6 +33,12 @@ export function useProofOcr(): UseProofOcrReturn {
       setExtraction(null);
 
       try {
+        if (!getInMemoryAccessToken()) {
+          setError('Please sign in again to scan proof images.');
+          setStatus('error');
+          return null;
+        }
+
         const formData = new FormData();
         formData.append('file', {
           uri: image.uri,
@@ -39,19 +46,50 @@ export function useProofOcr(): UseProofOcrReturn {
           type: image.type,
         } as any);
 
+        // Match other working RN multipart uploads (proof, challenge docs).
         const res = await api.post<{ success: boolean; data: OcrExtraction }>(
           '/api/ocr/extract',
           formData,
-          { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 30_000 },
+          {
+            timeout: 180_000,
+            headers: { 'Content-Type': 'multipart/form-data' },
+          },
         );
 
         const result = res.data.data;
         setExtraction(result);
         setStatus('done');
         return result;
-      } catch (err) {
+      } catch (err: unknown) {
         console.warn('OCR extraction failed:', err);
-        setError('Could not read proof image');
+        const axiosErr = err as {
+          message?: string;
+          response?: { status?: number; data?: { error?: string } };
+          code?: string;
+        };
+        if (axiosErr.response?.status === 401) {
+          setError('Session expired. Please sign in again.');
+        } else if (!axiosErr.response) {
+          const base = env.API_BASE_URL;
+          setError(
+            axiosErr.code === 'ECONNABORTED'
+              ? 'OCR timed out (over 3 minutes). Try a smaller image or enter values manually.'
+              : axiosErr.code === 'ERR_NETWORK'
+                ? 'OCR connection dropped (server may still be processing — first scan is slow). Restart the API server, try again, or use a smaller image.'
+                : `Could not reach server at ${base}. Use your PC LAN IP in .env (not localhost), same Wi‑Fi as the phone, and restart Expo with: npx expo start -c`,
+          );
+          if (__DEV__) {
+            console.warn('[OCR] network error', {
+              baseURL: base,
+              code: axiosErr.code,
+              message: axiosErr.message,
+            });
+          }
+        } else if (axiosErr.response?.status === 404) {
+          setError('OCR service not found on this server.');
+        } else {
+          setError(axiosErr.response?.data?.error ?? 'Could not read proof image');
+        }
         setStatus('error');
         return null;
       }
