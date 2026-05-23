@@ -6,6 +6,11 @@ import { normalizeExerciseSession } from '../utils/normalize-health-connect';
 
 type HCModule = typeof import('react-native-health-connect');
 
+type GrantedPermission = {
+  accessType?: string;
+  recordType?: string;
+};
+
 let _hc: HCModule | null = null;
 
 function getHC(): HCModule | null {
@@ -27,6 +32,16 @@ const REQUIRED_PERMISSIONS = [
   { accessType: 'read' as const, recordType: 'Distance' as const },
   { accessType: 'read' as const, recordType: 'TotalCaloriesBurned' as const },
 ];
+
+function hasRequiredPermissions(granted: ReadonlyArray<GrantedPermission>): boolean {
+  return REQUIRED_PERMISSIONS.every((req) =>
+    granted.some(
+      (g) =>
+        g.accessType === req.accessType &&
+        g.recordType === req.recordType,
+    ),
+  );
+}
 
 export function useHealthConnect() {
   const [status, setStatus] = useState<HealthConnectStatus>(
@@ -56,17 +71,7 @@ export function useHealthConnect() {
       await hc.initialize();
 
       const granted = await hc.getGrantedPermissions();
-      const hasAllPerms = REQUIRED_PERMISSIONS.every((req) =>
-        granted.some(
-          (g) =>
-            'accessType' in g &&
-            'recordType' in g &&
-            g.accessType === req.accessType &&
-            g.recordType === req.recordType,
-        ),
-      );
-
-      setStatus(hasAllPerms ? 'connected' : 'permission_needed');
+      setStatus(hasRequiredPermissions(granted) ? 'connected' : 'permission_needed');
     } catch {
       setStatus('not_connected');
     }
@@ -82,26 +87,43 @@ export function useHealthConnect() {
 
     setIsInitializing(true);
     try {
+      const sdkStatus = await hc.getSdkStatus();
+      if (sdkStatus === hc.SdkAvailabilityStatus.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
+        setStatus('not_installed');
+        return false;
+      }
+
       await hc.initialize();
-      const granted = await hc.requestPermission(REQUIRED_PERMISSIONS);
+      const fromDialog = await hc.requestPermission(REQUIRED_PERMISSIONS);
 
-      const hasAllPerms = REQUIRED_PERMISSIONS.every((req) =>
-        granted.some(
-          (g) =>
-            'accessType' in g &&
-            'recordType' in g &&
-            g.accessType === req.accessType &&
-            g.recordType === req.recordType,
-        ),
-      );
+      // Dialog callback can be empty on New Arch; controller state is authoritative.
+      let granted: GrantedPermission[] = fromDialog;
+      if (!hasRequiredPermissions(fromDialog)) {
+        granted = await hc.getGrantedPermissions();
+      }
 
+      const hasAllPerms = hasRequiredPermissions(granted);
       setStatus(hasAllPerms ? 'connected' : 'permission_needed');
       return hasAllPerms;
-    } catch {
+    } catch (error) {
+      if (__DEV__) {
+        console.warn('[HealthConnect] requestPermissions failed', error);
+      }
       setStatus('not_connected');
       return false;
     } finally {
       setIsInitializing(false);
+    }
+  }, []);
+
+  const openSettings = useCallback(async () => {
+    const hc = getHC();
+    if (!hc) return;
+    try {
+      await hc.initialize();
+      await hc.openHealthConnectSettings();
+    } catch {
+      // Ignore — user can open Health Connect manually
     }
   }, []);
 
@@ -180,6 +202,7 @@ export function useHealthConnect() {
     isInitializing,
     isSyncing,
     requestPermissions,
+    openSettings,
     readRecentWorkouts,
     disconnect,
     recheckStatus: checkAvailability,
