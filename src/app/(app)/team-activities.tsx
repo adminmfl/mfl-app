@@ -53,6 +53,7 @@ export default function TeamActivitiesScreen() {
   const [rejectionReason, setRejectionReason] = useState('');
   const [suspiciousProof, setSuspiciousProof] = useState(false);
   const [validatingId, setValidatingId] = useState<SubmissionId | null>(null);
+  const [showSubmissions, setShowSubmissions] = useState(false);
 
   const data = submissionsQuery.data;
   const submissions = data?.submissions ?? [];
@@ -326,38 +327,56 @@ export default function TeamActivitiesScreen() {
           />
         ) : null}
 
-        {/* Submissions Count */}
-        <SectionLabel
-          label={`${filteredSubmissions.length} Submission${filteredSubmissions.length === 1 ? '' : 's'}`}
-        />
+        {/* Submissions Count + Toggle */}
+        <View className="flex-row items-center justify-between">
+          <SectionLabel
+            label={`${filteredSubmissions.length} Submission${filteredSubmissions.length === 1 ? '' : 's'}`}
+          />
+          <Button
+            variant={showSubmissions ? 'secondary' : 'primary'}
+            size="sm"
+            onPress={() => setShowSubmissions((v) => !v)}
+          >
+            <Feather
+              name={showSubmissions ? 'eye-off' : 'eye'}
+              size={14}
+              color={showSubmissions ? mflColors.text : '#fff'}
+            />
+            <Button.Label>
+              {showSubmissions ? 'Hide' : 'Show'} Submissions
+            </Button.Label>
+          </Button>
+        </View>
 
         {/* Submissions List */}
-        {filteredSubmissions.length === 0 ? (
-          <Card className="p-5">
-            <AppText className="text-sm text-muted text-center py-6">
-              {submissions.length === 0
-                ? 'No submissions from your team yet.'
-                : 'No submissions match your filters.'}
-            </AppText>
-          </Card>
-        ) : (
-          <View className="gap-3">
-            {filteredSubmissions.map((submission) => (
-              <SubmissionValidationCard
-                key={String(submission.id)}
-                submission={submission}
-                pointsUnit={pointsUnit}
-                awardedPointsText={awardedPointsById[String(submission.id)] ?? ''}
-                canOverride={false}
-                isValidating={String(validatingId) === String(submission.id)}
-                onAwardedPointsChange={handleAwardedPointsChange}
-                onView={setSelectedSubmission}
-                onApprove={handleApprove}
-                onReject={openRejectPanel}
-              />
-            ))}
-          </View>
-        )}
+        {showSubmissions ? (
+          filteredSubmissions.length === 0 ? (
+            <Card className="p-5">
+              <AppText className="text-sm text-muted text-center py-6">
+                {submissions.length === 0
+                  ? 'No submissions from your team yet.'
+                  : 'No submissions match your filters.'}
+              </AppText>
+            </Card>
+          ) : (
+            <View className="gap-3">
+              {filteredSubmissions.map((submission) => (
+                <SubmissionValidationCard
+                  key={String(submission.id)}
+                  submission={submission}
+                  pointsUnit={pointsUnit}
+                  awardedPointsText={awardedPointsById[String(submission.id)] ?? ''}
+                  canOverride={false}
+                  isValidating={String(validatingId) === String(submission.id)}
+                  onAwardedPointsChange={handleAwardedPointsChange}
+                  onView={setSelectedSubmission}
+                  onApprove={handleApprove}
+                  onReject={openRejectPanel}
+                />
+              ))}
+            </View>
+          )
+        ) : null}
       </View>
     </ScreenScrollView>
   );
