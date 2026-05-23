@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { View, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { Avatar, Button, Card, Chip, Separator, Tabs } from 'heroui-native';
+import { useRouter } from 'expo-router';
 import { AppText } from '../../../components/app-text';
 import { ScreenScrollView } from '../../../components/screen-scroll-view';
 import { DarkHeaderCard } from '../../../components/dark-header-card';
@@ -28,6 +29,7 @@ function getInitials(name: string): string {
 }
 
 export default function MyTeamScreen() {
+  const router = useRouter();
   const { activeLeague } = useLeagueContext();
   const { isCaptain, isViceCaptain, isHost } = useRole();
   const [activeTab, setActiveTab] = useState<TabKey>('Roster');
@@ -131,6 +133,7 @@ export default function MyTeamScreen() {
             teamId={teamId}
             unallocatedMembers={unallocatedMembers ?? []}
             onMembersChanged={handleRefresh}
+            onOpenTeamActivities={() => router.push('/(app)/team-activities' as any)}
           />
         ) : (
           <TeamsTab teams={teams ?? []} />
@@ -188,6 +191,7 @@ interface RosterTabProps {
   teamId: string | null;
   unallocatedMembers: LeagueMember[];
   onMembersChanged: () => void;
+  onOpenTeamActivities: () => void;
 }
 
 function RosterTab({
@@ -203,6 +207,7 @@ function RosterTab({
   teamId,
   unallocatedMembers,
   onMembersChanged,
+  onOpenTeamActivities,
 }: RosterTabProps) {
   const { activeLeague } = useLeagueContext();
   const [searchQuery, setSearchQuery] = useState('');
@@ -282,15 +287,23 @@ function RosterTab({
         </View>
       )}
 
-      {/* Unallocated Members Button */}
-      {isLeader && unallocatedMembers.length > 0 && (
-        <Button
-          variant="secondary"
-          size="md"
-          onPress={() => setUnallocatedModalOpen(true)}
-        >
-          <Button.Label>Unallocated Members ({unallocatedMembers.length})</Button.Label>
-        </Button>
+      {/* Leader actions */}
+      {isLeader && (
+        <View className="gap-2">
+          {unallocatedMembers.length > 0 && (
+            <Button
+              variant="secondary"
+              size="md"
+              onPress={() => setUnallocatedModalOpen(true)}
+            >
+              <Button.Label>Unallocated Members ({unallocatedMembers.length})</Button.Label>
+            </Button>
+          )}
+          <Button variant="secondary" size="md" onPress={onOpenTeamActivities}>
+            <Feather name="clipboard" size={16} color={mflColors.text} />
+            <Button.Label>Team Activities</Button.Label>
+          </Button>
+        </View>
       )}
 
       {/* Search (show when >5 members) */}
