@@ -139,9 +139,10 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
             </View>
             <AppText className="text-xs text-muted mb-3">{template.subtitle}</AppText>
 
-            <View className="flex-row gap-3 mb-3">
+            <View className="flex-row gap-2 mb-3">
               <StatBadge icon="calendar" value={template.duration} label="Days" />
               <StatBadge icon="activity" value={template.activities} label="Activities" />
+              <StatBadge icon="target" value={template.challenges} label="Challenges" />
               <StatBadge icon="coffee" value={template.restDays} label="Rest/wk" />
             </View>
 
