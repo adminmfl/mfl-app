@@ -1,6 +1,14 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useState } from 'react';
-import { Dimensions, Image, Modal, Pressable, View } from 'react-native';
+import {
+  Dimensions,
+  Image,
+  Modal,
+  Pressable,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
@@ -83,88 +91,15 @@ export function ChatMessageBubble({
           </View>
         </Pressable>
 
-        {message.reactions.length > 0 ? (
-          <View className="mt-1 flex-row items-center">
-            {message.reactions.map((reaction, index) => {
-              const isUserReaction = !!currentUserId && reaction.userIds.includes(currentUserId);
-              return (
-                <Pressable
-                  key={reaction.emoji}
-                  onPress={() => onReact(message.messageId, reaction.emoji)}
-                  className="items-center justify-center rounded-full"
-                  style={{
-                    backgroundColor: isUserReaction ? '#FFFFFF' : mflColors.card,
-                    borderWidth: isUserReaction ? 0 : 2,
-                    borderColor: mflColors.surface,
-                    width: 32,
-                    height: 32,
-                    marginLeft: index > 0 ? -8 : 0,
-                    zIndex: message.reactions.length - index,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 2,
-                    elevation: 2,
-                  }}
-                >
-                  <AppText className="text-base">{reaction.emoji}</AppText>
-                  {reaction.userIds.length > 1 ? (
-                    <View
-                      className="absolute -bottom-1 -right-1 items-center justify-center rounded-full"
-                      style={{
-                        backgroundColor: isUserReaction ? mflColors.brand : mflColors.surface,
-                        borderWidth: 1.5,
-                        borderColor: mflColors.surface,
-                        minWidth: 16,
-                        height: 16,
-                        paddingHorizontal: 3,
-                      }}
-                    >
-                      <AppText 
-                        className="text-[9px] font-bold"
-                        style={{ 
-                          color: isUserReaction ? mflColors.white : mflColors.text
-                        }}
-                      >
-                        {reaction.userIds.length}
-                      </AppText>
-                    </View>
-                  ) : null}
-                </Pressable>
-              );
-            })}
-          </View>
-        ) : null}
-
-        <View className="mt-1 flex-row flex-wrap gap-1">
-          <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-          <MessagingChip 
-            label="React" 
-            icon="plus" 
-            onPress={() => setShowEmojiPicker(!showEmojiPicker)} 
-          />
-        </View>
-
-        {showEmojiPicker ? (
-          <View className="mt-1 flex-row flex-wrap gap-1">
-            {QUICK_EMOJIS.map((emoji) => (
-              <MessagingChip
-                key={emoji}
-                label={emoji}
-                selected={message.reactions.some(
-                  (reaction) =>
-                    reaction.emoji === emoji &&
-                    !!currentUserId &&
-                    reaction.userIds.includes(currentUserId),
-                )}
-                onPress={() => {
-                  onReact(message.messageId, emoji);
-                  setShowEmojiPicker(false);
-                }}
-              />
-            ))}
-          </View>
-        ) : null}
+        <MessageActions
+          message={message}
+          currentUserId={currentUserId}
+          isCaptainBoost
+          showEmojiPicker={showEmojiPicker}
+          onReply={onReply}
+          onReact={onReact}
+          onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
+        />
       </View>
     );
   }
@@ -374,94 +309,15 @@ export function ChatMessageBubble({
         </Pressable>
       </View>
 
-      {/* Reactions display - overlapped style */}
-      {message.reactions.length > 0 ? (
-        <View 
-          className={`mb-2 flex-row items-center ${isOwn ? 'justify-end' : 'justify-start'}`}
-          style={{ marginLeft: isOwn ? 0 : 36 }}
-        >
-          {message.reactions.map((reaction, index) => {
-            const isUserReaction = !!currentUserId && reaction.userIds.includes(currentUserId);
-            return (
-              <Pressable
-                key={reaction.emoji}
-                onPress={() => onReact(message.messageId, reaction.emoji)}
-                className="items-center justify-center rounded-full"
-                style={{
-                  backgroundColor: isUserReaction ? '#FFFFFF' : mflColors.card,
-                  borderWidth: isUserReaction ? 0 : 2,
-                  borderColor: mflColors.surface,
-                  width: 32,
-                  height: 32,
-                  marginLeft: index > 0 ? -8 : 0,
-                  zIndex: message.reactions.length - index,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 2,
-                  elevation: 2,
-                }}
-              >
-                <AppText className="text-base">{reaction.emoji}</AppText>
-                {reaction.userIds.length > 1 ? (
-                  <View
-                    className="absolute -bottom-1 -right-1 items-center justify-center rounded-full"
-                    style={{
-                      backgroundColor: isUserReaction ? mflColors.brand : mflColors.surface,
-                      borderWidth: 1.5,
-                      borderColor: mflColors.surface,
-                      minWidth: 16,
-                      height: 16,
-                      paddingHorizontal: 3,
-                    }}
-                  >
-                    <AppText 
-                      className="text-[9px] font-bold"
-                      style={{ 
-                        color: isUserReaction ? mflColors.white : mflColors.text
-                      }}
-                    >
-                      {reaction.userIds.length}
-                    </AppText>
-                  </View>
-                ) : null}
-              </Pressable>
-            );
-          })}
-        </View>
-      ) : null}
-
-      {/* Action buttons - Reply and React */}
-      <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-        <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
-        <MessagingChip 
-          label="React" 
-          icon="plus" 
-          onPress={() => setShowEmojiPicker(!showEmojiPicker)} 
-        />
-      </View>
-
-      {/* Emoji picker - shown when React button is pressed */}
-      {showEmojiPicker ? (
-        <View className={`mb-2 flex-row flex-wrap gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-          {QUICK_EMOJIS.map((emoji) => (
-            <MessagingChip
-              key={emoji}
-              label={emoji}
-              selected={message.reactions.some(
-                (reaction) =>
-                  reaction.emoji === emoji &&
-                  !!currentUserId &&
-                  reaction.userIds.includes(currentUserId),
-              )}
-              onPress={() => {
-                onReact(message.messageId, emoji);
-                setShowEmojiPicker(false);
-              }}
-            />
-          ))}
-        </View>
-      ) : null}
+      <MessageActions
+        message={message}
+        currentUserId={currentUserId}
+        isOwn={isOwn}
+        showEmojiPicker={showEmojiPicker}
+        onReply={onReply}
+        onReact={onReact}
+        onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
+      />
 
       {/* Photo lightbox */}
       {message.photoUrl ? (
@@ -495,6 +351,133 @@ export function ChatMessageBubble({
         </Modal>
       ) : null}
     </View>
+  );
+}
+
+function ChatMessageReactions({
+  messageId,
+  reactions,
+  currentUserId,
+  onReact,
+  className,
+  style,
+}: {
+  messageId: string;
+  reactions: ChatMessage['reactions'];
+  currentUserId?: string;
+  onReact: (messageId: string, emoji: string) => void;
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+}) {
+  if (reactions.length === 0) return null;
+
+  return (
+    <View className={className} style={style}>
+      {reactions.map((reaction, index) => {
+        const isUserReaction =
+          !!currentUserId && reaction.userIds.includes(currentUserId);
+        return (
+          <Pressable
+            key={reaction.emoji}
+            onPress={() => onReact(messageId, reaction.emoji)}
+            className="items-center justify-center rounded-full"
+            style={{
+              backgroundColor: isUserReaction ? '#FFFFFF' : mflColors.card,
+              borderWidth: isUserReaction ? 0 : 2,
+              borderColor: mflColors.surface,
+              width: 32,
+              height: 32,
+              marginLeft: index > 0 ? -8 : 0,
+              zIndex: reactions.length - index,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2,
+            }}
+          >
+            <AppText className="text-base">{reaction.emoji}</AppText>
+            {reaction.userIds.length > 1 ? (
+              <View
+                className="absolute -bottom-1 -right-1 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor: isUserReaction ? mflColors.brand : mflColors.surface,
+                  borderWidth: 1.5,
+                  borderColor: mflColors.surface,
+                  minWidth: 16,
+                  height: 16,
+                  paddingHorizontal: 3,
+                }}
+              >
+                <AppText
+                  className="text-[9px] font-bold"
+                  style={{
+                    color: isUserReaction ? mflColors.white : mflColors.text,
+                  }}
+                >
+                  {reaction.userIds.length}
+                </AppText>
+              </View>
+            ) : null}
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+function MessageActions({
+  message,
+  currentUserId,
+  isOwn,
+  isCaptainBoost,
+  showEmojiPicker,
+  onReply,
+  onReact,
+  onToggleEmojiPicker,
+}: {
+  message: ChatMessage;
+  currentUserId?: string;
+  isOwn?: boolean;
+  isCaptainBoost?: boolean;
+  showEmojiPicker: boolean;
+  onReply: (message: ChatMessage) => void;
+  onReact: (messageId: string, emoji: string) => void;
+  onToggleEmojiPicker: () => void;
+}) {
+  const alignment = isCaptainBoost ? '' : isOwn ? 'justify-end' : 'justify-start';
+  return (
+    <>
+      <ChatMessageReactions
+        messageId={message.messageId}
+        reactions={message.reactions}
+        currentUserId={currentUserId}
+        onReact={onReact}
+        className={`${isCaptainBoost ? 'mt-1' : 'mb-2'} flex-row items-center ${alignment}`}
+        {...(!isCaptainBoost && { style: { marginLeft: isOwn ? 0 : 36 } })}
+      />
+      <View className={`${isCaptainBoost ? 'mt-1' : 'mb-2'} flex-row flex-wrap gap-1 ${alignment}`}>
+        <MessagingChip label="Reply" icon="corner-up-left" onPress={() => onReply(message)} />
+        <MessagingChip label="React" icon="plus" onPress={onToggleEmojiPicker} />
+      </View>
+      {showEmojiPicker ? (
+        <View className={`${isCaptainBoost ? 'mt-1' : 'mb-2'} flex-row flex-wrap gap-1 ${alignment}`}>
+          {QUICK_EMOJIS.map((emoji) => (
+            <MessagingChip
+              key={emoji}
+              label={emoji}
+              selected={message.reactions.some(
+                (r) => r.emoji === emoji && !!currentUserId && r.userIds.includes(currentUserId),
+              )}
+              onPress={() => {
+                onReact(message.messageId, emoji);
+                onToggleEmojiPicker();
+              }}
+            />
+          ))}
+        </View>
+      ) : null}
+    </>
   );
 }
 
