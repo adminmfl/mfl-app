@@ -199,16 +199,16 @@ export default function DashboardScreen() {
             </View>
           )}
 
-          {/* Join + Create buttons (matches web) */}
+          {/* Join + Create + Quick Start (matches web) */}
           <View className="flex-row gap-2 mt-3">
             <View className="flex-1">
               <Button
-                variant="primary"
+                variant="secondary"
                 size="sm"
                 onPress={() => router.push('/(app)/join-league' as any)}
                 className="w-full"
               >
-                <Button.Label>Join League</Button.Label>
+                <Button.Label>Join</Button.Label>
               </Button>
             </View>
             <View className="flex-1">
@@ -218,7 +218,17 @@ export default function DashboardScreen() {
                 onPress={() => router.push('/(app)/create-league' as any)}
                 className="w-full"
               >
-                <Button.Label>Create League</Button.Label>
+                <Button.Label>Create</Button.Label>
+              </Button>
+            </View>
+            <View className="flex-1">
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={() => router.push('/(app)/quick-start-league' as any)}
+                className="w-full"
+              >
+                <Button.Label>Quick Start</Button.Label>
               </Button>
             </View>
           </View>
