@@ -106,11 +106,11 @@ export default function ReuploadSubmissionScreen() {
     if (!result.canceled && result.assets?.[0]) {
       const asset = result.assets[0];
       const fileName = asset.fileName ?? `proof_${Date.now()}.jpg`;
-      const fileType = asset.type ?? 'image/jpeg';
+      const fileType = (asset as { mimeType?: string }).mimeType ?? 'image/jpeg';
       setProofImage({
         uri: asset.uri,
         name: fileName,
-        type: fileType.startsWith('image/') ? fileType : `image/${fileType}`,
+        type: fileType,
       });
     }
   }, []);
