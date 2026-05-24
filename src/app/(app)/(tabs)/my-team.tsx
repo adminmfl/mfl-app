@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { View, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { Avatar, Button, Card, Chip, Separator, Tabs } from 'heroui-native';
+import { Avatar, Button, Card, Chip, Tabs } from 'heroui-native';
+import { TeamViewRoster } from '../../../features/team/components/team-view-roster';
 import { useRouter } from 'expo-router';
 import { AppText } from '../../../components/app-text';
 import { ScreenScrollView } from '../../../components/screen-scroll-view';
@@ -218,16 +219,6 @@ function RosterTab({
   const showRR = rrFormula === 'standard';
   const showRestDays = (activeLeague?.restDays ?? 1) > 0;
 
-  if (!teamName || !teamId) {
-    return (
-      <ScreenState
-        screen="my-team"
-        state="empty"
-        message="You are not assigned to a team yet"
-      />
-    );
-  }
-
   const members = overviewData?.members ?? [];
   const stats = overviewData?.stats;
 
@@ -246,6 +237,16 @@ function RosterTab({
     const q = searchQuery.toLowerCase();
     return sortedMembers.filter((m) => m.username.toLowerCase().includes(q));
   }, [sortedMembers, searchQuery]);
+
+  if (!teamName || !teamId) {
+    return (
+      <ScreenState
+        screen="my-team"
+        state="empty"
+        message="You are not assigned to a team yet"
+      />
+    );
+  }
 
   const roleLabel = isCaptain
     ? 'Captain'
@@ -330,88 +331,12 @@ function RosterTab({
       )}
 
       {/* Members List */}
-      <Card className="p-4">
-        <SectionLabel
-          label={`Members (${filteredMembers.length})`}
-        />
-        {filteredMembers.length > 0 && (
-          <View className="flex-row items-center pb-2 gap-3">
-            <View className="flex-1">
-              <AppText className="text-xs" style={{ color: mflColors.textMuted }}>Member</AppText>
-            </View>
-            {showRestDays && (
-              <AppText className="text-xs" style={{ color: mflColors.textMuted }}>Rest</AppText>
-            )}
-            <AppText className="text-xs" style={{ color: mflColors.textMuted }}>Pts</AppText>
-            {showRR && (
-              <AppText className="text-xs w-10 text-right" style={{ color: mflColors.textMuted }}>RR</AppText>
-            )}
-          </View>
-        )}
-        {filteredMembers.length > 0 ? (
-          filteredMembers.map((member, index) => (
-            <View key={member.leagueMemberId}>
-              {index > 0 && <Separator className="my-0" />}
-              <View className="flex-row items-center py-3 gap-3">
-                {/* Avatar with captain badge */}
-                <View>
-                  <Avatar size="md" alt={member.username}>
-                    {member.profilePictureUrl ? (
-                      <Avatar.Image source={{ uri: member.profilePictureUrl }} />
-                    ) : null}
-                    <Avatar.Fallback>
-                      <AppText className="text-xs font-semibold" style={{ color: mflColors.brand }}>
-                        {getInitials(member.username)}
-                      </AppText>
-                    </Avatar.Fallback>
-                  </Avatar>
-                  {member.isCaptain && (
-                    <View
-                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full items-center justify-center"
-                      style={{ backgroundColor: mflColors.amber }}
-                    >
-                      <Feather name="award" size={10} color={mflColors.white} />
-                    </View>
-                  )}
-                </View>
-                {/* Name + role */}
-                <View className="flex-1 gap-0.5">
-                  <AppText className="text-sm font-semibold text-foreground" numberOfLines={1}>
-                    {member.username}
-                  </AppText>
-                  {member.isCaptain && (
-                    <Chip size="sm" variant="soft">
-                      <Chip.Label>Captain</Chip.Label>
-                    </Chip>
-                  )}
-                </View>
-                {/* Rest Days */}
-                {showRestDays && (
-                  <AppText className="text-xs" style={{ color: mflColors.textMuted }}>
-                    {member.restDaysUsed}R
-                  </AppText>
-                )}
-                {/* Points */}
-                <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
-                  {member.points}
-                </AppText>
-                {/* RR */}
-                {showRR && (
-                  <AppText className="text-xs w-10 text-right" style={{ color: mflColors.textMuted }}>
-                    {member.avgRr.toFixed(2)}
-                  </AppText>
-                )}
-              </View>
-            </View>
-          ))
-        ) : (
-          <View className="py-6 items-center">
-            <AppText className="text-sm text-muted">
-              {searchQuery ? 'No members found' : 'No members on your team yet'}
-            </AppText>
-          </View>
-        )}
-      </Card>
+      <TeamViewRoster
+        members={filteredMembers}
+        showRR={showRR}
+        showRestDays={showRestDays}
+        isCaptain={isCaptain}
+      />
 
       {/* Unallocated Members Modal */}
       {isLeader && teamId && (
