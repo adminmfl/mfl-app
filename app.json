@@ -81,6 +81,7 @@
           ]
         }
       ],
+      "./plugins/with-health-connect-delegate.js",
       [
         "@kingstinct/react-native-healthkit",
         {

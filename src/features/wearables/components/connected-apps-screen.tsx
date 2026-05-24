@@ -20,6 +20,7 @@ import {
   useConfirmWorkout,
   useRejectWorkout,
 } from '../hooks/use-pending-confirmations';
+import { getApiErrorMessage } from '../../leagues/utils/activity-config';
 import { HealthConnectCard } from './health-connect-card';
 import { HealthKitCard } from './healthkit-card';
 import { PendingConfirmationCard } from './pending-confirmation-card';
@@ -61,11 +62,23 @@ export function ConnectedAppsScreen() {
 
   // ---------- Health Connect (Android) handlers ----------
   const handleConnectHc = useCallback(async () => {
+    if (hc.status === 'not_installed') {
+      Alert.alert(
+        'Update Required',
+        'Install or update the Health Connect app from the Play Store, then try again.',
+      );
+      return;
+    }
+
     const granted = await hc.requestPermissions();
     if (!granted) {
       Alert.alert(
         'Permission Required',
-        'Health Connect permissions are needed to sync workouts.',
+        'Allow MFL to read workouts, steps, distance, and calories in Health Connect. Tap Open Settings if the permission screen did not appear.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => void hc.openSettings() },
+        ],
       );
       return;
     }
@@ -222,8 +235,11 @@ export function ConnectedAppsScreen() {
           'Confirmed',
           `${result.pointsAwarded} point${result.pointsAwarded !== 1 ? 's' : ''} awarded!`,
         );
-      } catch {
-        Alert.alert('Error', 'Failed to confirm workout.');
+      } catch (error) {
+        Alert.alert(
+          'Could not confirm',
+          getApiErrorMessage(error, 'Failed to confirm workout.'),
+        );
       } finally {
         setConfirmingId(null);
       }
@@ -236,8 +252,11 @@ export function ConnectedAppsScreen() {
       setRejectingId(workoutId);
       try {
         await rejectMutation.mutateAsync({ leagueId, workoutId });
-      } catch {
-        Alert.alert('Error', 'Failed to reject workout.');
+      } catch (error) {
+        Alert.alert(
+          'Could not reject',
+          getApiErrorMessage(error, 'Failed to reject workout.'),
+        );
       } finally {
         setRejectingId(null);
       }
