@@ -57,6 +57,16 @@ export function MyTeamViewScreen() {
     await refetch();
   }, [refetch]);
 
+  const members = viewData?.members ?? [];
+  const membersWithPoints = useMemo(
+    () => members.filter((m) => m.points > 0).length,
+    [members],
+  );
+  const membersAtRisk = useMemo(
+    () => members.filter((m) => m.points === 0).length,
+    [members],
+  );
+
   // Access check — only players/captains/VCs can see their team view
   if (!canViewTeam) {
     return (
@@ -123,18 +133,8 @@ export function MyTeamViewScreen() {
     );
   }
 
-  const members = viewData?.members ?? [];
   const stats = viewData?.stats;
   const captain = members.find((m) => m.isCaptain);
-
-  const membersWithPoints = useMemo(
-    () => members.filter((m) => m.points > 0).length,
-    [members],
-  );
-  const membersAtRisk = useMemo(
-    () => members.filter((m) => m.points === 0).length,
-    [members],
-  );
 
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
