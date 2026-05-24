@@ -381,6 +381,7 @@ export default function AppLayout() {
           <Stack.Screen name="analytics" />
           <Stack.Screen name="governor" />
           <Stack.Screen name="submission-validation" />
+          <Stack.Screen name="team-activities" />
           <Stack.Screen name="rest-day-donations" />
           <Stack.Screen name="manual-entry" />
           <Stack.Screen name="settings" />
