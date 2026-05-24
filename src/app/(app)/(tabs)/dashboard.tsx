@@ -158,6 +158,18 @@ export default function DashboardScreen() {
           </Pressable>
         )}
 
+        {activeLeague && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() => router.push('/(app)/league-overview' as any)}
+            className="self-start"
+          >
+            <Feather name="grid" size={14} color={mflColors.brand} />
+            <Button.Label>League Overview</Button.Label>
+          </Button>
+        )}
+
         {/* ── My Leagues Section (matches web) ─────────────────── */}
         <View>
           <SectionLabel
