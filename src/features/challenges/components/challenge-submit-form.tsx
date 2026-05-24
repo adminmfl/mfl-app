@@ -27,10 +27,9 @@ import type { ProofImageFile } from './proof-upload-field';
 
 interface ChallengeSubmitFormProps {
   challenge: Challenge;
-  leagueId: string;
 }
 
-export function ChallengeSubmitForm({ challenge, leagueId }: ChallengeSubmitFormProps) {
+export function ChallengeSubmitForm({ challenge }: ChallengeSubmitFormProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const submitMutation = useSubmitChallenge();
@@ -78,7 +77,11 @@ export function ChallengeSubmitForm({ challenge, leagueId }: ChallengeSubmitForm
 
     let proofUrl: string;
     try {
-      const uploadResult = await uploadChallengeProof(proofImage, leagueId, challenge.challengeId);
+      const uploadResult = await uploadChallengeProof(
+        proofImage,
+        challenge.leagueId,
+        challenge.challengeId,
+      );
       proofUrl = uploadResult.data.url;
     } catch {
       Alert.alert('Upload Failed', 'Could not upload proof image. Please try again.');
@@ -90,7 +93,7 @@ export function ChallengeSubmitForm({ challenge, leagueId }: ChallengeSubmitForm
 
     submitMutation.mutate(
       {
-        leagueId,
+        leagueId: challenge.leagueId,
         challengeId: challenge.challengeId,
         proofUrl,
       },
@@ -108,7 +111,7 @@ export function ChallengeSubmitForm({ challenge, leagueId }: ChallengeSubmitForm
         },
       },
     );
-  }, [proofImage, leagueId, challenge, submitMutation, router]);
+  }, [proofImage, challenge, submitMutation, router]);
 
   // Submission status banner
   const renderSubmissionStatus = () => {
