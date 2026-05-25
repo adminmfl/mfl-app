@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
+import { queryKeys } from '../../../core/config';
 import { saveManualEntry } from '../services/manual-entry.service';
 import type { ManualEntrySaveRequestDTO } from '../types/manual-entry';
 
@@ -23,7 +24,7 @@ export function useSaveManualEntry() {
         queryKey: ['leagues', leagueId, 'submissions'],
       });
       queryClient.invalidateQueries({
-        queryKey: ['leagues', leagueId, 'leaderboard'],
+        queryKey: queryKeys.leagues.leaderboard(leagueId),
       });
     },
   });
