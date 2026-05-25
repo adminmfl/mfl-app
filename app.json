@@ -89,7 +89,8 @@
           "NSHealthUpdateUsageDescription": "MFL does not write to Apple Health. This entry is required by iOS when requesting Health access.",
           "background": false
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "router": {
