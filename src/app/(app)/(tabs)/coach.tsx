@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   View,
   TextInput,
@@ -158,7 +158,8 @@ export default function CoachTab() {
   const [input, setInput] = useState('');
   const flatListRef = useRef<FlatList>(null);
 
-  const messages = useMemo(() => [...(history ?? [])].reverse(), [history]);
+  // useCoachHistory returns newest-first for inverted FlatList.
+  const messages = history ?? [];
 
   const handleSend = useCallback(
     (text?: string) => {
@@ -213,27 +214,28 @@ export default function CoachTab() {
       />
 
       {/* Chat */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.messageId}
-        renderItem={renderItem}
-        inverted
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View
-            className="items-center justify-center"
-            style={{ paddingVertical: 48, transform: [{ scaleY: -1 }] }}
-          >
+      <View className="flex-1">
+        {messages.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-5 py-12">
             <Feather name="cpu" size={32} color={mflColors.textMuted} />
             <AppText className="text-sm font-medium text-muted mt-3">Your Private AI Coach</AppText>
             <AppText className="text-xs text-muted mt-1 text-center px-8">
               Ask about your performance, strategy, or league standings. Everything here is private.
             </AppText>
           </View>
-        }
-      />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.messageId}
+            renderItem={renderItem}
+            inverted
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
+      </View>
 
       {/* Sending indicator */}
       {sendMutation.isPending && (
