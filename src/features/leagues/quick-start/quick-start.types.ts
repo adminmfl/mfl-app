@@ -13,6 +13,7 @@ export interface TemplateConfig {
   subtitle: string;
   duration: number;
   activities: number;
+  challenges: number;
   restDays: number;
   activityList: string[];
 }
@@ -53,6 +54,7 @@ export interface WizardResult {
   invite_code: string;
   teams_created: number;
   activities_added: number;
+  challenges_added: number;
   start_date: string;
   end_date: string;
   team_invites: TeamInvite[];
@@ -76,18 +78,20 @@ export const TEMPLATES: TemplateConfig[] = [
   {
     id: '40_day',
     title: '40-Day League',
-    subtitle: 'Perfect for a focused fitness sprint. 40 days, 5 core activities.',
+    subtitle: 'Perfect for a focused fitness sprint. 40 days, 5 activities, 3 challenges.',
     duration: 40,
     activities: 5,
+    challenges: 3,
     restDays: 1,
     activityList: ['Running', 'Walking', 'Cycling', 'Yoga', 'Gym'],
   },
   {
     id: '60_day',
     title: '60-Day League',
-    subtitle: 'Full fitness journey. 60 days, all activities included.',
+    subtitle: 'Full fitness journey. 60 days, 8 activities, 4 challenges included.',
     duration: 60,
     activities: 8,
+    challenges: 4,
     restDays: 1,
     activityList: [
       'Running', 'Walking', 'Cycling', 'Yoga', 'Gym',
@@ -96,11 +100,12 @@ export const TEMPLATES: TemplateConfig[] = [
   },
   {
     id: '90_day_pfl',
-    title: '90-Day PFL Format',
+    title: '90-Day League',
     subtitle:
-      'The full Pristine Fitness League format. 90 days, 10 activities including Golf & Steps.',
+      'The ultimate fitness challenge. 90 days, 10 activities, 5 challenges.',
     duration: 90,
     activities: 10,
+    challenges: 5,
     restDays: 1,
     activityList: [
       'Running', 'Walking', 'Cycling', 'Yoga', 'Gym',

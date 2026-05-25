@@ -6,31 +6,43 @@ import { AppText } from '../../../components/app-text';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { mflColors } from '../../../constants/colors';
 import { useHealthConnect } from '../hooks/use-health-connect';
+import { useHealthKit } from '../hooks/use-healthkit';
 import {
   useWearableConnections,
   useRegisterHealthConnect,
+  useRegisterHealthKit,
   useDeleteWearableConnection,
   useSyncHealthConnect,
+  useSyncHealthKit,
 } from '../hooks/use-wearable-connections';
 import {
   usePendingConfirmations,
   useConfirmWorkout,
   useRejectWorkout,
 } from '../hooks/use-pending-confirmations';
+import { getApiErrorMessage } from '../../leagues/utils/activity-config';
 import { HealthConnectCard } from './health-connect-card';
+import { HealthKitCard } from './healthkit-card';
 import { PendingConfirmationCard } from './pending-confirmation-card';
+
+const isIos = Platform.OS === 'ios';
+const isAndroid = Platform.OS === 'android';
 
 export function ConnectedAppsScreen() {
   const { activeLeague } = useLeagueContext();
   const leagueId = activeLeague?.leagueId ?? '';
 
   const hc = useHealthConnect();
+  const hk = useHealthKit();
+
   const connectionsQuery = useWearableConnections(leagueId);
   const pendingQuery = usePendingConfirmations(leagueId);
 
-  const registerMutation = useRegisterHealthConnect();
+  const registerHcMutation = useRegisterHealthConnect();
+  const registerHkMutation = useRegisterHealthKit();
   const deleteMutation = useDeleteWearableConnection();
-  const syncMutation = useSyncHealthConnect();
+  const syncHcMutation = useSyncHealthConnect();
+  const syncHkMutation = useSyncHealthKit();
   const confirmMutation = useConfirmWorkout();
   const rejectMutation = useRejectWorkout();
 
@@ -38,54 +50,90 @@ export function ConnectedAppsScreen() {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
 
-  const hcConnection = connectionsQuery.data?.find((c) => c.provider === 'health_connect') ?? null;
+  const hcConnection =
+    connectionsQuery.data?.find((c) => c.provider === 'health_connect') ?? null;
+  const hkConnection =
+    connectionsQuery.data?.find((c) => c.provider === 'healthkit') ?? null;
+  // Google Health is connected via the web app (OAuth). Mobile only displays it.
+  const ghConnection =
+    connectionsQuery.data?.find(
+      (c) => c.provider === 'google_health' && c.status === 'active',
+    ) ?? null;
 
-  const handleConnect = useCallback(async () => {
+  // ---------- Health Connect (Android) handlers ----------
+  const handleConnectHc = useCallback(async () => {
+    if (hc.status === 'not_installed') {
+      Alert.alert(
+        'Update Required',
+        'Install or update the Health Connect app from the Play Store, then try again.',
+      );
+      return;
+    }
+
     const granted = await hc.requestPermissions();
     if (!granted) {
-      Alert.alert('Permission Required', 'Health Connect permissions are needed to sync workouts.');
+      Alert.alert(
+        'Permission Required',
+        'Allow MFL to read workouts, steps, distance, and calories in Health Connect. Tap Open Settings if the permission screen did not appear.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => void hc.openSettings() },
+        ],
+      );
       return;
     }
 
     try {
-      await registerMutation.mutateAsync({
+      await registerHcMutation.mutateAsync({
         leagueId,
-        deviceName: Platform.OS === 'android' ? `Android ${Platform.Version}` : undefined,
-        androidVersion: Platform.OS === 'android' ? String(Platform.Version) : undefined,
+        deviceName: `Android ${Platform.Version}`,
+        androidVersion: String(Platform.Version),
       });
     } catch {
       Alert.alert('Error', 'Failed to register Health Connect with server.');
     }
-  }, [hc, registerMutation, leagueId]);
+  }, [hc, registerHcMutation, leagueId]);
 
-  const handleSync = useCallback(async () => {
+  const handleSyncHc = useCallback(async () => {
     try {
       const activities = await hc.readRecentWorkouts(7);
       if (activities.length === 0) {
-        Alert.alert('No Workouts', 'No new workouts found in Health Connect for the last 7 days.');
+        Alert.alert(
+          'No Workouts',
+          'No new workouts found in Health Connect for the last 7 days.',
+        );
         setLastSyncCount(0);
         return;
       }
 
-      const result = await syncMutation.mutateAsync({ leagueId, activities });
+      const result = await syncHcMutation.mutateAsync({
+        leagueId,
+        activities,
+        connectionId: hcConnection?.connectionId ?? null,
+      });
       setLastSyncCount(result.imported);
 
       if (result.imported > 0) {
         Alert.alert(
           'Sync Complete',
           `${result.imported} workout${result.imported !== 1 ? 's' : ''} imported.${
-            result.duplicates > 0 ? ` ${result.duplicates} duplicate(s) skipped.` : ''
+            result.duplicates > 0
+              ? ` ${result.duplicates} duplicate(s) skipped.`
+              : ''
           }`,
         );
       } else {
-        Alert.alert('Sync Complete', 'No new workouts to import. All are already synced.');
+        Alert.alert(
+          'Sync Complete',
+          'No new workouts to import. All are already synced.',
+        );
       }
     } catch {
       Alert.alert('Sync Failed', 'Failed to sync workouts. Please try again.');
     }
-  }, [hc, syncMutation, leagueId]);
+  }, [hc, syncHcMutation, leagueId, hcConnection]);
 
-  const handleDisconnect = useCallback(async () => {
+  const handleDisconnectHc = useCallback(async () => {
     await hc.disconnect();
     if (hcConnection) {
       try {
@@ -99,14 +147,99 @@ export function ConnectedAppsScreen() {
     }
   }, [hc, hcConnection, deleteMutation, leagueId]);
 
+  // ---------- HealthKit (iOS) handlers ----------
+  const handleConnectHk = useCallback(async () => {
+    const granted = await hk.requestPermissions();
+    if (!granted) {
+      Alert.alert(
+        'Permission Required',
+        'Open the iOS Settings app and enable Apple Health access for MFL under Privacy & Security > Health.',
+      );
+      return;
+    }
+
+    try {
+      await registerHkMutation.mutateAsync({
+        leagueId,
+        deviceName: `iPhone (iOS ${Platform.Version})`,
+        iosVersion: String(Platform.Version),
+      });
+    } catch {
+      Alert.alert('Error', 'Failed to register Apple Health with server.');
+    }
+  }, [hk, registerHkMutation, leagueId]);
+
+  const handleSyncHk = useCallback(async () => {
+    try {
+      const activities = await hk.readRecentWorkouts(7);
+      if (activities.length === 0) {
+        Alert.alert(
+          'No Workouts',
+          'No new workouts found in Apple Health for the last 7 days.',
+        );
+        setLastSyncCount(0);
+        return;
+      }
+
+      const result = await syncHkMutation.mutateAsync({
+        leagueId,
+        activities,
+        connectionId: hkConnection?.connectionId ?? null,
+      });
+      setLastSyncCount(result.imported);
+
+      if (result.imported > 0) {
+        Alert.alert(
+          'Sync Complete',
+          `${result.imported} workout${result.imported !== 1 ? 's' : ''} imported.${
+            result.duplicates > 0
+              ? ` ${result.duplicates} duplicate(s) skipped.`
+              : ''
+          }`,
+        );
+      } else {
+        Alert.alert(
+          'Sync Complete',
+          'No new workouts to import. All are already synced.',
+        );
+      }
+    } catch {
+      Alert.alert('Sync Failed', 'Failed to sync workouts. Please try again.');
+    }
+  }, [hk, syncHkMutation, leagueId, hkConnection]);
+
+  const handleDisconnectHk = useCallback(async () => {
+    await hk.disconnect();
+    if (hkConnection) {
+      try {
+        await deleteMutation.mutateAsync({
+          leagueId,
+          connectionId: hkConnection.connectionId,
+        });
+      } catch {
+        // Connection removed locally even if server fails
+      }
+    }
+  }, [hk, hkConnection, deleteMutation, leagueId]);
+
+  // ---------- Pending confirmations ----------
   const handleConfirm = useCallback(
     async (workoutId: string) => {
       setConfirmingId(workoutId);
       try {
-        const result = await confirmMutation.mutateAsync({ leagueId, workoutId });
-        Alert.alert('Confirmed', `${result.pointsAwarded} point${result.pointsAwarded !== 1 ? 's' : ''} awarded!`);
-      } catch {
-        Alert.alert('Error', 'Failed to confirm workout.');
+        const result = await confirmMutation.mutateAsync({
+          leagueId,
+          workoutId,
+        });
+        Alert.alert(
+          'Confirmed',
+          `${result.pointsAwarded} point${result.pointsAwarded !== 1 ? 's' : ''} awarded!`,
+        );
+      } catch (error) {
+        Alert.alert(
+          'Could not confirm',
+          getApiErrorMessage(error, 'Failed to confirm workout.'),
+        );
       } finally {
         setConfirmingId(null);
       }
@@ -119,8 +252,11 @@ export function ConnectedAppsScreen() {
       setRejectingId(workoutId);
       try {
         await rejectMutation.mutateAsync({ leagueId, workoutId });
-      } catch {
-        Alert.alert('Error', 'Failed to reject workout.');
+      } catch (error) {
+        Alert.alert(
+          'Could not reject',
+          getApiErrorMessage(error, 'Failed to reject workout.'),
+        );
       } finally {
         setRejectingId(null);
       }
@@ -130,8 +266,9 @@ export function ConnectedAppsScreen() {
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([connectionsQuery.refetch(), pendingQuery.refetch()]);
-    await hc.recheckStatus();
-  }, [connectionsQuery, pendingQuery, hc]);
+    if (isAndroid) await hc.recheckStatus();
+    if (isIos) await hk.recheckStatus();
+  }, [connectionsQuery, pendingQuery, hc, hk]);
 
   if (!activeLeague) {
     return (
@@ -164,6 +301,9 @@ export function ConnectedAppsScreen() {
 
   const pendingWorkouts = pendingQuery.data ?? [];
 
+  const providerStatus = isIos ? hk.status : hc.status;
+  const isConnectedToProvider = providerStatus === 'connected';
+
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
       <View className="gap-6 py-4">
@@ -171,16 +311,58 @@ export function ConnectedAppsScreen() {
           Connected Apps & Wearables
         </AppText>
 
-        <HealthConnectCard
-          status={hc.status}
-          connection={hcConnection}
-          isInitializing={hc.isInitializing}
-          isSyncing={hc.isSyncing || syncMutation.isPending}
-          lastSyncCount={lastSyncCount}
-          onConnect={handleConnect}
-          onSync={handleSync}
-          onDisconnect={handleDisconnect}
-        />
+        {isIos && (
+          <HealthKitCard
+            status={hk.status}
+            connection={hkConnection}
+            isInitializing={hk.isInitializing}
+            isSyncing={hk.isSyncing || syncHkMutation.isPending}
+            lastSyncCount={lastSyncCount}
+            onConnect={handleConnectHk}
+            onSync={handleSyncHk}
+            onDisconnect={handleDisconnectHk}
+          />
+        )}
+
+        {isAndroid && (
+          <HealthConnectCard
+            status={hc.status}
+            connection={hcConnection}
+            isInitializing={hc.isInitializing}
+            isSyncing={hc.isSyncing || syncHcMutation.isPending}
+            lastSyncCount={lastSyncCount}
+            onConnect={handleConnectHc}
+            onSync={handleSyncHc}
+            onDisconnect={handleDisconnectHc}
+          />
+        )}
+
+        {ghConnection && (
+          <View className="rounded-2xl bg-content1 p-4">
+            <View className="flex-row items-center gap-3">
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center"
+                style={{ backgroundColor: `${mflColors.brand}15` }}
+              >
+                <AppText
+                  className="text-base"
+                  style={{ color: mflColors.brand }}
+                >
+                  ✓
+                </AppText>
+              </View>
+              <View className="flex-1">
+                <AppText className="text-base font-semibold text-foreground">
+                  Google Health
+                </AppText>
+                <AppText className="text-xs text-muted mt-0.5">
+                  Connected via the MFL web app. Manage and sync it from
+                  Connected Apps on the website.
+                </AppText>
+              </View>
+            </View>
+          </View>
+        )}
 
         {pendingWorkouts.length > 0 && (
           <View className="gap-3">
@@ -192,7 +374,10 @@ export function ConnectedAppsScreen() {
                 className="rounded-full px-2 py-0.5"
                 style={{ backgroundColor: `${mflColors.amber}20` }}
               >
-                <AppText className="text-xs font-semibold" style={{ color: mflColors.amber }}>
+                <AppText
+                  className="text-xs font-semibold"
+                  style={{ color: mflColors.amber }}
+                >
                   {pendingWorkouts.length}
                 </AppText>
               </View>
@@ -211,10 +396,12 @@ export function ConnectedAppsScreen() {
           </View>
         )}
 
-        {pendingWorkouts.length === 0 && hc.status === 'connected' && (
+        {pendingWorkouts.length === 0 && isConnectedToProvider && (
           <View className="rounded-2xl bg-content1 p-4 items-center">
             <AppText className="text-sm text-muted text-center">
-              No pending workouts. Sync from Health Connect to import new activities.
+              No pending workouts. Sync from{' '}
+              {isIos ? 'Apple Health' : 'Health Connect'} to import new
+              activities.
             </AppText>
           </View>
         )}

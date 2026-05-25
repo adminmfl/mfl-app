@@ -137,6 +137,14 @@ export function StepReviewLaunch({ data, onBack, onSubmit, loading, result }: Pr
         <View className="flex-row gap-2">
           <SuccessStat value={String(result.teams_created)} label="Teams" />
           <SuccessStat value={String(result.activities_added)} label="Activities" />
+          <SuccessStat
+            value={String(
+              result.challenges_added ??
+                template?.challenges ??
+                0,
+            )}
+            label="Challenges"
+          />
           <SuccessStat value={String(data.duration)} label="Days" />
         </View>
       </View>

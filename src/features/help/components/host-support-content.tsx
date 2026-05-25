@@ -90,16 +90,28 @@ export function HostSupportContent() {
         <AppText className="text-sm text-muted mb-4">
           Once you've reviewed both the concept and settings checklist, you're ready to launch your league!
         </AppText>
-        <Pressable
-          className="rounded-lg py-3 items-center flex-row justify-center gap-2"
-          style={{ backgroundColor: mflColors.brand }}
-          onPress={() => router.push('/(app)/create-league' as any)}
-        >
-          <AppText className="text-sm font-semibold" style={{ color: '#fff' }}>
-            Create a League
-          </AppText>
-          <Feather name="arrow-right" size={16} color="#fff" />
-        </Pressable>
+        <View className="gap-2">
+          <Pressable
+            className="rounded-lg py-3 items-center flex-row justify-center gap-2"
+            style={{ backgroundColor: mflColors.brand }}
+            onPress={() => router.push('/(app)/quick-start-league' as any)}
+          >
+            <Feather name="zap" size={16} color="#fff" />
+            <AppText className="text-sm font-semibold" style={{ color: '#fff' }}>
+              Quick Start League
+            </AppText>
+          </Pressable>
+          <Pressable
+            className="rounded-lg py-3 items-center flex-row justify-center gap-2"
+            style={{ backgroundColor: mflColors.card, borderWidth: 1, borderColor: mflColors.border }}
+            onPress={() => router.push('/(app)/create-league' as any)}
+          >
+            <AppText className="text-sm font-semibold text-foreground">
+              Create a League
+            </AppText>
+            <Feather name="arrow-right" size={16} color={mflColors.text} />
+          </Pressable>
+        </View>
       </Card>
     </View>
   );

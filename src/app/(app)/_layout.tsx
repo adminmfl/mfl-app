@@ -314,6 +314,9 @@ function DrawerContent({ closeDrawer }: { closeDrawer: () => void }) {
 
       {/* ── Logout ── */}
       <View className="border-t border-default-200 p-5" style={{ paddingBottom: insets.bottom + 16 }}>
+        <AppText className="text-xs text-center mb-4" style={{ color: '#000000' }}>
+          v3.0.0
+        </AppText>
         <Pressable onPress={handleLogout} className="flex-row items-center gap-3">
           <Feather name="log-out" size={20} color={mflColors.danger} />
           <AppText className="text-sm font-medium flex-1" numberOfLines={1} style={{ color: mflColors.danger }}>
@@ -381,6 +384,7 @@ export default function AppLayout() {
           <Stack.Screen name="analytics" />
           <Stack.Screen name="governor" />
           <Stack.Screen name="submission-validation" />
+          <Stack.Screen name="team-activities" />
           <Stack.Screen name="rest-day-donations" />
           <Stack.Screen name="manual-entry" />
           <Stack.Screen name="settings" />

@@ -75,12 +75,6 @@ export function TeamRankingCard({
           Activity points normalized by team size: {formatNumber(team.normalized_points)}
         </AppText>
       ) : null}
-
-      {team.motivational_nudge ? (
-        <AppText className="mt-2 text-xs text-muted">
-          {team.motivational_nudge}
-        </AppText>
-      ) : null}
     </Card>
   );
 }

@@ -19,6 +19,8 @@
         "NSCameraUsageDescription": "MFL needs camera access for activity proof photos",
         "NSMicrophoneUsageDescription": "MFL needs microphone access for team chat",
         "NSPhotoLibraryUsageDescription": "MFL needs photo library access for uploading activity proofs",
+        "NSHealthShareUsageDescription": "MFL reads your workouts, steps, distance, and energy from Apple Health to log fitness activities for your league.",
+        "NSHealthUpdateUsageDescription": "MFL does not write to Apple Health. This entry is required by iOS when requesting Health access.",
         "UIViewControllerBasedStatusBarAppearance": false,
         "UIBackgroundModes": [
           "remote-notification"
@@ -77,6 +79,15 @@
             "android.permission.health.READ_DISTANCE",
             "android.permission.health.READ_TOTAL_CALORIES_BURNED"
           ]
+        }
+      ],
+      "./plugins/with-health-connect-delegate.js",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "MFL reads your workouts, steps, distance, and energy from Apple Health to log fitness activities for your league.",
+          "NSHealthUpdateUsageDescription": "MFL does not write to Apple Health. This entry is required by iOS when requesting Health access.",
+          "background": false
         }
       ]
     ],

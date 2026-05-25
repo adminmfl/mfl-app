@@ -46,7 +46,7 @@ export function OcrSuggestionPanel({
       <View className="flex-row items-center gap-2 rounded-xl border border-default-200 bg-default-50 px-3 py-2">
         <Feather name="eye" size={16} color={mflColors.textMuted} />
         <AppText className="text-sm text-muted">
-          Could not read proof — please enter values manually.
+          {error ?? 'Could not read proof — please enter values manually.'}
         </AppText>
       </View>
     );

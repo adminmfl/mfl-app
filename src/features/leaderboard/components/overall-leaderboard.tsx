@@ -2,6 +2,7 @@ import { View } from 'react-native';
 import { AppText } from '../../../components/app-text';
 import { ScreenState } from '../../../components/screen-state';
 import { SectionLabel } from '../../../components/section-label';
+import { mflColors } from '../../../constants/colors';
 import type { LeaderboardDataDTO } from '../types/leaderboard.dto';
 import { TeamRankingCard, IndividualRankingCard } from './ranking-cards';
 import { LeaderboardStatsBar } from './leaderboard-stats-bar';
@@ -17,6 +18,10 @@ export function OverallLeaderboard({
   const top20Count = Math.max(1, Math.ceil(data.individuals.length * 0.2));
   const topIndividuals = data.individuals.slice(0, top20Count);
 
+  const nudges = data.teams
+    .filter((t) => t.motivational_nudge)
+    .map((t) => ({ teamName: t.team_name, nudge: t.motivational_nudge! }));
+
   return (
     <View className="gap-6">
       {data.normalization?.active ? (
@@ -28,12 +33,9 @@ export function OverallLeaderboard({
       ) : null}
 
       <View className="gap-3">
-        <View>
-          <SectionLabel label="League Standings" />
-          <AppText className="mt-1 text-xs text-muted">
-            Combined activity and challenge points
-          </AppText>
-        </View>
+        <AppText className="text-xs text-muted">
+          Activity + Challenge Points
+        </AppText>
         {data.teams.length === 0 ? (
           <ScreenState
             screen="league-leaderboard"
@@ -76,6 +78,25 @@ export function OverallLeaderboard({
       </View>
 
       <LeaderboardStatsBar stats={data.stats} />
+
+      {nudges.length > 0 ? (
+        <View className="gap-2">
+          {nudges.map((item) => (
+            <View
+              key={item.teamName}
+              className="rounded-lg p-3"
+              style={{ backgroundColor: mflColors.surface }}
+            >
+              <AppText className="text-[10px] font-semibold uppercase text-muted mb-1">
+                {item.teamName}
+              </AppText>
+              <AppText className="text-xs text-muted">
+                {item.nudge}
+              </AppText>
+            </View>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }

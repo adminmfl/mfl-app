@@ -53,9 +53,10 @@ export function ChallengeDetailScreen() {
   }
 
   const handleSubmitProof = () => {
+    if (!challenge) return;
     router.push({
       pathname: '/(app)/challenge-submit' as any,
-      params: { challengeId },
+      params: { challengeId: challenge.challengeId },
     });
   };
 

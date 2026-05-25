@@ -207,36 +207,33 @@ export function LeagueOverviewScreen() {
           </Card>
         )}
 
-        {/* ── Phase Indicator ────────────────────────────────────── */}
-        {phaseQuery.isLoading ? (
-          <Card variant="secondary" className="p-4" style={{ borderStyle: 'dashed' }}>
-            <AppText className="text-sm text-muted">Loading league phase...</AppText>
-          </Card>
-        ) : phaseInfo ? (
-          <Card variant="secondary" className="p-4">
-            <AppText className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">
-              CURRENT PHASE
-            </AppText>
-            <View className="flex-row items-center gap-2 mb-1">
-              <AppText className="text-base font-semibold text-foreground">
-                {PHASE_LABELS[phaseInfo.phase as LeaguePhase] ?? phaseInfo.phase_label}
-              </AppText>
-            </View>
-            {phaseInfo.phase_description ? (
-              <AppText className="text-sm text-muted mb-2">
-                {phaseInfo.phase_description}
-              </AppText>
-            ) : null}
-            {phaseInfo.days_remaining != null && (
-              <View className="flex-row items-center gap-1">
-                <Feather name="clock" size={13} color={mflColors.amber} />
-                <AppText className="text-xs font-medium" style={{ color: mflColors.amber }}>
-                  {phaseInfo.days_remaining} day{phaseInfo.days_remaining !== 1 ? 's' : ''} remaining
-                </AppText>
-              </View>
+        {/* ── Quick Actions (visible without scrolling) ─────────── */}
+        {!ended && (
+          <View className="flex-row gap-2">
+            {league.startDate && league.endDate && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={() => router.push('/(app)/analytics' as any)}
+                className="flex-1"
+              >
+                <Feather name="clipboard" size={14} color={mflColors.brand} />
+                <Button.Label>My Summary</Button.Label>
+              </Button>
             )}
-          </Card>
-        ) : null}
+            {!isChallengesOnly && (
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={() => router.push('/(app)/(tabs)/my-activity' as any)}
+                className="flex-1"
+              >
+                <Feather name="plus-circle" size={14} color="#fff" />
+                <Button.Label>Log Activity</Button.Label>
+              </Button>
+            )}
+          </View>
+        )}
 
         {/* ── Progress Bar (active phases only) ──────────────────── */}
         {progress && !ended && ACTIVE_PHASES.includes(league.phase as LeaguePhase) && (
@@ -268,6 +265,34 @@ export function LeagueOverviewScreen() {
             </View>
           </Card>
         )}
+
+        {/* ── Phase Indicator (slim) ───────────────────────────────── */}
+        {phaseQuery.isLoading ? (
+          <Card variant="secondary" className="px-4 py-2.5" style={{ borderStyle: 'dashed' }}>
+            <AppText className="text-xs text-muted">Loading phase...</AppText>
+          </Card>
+        ) : phaseInfo ? (
+          <Card variant="secondary" className="px-4 py-2.5">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2 flex-1">
+                <AppText className="text-[10px] font-semibold text-muted uppercase tracking-wider">
+                  PHASE
+                </AppText>
+                <AppText className="text-sm font-semibold text-foreground" numberOfLines={1}>
+                  {PHASE_LABELS[phaseInfo.phase as LeaguePhase] ?? phaseInfo.phase_label}
+                </AppText>
+              </View>
+              {phaseInfo.days_remaining != null && (
+                <View className="flex-row items-center gap-1">
+                  <Feather name="clock" size={12} color={mflColors.amber} />
+                  <AppText className="text-[11px] font-medium" style={{ color: mflColors.amber }}>
+                    {phaseInfo.days_remaining}d left
+                  </AppText>
+                </View>
+              )}
+            </View>
+          </Card>
+        ) : null}
 
         {/* ── League Info Section ────────────────────────────────── */}
         <View>
@@ -339,27 +364,17 @@ export function LeagueOverviewScreen() {
           </Pressable>
         )}
 
-        {/* ── Action Cards (Report & Donate) ─────────────────────── */}
-        {!ended && (
+        {/* ── Rest Day Donation ─────────────────────────────────── */}
+        {!ended && league.restDays > 0 && (
           <View>
             <SectionLabel label="ACTIONS" />
             <Card variant="secondary" className="mt-1">
-              {league.startDate && league.endDate && (
-                <ActionRow
-                  icon="clipboard"
-                  label="My League Summary"
-                  subtitle="View your activity report"
-                  onPress={() => router.push('/(app)/analytics' as any)}
-                />
-              )}
-              {league.restDays > 0 && (
-                <ActionRow
-                  icon="gift"
-                  label="Donate Rest Days"
-                  subtitle="Gift rest days to a teammate"
-                  onPress={() => router.push('/(app)/rest-day-donations' as any)}
-                />
-              )}
+              <ActionRow
+                icon="gift"
+                label="Donate Rest Days"
+                subtitle="Gift rest days to a teammate"
+                onPress={() => router.push('/(app)/rest-day-donations' as any)}
+              />
             </Card>
           </View>
         )}

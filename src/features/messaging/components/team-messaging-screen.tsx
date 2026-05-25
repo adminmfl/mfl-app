@@ -205,16 +205,18 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
           isGrouped={isGrouped}
           onReply={setReplyTo}
           onReact={(messageId, emoji) => {
-            reactionMutation.mutate(
-              { leagueId, messageId, emoji },
-              { onSuccess: () => messagesQuery.refetch() },
-            );
+            reactionMutation.mutate({
+              leagueId,
+              messageId,
+              emoji,
+              userId: user?.id,
+            });
           }}
           onOpenDeepLink={openDeepLink}
         />
       );
     },
-    [leagueId, messages, messagesQuery, openDeepLink, reactionMutation, user?.id],
+    [leagueId, messages, openDeepLink, reactionMutation, user?.id],
   );
 
   const keyExtractor = useCallback((item: ChatMessage) => item.messageId, []);
@@ -341,7 +343,8 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
                 className="flex-1 items-center justify-center py-12"
                 style={{ transform: [{ scaleY: -1 }] }}
               >
-                <AppText className="text-sm text-muted text-center">
+              
+              <AppText className="text-sm text-muted text-center">
                   {filter === 'all'
                     ? 'No messages yet.'
                     : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}

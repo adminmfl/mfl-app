@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { View, Pressable } from 'react-native';
+import { Image, View, Pressable } from 'react-native';
 import { Card, Chip } from 'heroui-native';
 
 import { AppText } from '../../../components/app-text';
@@ -51,14 +51,22 @@ export function LeagueCard({ league, onPress }: LeagueCardProps) {
 
           {/* Logo initials */}
           <View className="absolute top-1.5 left-1.5">
-            <View
-              className="w-6 h-6 rounded-full items-center justify-center"
-              style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}
-            >
-              <AppText className="text-[10px] font-bold" style={{ color: '#fff' }}>
-                {league.name?.slice(0, 2).toUpperCase() || 'LG'}
-              </AppText>
-            </View>
+            {league.logoUrl ? (
+              <Image
+                source={{ uri: league.logoUrl }}
+                className="w-6 h-6 rounded-full"
+                style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}
+              />
+            ) : (
+              <View
+                className="w-6 h-6 rounded-full items-center justify-center"
+                style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}
+              >
+                <AppText className="text-[10px] font-bold" style={{ color: '#fff' }}>
+                  {league.name?.slice(0, 2).toUpperCase() || 'LG'}
+                </AppText>
+              </View>
+            )}
           </View>
 
           {/* League name */}
