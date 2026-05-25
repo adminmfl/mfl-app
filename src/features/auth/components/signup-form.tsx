@@ -4,7 +4,11 @@ import {
   TextInput,
   Pressable,
   Alert,
+  Platform,
 } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import Feather from '@expo/vector-icons/Feather';
 import { Button, Spinner } from 'heroui-native';
 import { mflColors } from '../../../constants/colors';
@@ -43,6 +47,59 @@ const inputStyle = {
   color: '#0F172A',
 } as const;
 
+const DOB_MIN_DATE = new Date(1920, 0, 1);
+const DOB_MAX_DATE = new Date();
+
+function formatDateYmd(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseDateYmd(value: string): Date {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const parsed = new Date(`${value}T12:00:00`);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  const fallback = new Date();
+  fallback.setFullYear(fallback.getFullYear() - 25);
+  return fallback;
+}
+
+function formatDisplayDob(value: string): string {
+  if (!value) return 'Select date of birth';
+  try {
+    const dt = parseDateYmd(value);
+    return dt.toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return value;
+  }
+}
+
+function FieldLabel({
+  children,
+  required = false,
+}: {
+  children: string;
+  required?: boolean;
+}) {
+  return (
+    <View className="flex-row items-center gap-0.5">
+      <AppText className="text-sm font-medium text-muted">{children}</AppText>
+      {required ? (
+        <AppText className="text-sm font-medium" style={{ color: mflColors.danger }}>
+          *
+        </AppText>
+      ) : null}
+    </View>
+  );
+}
+
 export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: SignupFormProps) {
   // Form fields
   const [email, setEmail] = useState('');
@@ -58,8 +115,22 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
   const [step, setStep] = useState<SignupStep>('details');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showDobPicker, setShowDobPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDobPicker(false);
+    }
+    if (event.type === 'dismissed') {
+      setShowDobPicker(false);
+      return;
+    }
+    if (selectedDate) {
+      setDateOfBirth(formatDateYmd(selectedDate));
+    }
+  };
 
   const isFormDisabled = isLoading || isGoogleLoading;
 
@@ -67,7 +138,10 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
   const validateForm = (): string | null => {
     if (!email.trim()) return 'Please enter your email.';
     if (!username.trim()) return 'Please enter a username.';
-    if (!dateOfBirth) return 'Please enter your date of birth.';
+    if (!dateOfBirth) return 'Please select your date of birth.';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
+      return 'Please select a valid date of birth.';
+    }
     if (!gender) return 'Please select your gender.';
     if (!password) return 'Please enter a password.';
     if (password.length < MIN_PASSWORD_LENGTH)
@@ -221,7 +295,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
         {/* OTP Field */}
         <View className="gap-1">
-          <AppText className="text-sm font-medium text-muted">Verification Code</AppText>
+          <FieldLabel required>Verification Code</FieldLabel>
           <TextInput
             style={[inputStyle, { textAlign: 'center', letterSpacing: 8, fontFamily: 'monospace' }]}
             value={otp}
@@ -280,7 +354,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
       {/* Email */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Email</AppText>
+        <FieldLabel required>Email</FieldLabel>
         <TextInput
           style={inputStyle}
           value={email}
@@ -297,7 +371,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
       {/* Username */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Username</AppText>
+        <FieldLabel required>Username</FieldLabel>
         <TextInput
           style={inputStyle}
           value={username}
@@ -331,21 +405,51 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
       {/* Date of Birth */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Date of Birth</AppText>
-        <TextInput
-          style={inputStyle}
-          value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={mflColors.textMuted}
-          keyboardType="numbers-and-punctuation"
-          editable={!isFormDisabled}
-        />
+        <FieldLabel required>Date of Birth</FieldLabel>
+        <Pressable
+          onPress={() => setShowDobPicker(true)}
+          disabled={isFormDisabled}
+          style={[
+            inputStyle,
+            { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+          ]}
+        >
+          <AppText
+            className="text-sm"
+            style={{ color: dateOfBirth ? mflColors.text : mflColors.textMuted }}
+          >
+            {formatDisplayDob(dateOfBirth)}
+          </AppText>
+          <Feather name="calendar" size={18} color={mflColors.textMuted} />
+        </Pressable>
+        {showDobPicker ? (
+          <View className="rounded-xl overflow-hidden border border-default-200">
+            <DateTimePicker
+              value={parseDateYmd(dateOfBirth)}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              minimumDate={DOB_MIN_DATE}
+              maximumDate={DOB_MAX_DATE}
+              onChange={handleDobChange}
+            />
+            {Platform.OS === 'ios' ? (
+              <Pressable
+                onPress={() => setShowDobPicker(false)}
+                className="py-3 items-center"
+                style={{ borderTopWidth: 1, borderTopColor: '#E2E8F0' }}
+              >
+                <AppText className="text-sm font-semibold" style={{ color: mflColors.brand }}>
+                  Done
+                </AppText>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
       </View>
 
       {/* Gender */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Gender</AppText>
+        <FieldLabel required>Gender</FieldLabel>
         <Pressable
           onPress={showGenderPicker}
           disabled={isFormDisabled}
@@ -364,7 +468,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
       {/* Password */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Password</AppText>
+        <FieldLabel required>Password</FieldLabel>
         <View>
           <TextInput
             style={[inputStyle, { paddingRight: 48 }]}
@@ -395,7 +499,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
 
       {/* Confirm Password */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Confirm Password</AppText>
+        <FieldLabel required>Confirm Password</FieldLabel>
         <View>
           <TextInput
             style={[inputStyle, { paddingRight: 48 }]}
