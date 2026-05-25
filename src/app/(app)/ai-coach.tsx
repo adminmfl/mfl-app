@@ -222,24 +222,27 @@ export default function AiCoachScreen() {
       </ScrollView>
 
       {/* Chat history */}
-      <FlatList
-        data={messages}
-        renderItem={renderMessage}
-        keyExtractor={keyExtractor}
-        inverted
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          <View className="items-center justify-center" style={{ paddingVertical: 48, transform: [{ scaleY: -1 }] }}>
+      <View className="flex-1">
+        {(messages?.length ?? 0) === 0 ? (
+          <View className="flex-1 items-center justify-center px-4 py-12">
             <Feather name="cpu" size={32} color={mflColors.textMuted} />
             <AppText className="text-sm font-medium text-muted mt-3">Your Private AI Coach</AppText>
             <AppText className="text-xs text-muted mt-1 text-center px-8">
               Ask about your performance, strategy, or league standings. Everything here is private.
             </AppText>
           </View>
-        }
-      />
+        ) : (
+          <FlatList
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={keyExtractor}
+            inverted
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
+      </View>
 
       {/* Sending indicator */}
       {sendMutation.isPending && (

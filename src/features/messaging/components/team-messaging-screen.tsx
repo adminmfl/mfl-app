@@ -7,6 +7,7 @@ import {
   Platform,
   Pressable,
   RefreshControl,
+  ScrollView,
   View,
   type ListRenderItemInfo,
 } from 'react-native';
@@ -321,6 +322,26 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             actionLabel="Retry"
             onAction={() => messagesQuery.refetch()}
           />
+        ) : messages.length === 0 ? (
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{
+              flexGrow: 1,
+              justifyContent: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 48,
+            }}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+            }
+            keyboardShouldPersistTaps="handled"
+          >
+            <AppText className="text-sm text-muted text-center">
+              {filter === 'all'
+                ? 'No messages yet.'
+                : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}
+            </AppText>
+          </ScrollView>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -334,23 +355,9 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             contentContainerStyle={{
               paddingHorizontal: 16,
               paddingVertical: 12,
-              flexGrow: messages.length === 0 ? 1 : undefined,
             }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            ListEmptyComponent={
-              <View
-                className="flex-1 items-center justify-center py-12"
-                style={{ transform: [{ scaleY: -1 }] }}
-              >
-              
-              <AppText className="text-sm text-muted text-center">
-                  {filter === 'all'
-                    ? 'No messages yet.'
-                    : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}
-                </AppText>
-              </View>
-            }
           />
         )}
       </View>
