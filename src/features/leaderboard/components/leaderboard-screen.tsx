@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -53,6 +54,12 @@ export function LeaderboardScreen() {
   const handleRefresh = useCallback(async () => {
     await leaderboardQuery.refetch();
   }, [leaderboardQuery]);
+
+  useFocusEffect(
+    useCallback(() => {
+      leaderboardQuery.refetch();
+    }, [leaderboardQuery]),
+  );
 
   const data = leaderboardQuery.data;
   const league = data?.league;
