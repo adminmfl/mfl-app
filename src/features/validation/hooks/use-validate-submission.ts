@@ -21,6 +21,7 @@ export function useValidateSubmission() {
       queryClient.invalidateQueries({ queryKey: queryKeys.leagues.submissions(leagueId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.leagues.teamSubmissions(leagueId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.leagues.leaderboard(leagueId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.leagues.analytics(leagueId) });
     },
   });
 }
