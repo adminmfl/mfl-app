@@ -1,10 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   View,
   TextInput,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  type ListRenderItemInfo,
 } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +27,58 @@ import { SuggestedQuestions } from '../../../features/ai-coach/components/sugges
 import { MilestoneCard } from '../../../features/ai-coach/components/milestone-card';
 import { RecoveryCard } from '../../../features/ai-coach/components/recovery-card';
 import { WeeklyInsightCard } from '../../../features/ai-coach/components/weekly-insight-card';
-import { CoachChatList } from '../../../features/ai-coach/components/coach-chat-list';
+import type { AiCoachMessage } from '../../../features/ai-coach/types/ai-coach.model';
+import { renderCoachMarkdown } from '../../../features/ai-coach/utils/render-coach-markdown';
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+function formatTimestamp(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// ─── Message Bubble ─────────────────────────────────────────────────────────
+
+function MessageBubble({ message, isOwn }: { message: AiCoachMessage; isOwn: boolean }) {
+  if (isOwn) {
+    return (
+      <View className="items-end mb-3">
+        <View className="rounded-2xl px-4 py-3 max-w-[80%]" style={{ backgroundColor: mflColors.brand }}>
+          <AppText className="text-sm" style={{ color: '#fff' }}>{message.content}</AppText>
+        </View>
+        <AppText className="text-[10px] text-muted mt-1">{formatTimestamp(message.createdAt)}</AppText>
+      </View>
+    );
+  }
+
+  return (
+    <View className="items-start mb-3">
+      <View className="flex-row items-start gap-2 max-w-[85%]">
+        <View className="w-7 h-7 rounded-full items-center justify-center mt-1" style={{ backgroundColor: mflColors.brand }}>
+          <AppText className="text-xs font-bold" style={{ color: '#fff' }}>AI</AppText>
+        </View>
+        <View className="bg-card rounded-2xl px-4 py-3 flex-1 border border-default-200" style={{ borderLeftWidth: 3, borderLeftColor: mflColors.brand }}>
+          <AppText className="text-sm text-foreground">
+            {renderCoachMarkdown(message.content, {
+              base: { fontSize: 14, color: mflColors.text },
+              bold: { fontWeight: '700' },
+              italic: { fontStyle: 'italic' },
+              code: { fontFamily: 'monospace', fontSize: 13 },
+            })}
+          </AppText>
+        </View>
+      </View>
+      <AppText className="text-[10px] text-muted mt-1 ml-9">{formatTimestamp(message.createdAt)}</AppText>
+    </View>
+  );
+}
 
 // ─── Insights Panel (horizontal scroll on mobile) ───────────────────────────
 
@@ -111,6 +164,9 @@ export default function CoachTab() {
   const sendMutation = useSendCoachMessage();
 
   const [input, setInput] = useState('');
+  const flatListRef = useRef<FlatList>(null);
+
+  // useCoachHistory returns newest-first for inverted FlatList.
   const messages = history ?? [];
 
   const handleSend = useCallback(
@@ -121,6 +177,13 @@ export default function CoachTab() {
       sendMutation.mutate({ leagueId, message: msg });
     },
     [input, leagueId, sendMutation],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<AiCoachMessage>) => (
+      <MessageBubble message={item} isOwn={item.role === 'user'} />
+    ),
+    [],
   );
 
   if (!activeLeague) {
@@ -158,9 +221,28 @@ export default function CoachTab() {
         isSending={sendMutation.isPending}
       />
 
-      {/* Chat — chronological list (oldest → newest), scroll pinned to bottom */}
+      {/* Chat */}
       <View className="flex-1">
-        <CoachChatList messages={messages} />
+        {messages.length === 0 ? (
+          <View className="flex-1 items-center justify-center px-5 py-12">
+            <Feather name="cpu" size={32} color={mflColors.textMuted} />
+            <AppText className="text-sm font-medium text-muted mt-3">Your Private AI Coach</AppText>
+            <AppText className="text-xs text-muted mt-1 text-center px-8">
+              Ask about your performance, strategy, or league standings. Everything here is private.
+            </AppText>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.messageId}
+            renderItem={renderItem}
+            inverted
+            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 8 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
       </View>
 
       {/* Sending indicator */}

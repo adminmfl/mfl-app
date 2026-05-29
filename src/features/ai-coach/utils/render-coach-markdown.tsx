@@ -1,88 +1,61 @@
 import type { ReactNode } from 'react';
 import { Text, type TextStyle } from 'react-native';
 
-type MarkdownStyle = {
-  base: TextStyle;
-  bold: TextStyle;
-  italic: TextStyle;
-  code: TextStyle;
-};
-
-function parseInlineMarkdown(
-  text: string,
-  style: MarkdownStyle,
-): ReactNode[] {
-  const nodes: React.ReactNode[] = [];
-  let index = 0;
-  let key = 0;
-
-  while (index < text.length) {
-    if (text.startsWith('**', index)) {
-      const end = text.indexOf('**', index + 2);
-      if (end !== -1) {
-        const inner = text.slice(index + 2, end);
-        nodes.push(
-          <Text key={key++} style={style.bold}>
-            {parseInlineMarkdown(inner, style)}
-          </Text>,
-        );
-        index = end + 2;
-        continue;
-      }
-    }
-
-    if (text[index] === '*' && !text.startsWith('**', index)) {
-      const end = text.indexOf('*', index + 1);
-      if (end !== -1) {
-        const inner = text.slice(index + 1, end);
-        nodes.push(
-          <Text key={key++} style={style.italic}>
-            {parseInlineMarkdown(inner, style)}
-          </Text>,
-        );
-        index = end + 1;
-        continue;
-      }
-    }
-
-    if (text[index] === '`') {
-      const end = text.indexOf('`', index + 1);
-      if (end !== -1) {
-        nodes.push(
-          <Text key={key++} style={style.code}>
-            {text.slice(index + 1, end)}
-          </Text>,
-        );
-        index = end + 1;
-        continue;
-      }
-    }
-
-    let next = text.length;
-    const nextBold = text.indexOf('**', index);
-    const nextItalic = text.indexOf('*', index);
-    const nextCode = text.indexOf('`', index);
-    if (nextBold !== -1 && nextBold < next) next = nextBold;
-    if (nextItalic !== -1 && nextItalic < next) next = nextItalic;
-    if (nextCode !== -1 && nextCode < next) next = nextCode;
-
-    nodes.push(text.slice(index, next));
-    index = next;
-  }
-
-  return nodes;
-}
-
+/** Minimal **bold** / *italic* / `code` for assistant replies (no new dependency). */
 export function renderCoachMarkdown(
   text: string,
-  style: MarkdownStyle,
+  style: { base: TextStyle; bold: TextStyle; italic: TextStyle; code: TextStyle },
 ): ReactNode {
-  const lines = text.split('\n');
-
-  return lines.map((line, lineIndex) => (
-    <Text key={`line-${lineIndex}`}>
-      {parseInlineMarkdown(line, style)}
+  return text.split('\n').map((line, lineIndex, lines) => (
+    <Text key={`l-${lineIndex}`}>
+      {parseInline(line, style, `l-${lineIndex}`)}
       {lineIndex < lines.length - 1 ? '\n' : null}
     </Text>
   ));
+}
+
+function parseInline(
+  text: string,
+  style: { base: TextStyle; bold: TextStyle; italic: TextStyle; code: TextStyle },
+  keyPrefix: string,
+): ReactNode[] {
+  const nodes: ReactNode[] = [];
+  let i = 0;
+  let k = 0;
+
+  while (i < text.length) {
+    if (text.startsWith('**', i)) {
+      const end = text.indexOf('**', i + 2);
+      if (end !== -1) {
+        nodes.push(
+          <Text key={`${keyPrefix}-b-${k++}`} style={style.bold}>
+            {parseInline(text.slice(i + 2, end), style, `${keyPrefix}-b-${k}`)}
+          </Text>,
+        );
+        i = end + 2;
+        continue;
+      }
+    }
+    if (text[i] === '`') {
+      const end = text.indexOf('`', i + 1);
+      if (end !== -1) {
+        nodes.push(
+          <Text key={`${keyPrefix}-c-${k++}`} style={style.code}>
+            {text.slice(i + 1, end)}
+          </Text>,
+        );
+        i = end + 1;
+        continue;
+      }
+    }
+    let next = text.length;
+    for (const marker of ['**', '`']) {
+      const at = text.indexOf(marker, i);
+      if (at !== -1 && at < next) next = at;
+    }
+    nodes.push(text.slice(i, next));
+    i = next;
+  }
+
+  return nodes;
 }

@@ -2,11 +2,13 @@ import { useCallback, useRef, useState } from 'react';
 import {
   View,
   TextInput,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   Alert,
+  type ListRenderItemInfo,
 } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,8 +30,70 @@ import { SuggestedQuestions } from '../../features/ai-coach/components/suggested
 import { MilestoneCard } from '../../features/ai-coach/components/milestone-card';
 import { RecoveryCard } from '../../features/ai-coach/components/recovery-card';
 import { WeeklyInsightCard } from '../../features/ai-coach/components/weekly-insight-card';
-import { CoachChatList } from '../../features/ai-coach/components/coach-chat-list';
+import type { AiCoachMessage } from '../../features/ai-coach/types/ai-coach.model';
+import { renderCoachMarkdown } from '../../features/ai-coach/utils/render-coach-markdown';
 import { mflColors } from '../../constants/colors';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function formatTimestamp(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHrs = Math.floor(diffMin / 60);
+  if (diffHrs < 24) return `${diffHrs}h ago`;
+  const diffDays = Math.floor(diffHrs / 24);
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+// ─── Message Bubble ──────────────────────────────────────────────────────────
+
+function CoachBubble({ message }: { message: AiCoachMessage }) {
+  const isAssistant = message.role === 'assistant';
+
+  return (
+    <View className={`flex-row mb-3 max-w-[85%] ${isAssistant ? 'self-start' : 'self-end'}`}>
+      {isAssistant && (
+        <View
+          className="w-8 h-8 rounded-full items-center justify-center mr-2 self-end"
+          style={{ backgroundColor: '#00C48C' }}
+        >
+          <AppText className="text-white font-bold text-[11px]">AI</AppText>
+        </View>
+      )}
+      <View
+        className={`rounded-2xl px-4 py-3 max-w-full ${
+          isAssistant ? 'bg-card rounded-bl-sm border-l-[3px]' : 'rounded-br-sm'
+        }`}
+        style={isAssistant ? { borderLeftColor: '#00C48C' } : { backgroundColor: mflColors.accent }}
+      >
+        <AppText
+          className={`text-sm ${isAssistant ? 'text-foreground' : ''}`}
+          style={isAssistant ? undefined : { color: '#FFFFFF' }}
+        >
+          {isAssistant
+            ? renderCoachMarkdown(message.content, {
+                base: { fontSize: 14, color: mflColors.text },
+                bold: { fontWeight: '700' },
+                italic: { fontStyle: 'italic' },
+                code: { fontFamily: 'monospace', fontSize: 13 },
+              })
+            : message.content}
+        </AppText>
+        <AppText
+          className={`text-xs mt-1 ${isAssistant ? 'text-muted' : 'text-right'}`}
+          style={isAssistant ? undefined : { color: 'rgba(255,255,255,0.7)' }}
+        >
+          {formatTimestamp(message.createdAt)}
+        </AppText>
+      </View>
+    </View>
+  );
+}
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -73,6 +137,13 @@ export default function AiCoachScreen() {
         Alert.alert('Error', error?.response?.data?.error || error?.message || 'Failed to get motivation.'),
     });
   }, [leagueId, motivateMutation]);
+
+  const renderMessage = useCallback(
+    ({ item }: ListRenderItemInfo<AiCoachMessage>) => <CoachBubble message={item} />,
+    [],
+  );
+
+  const keyExtractor = useCallback((item: AiCoachMessage) => item.messageId, []);
 
   if (!activeLeague) {
     return (
@@ -160,7 +231,25 @@ export default function AiCoachScreen() {
 
       {/* Chat history */}
       <View className="flex-1">
-        <CoachChatList messages={messages ?? []} contentPaddingHorizontal={16} />
+        {(messages?.length ?? 0) === 0 ? (
+          <View className="flex-1 items-center justify-center px-4 py-12">
+            <Feather name="cpu" size={32} color={mflColors.textMuted} />
+            <AppText className="text-sm font-medium text-muted mt-3">Your Private AI Coach</AppText>
+            <AppText className="text-xs text-muted mt-1 text-center px-8">
+              Ask about your performance, strategy, or league standings. Everything here is private.
+            </AppText>
+          </View>
+        ) : (
+          <FlatList
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={keyExtractor}
+            inverted
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          />
+        )}
       </View>
 
       {/* Sending indicator */}
