@@ -28,6 +28,7 @@ import { MilestoneCard } from '../../../features/ai-coach/components/milestone-c
 import { RecoveryCard } from '../../../features/ai-coach/components/recovery-card';
 import { WeeklyInsightCard } from '../../../features/ai-coach/components/weekly-insight-card';
 import type { AiCoachMessage } from '../../../features/ai-coach/types/ai-coach.model';
+import { renderCoachMarkdown } from '../../../features/ai-coach/utils/render-coach-markdown';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -64,7 +65,14 @@ function MessageBubble({ message, isOwn }: { message: AiCoachMessage; isOwn: boo
           <AppText className="text-xs font-bold" style={{ color: '#fff' }}>AI</AppText>
         </View>
         <View className="bg-card rounded-2xl px-4 py-3 flex-1 border border-default-200" style={{ borderLeftWidth: 3, borderLeftColor: mflColors.brand }}>
-          <AppText className="text-sm text-foreground">{message.content}</AppText>
+          <AppText className="text-sm text-foreground">
+            {renderCoachMarkdown(message.content, {
+              base: { fontSize: 14, color: mflColors.text },
+              bold: { fontWeight: '700' },
+              italic: { fontStyle: 'italic' },
+              code: { fontFamily: 'monospace', fontSize: 13 },
+            })}
+          </AppText>
         </View>
       </View>
       <AppText className="text-[10px] text-muted mt-1 ml-9">{formatTimestamp(message.createdAt)}</AppText>
