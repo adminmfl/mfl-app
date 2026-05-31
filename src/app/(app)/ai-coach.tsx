@@ -31,6 +31,7 @@ import { MilestoneCard } from '../../features/ai-coach/components/milestone-card
 import { RecoveryCard } from '../../features/ai-coach/components/recovery-card';
 import { WeeklyInsightCard } from '../../features/ai-coach/components/weekly-insight-card';
 import type { AiCoachMessage } from '../../features/ai-coach/types/ai-coach.model';
+import { renderCoachMarkdown } from '../../features/ai-coach/utils/render-coach-markdown';
 import { mflColors } from '../../constants/colors';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -74,7 +75,14 @@ function CoachBubble({ message }: { message: AiCoachMessage }) {
           className={`text-sm ${isAssistant ? 'text-foreground' : ''}`}
           style={isAssistant ? undefined : { color: '#FFFFFF' }}
         >
-          {message.content}
+          {isAssistant
+            ? renderCoachMarkdown(message.content, {
+                base: { fontSize: 14, color: mflColors.text },
+                bold: { fontWeight: '700' },
+                italic: { fontStyle: 'italic' },
+                code: { fontFamily: 'monospace', fontSize: 13 },
+              })
+            : message.content}
         </AppText>
         <AppText
           className={`text-xs mt-1 ${isAssistant ? 'text-muted' : 'text-right'}`}
