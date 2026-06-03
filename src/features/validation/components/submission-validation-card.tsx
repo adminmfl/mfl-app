@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Image, Pressable, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { Avatar, Button, Card, Spinner } from 'heroui-native';
 
 import { AppText } from '../../../components/app-text';
@@ -129,13 +129,7 @@ export function SubmissionValidationCard({
       ) : null}
 
       {submission.proofUrl ? (
-        <Pressable onPress={() => onView(submission)} className="rounded-xl overflow-hidden">
-          <Image
-            source={{ uri: submission.proofUrl }}
-            style={{ width: '100%', height: 150, borderRadius: 12 }}
-            resizeMode="cover"
-          />
-        </Pressable>
+        <AppText className="text-xs text-muted">Proof attached — tap View for full details</AppText>
       ) : null}
 
       {submission.plausibilityScore != null && submission.plausibilityScore < 50 ? (
@@ -149,15 +143,6 @@ export function SubmissionValidationCard({
             {submission.reviewTier && submission.reviewTier !== 'none'
               ? ` · Flagged for ${submission.reviewTier}`
               : ''}
-          </AppText>
-        </View>
-      ) : null}
-
-      {submission.notes ? (
-        <View className="rounded-xl p-3 bg-default-100">
-          <AppText className="text-[10px] font-semibold text-muted uppercase">Notes</AppText>
-          <AppText className="text-xs text-foreground mt-1" numberOfLines={2}>
-            {submission.notes}
           </AppText>
         </View>
       ) : null}

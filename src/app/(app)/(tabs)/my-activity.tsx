@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { View, Pressable, Image } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { Button, Card, Chip, Separator, Tabs } from 'heroui-native';
 
 import { AppText } from '../../../components/app-text';
@@ -190,9 +190,10 @@ function SubmissionCard({
           </Chip>
         </View>
 
-        {/* Date */}
+        {/* Date + duration summary */}
         <AppText className="text-xs text-muted mt-1">
           {formatDate(entry.date)}
+          {entry.duration != null ? ` · ${entry.duration} min` : ''}
         </AppText>
 
         {/* Reupload indicator */}
@@ -246,23 +247,10 @@ function SubmissionCard({
           )}
         </View>
 
-        {/* Proof thumbnail */}
         {entry.proofUrl && (
-          <View className="mt-2 rounded-lg overflow-hidden" style={{ height: 120 }}>
-            <Image
-              source={{ uri: entry.proofUrl }}
-              style={{ width: '100%', height: '100%' }}
-              resizeMode="cover"
-            />
-          </View>
-        )}
-
-        {/* Notes */}
-        {entry.notes && !isExemption && (
-          <View className="mt-2 p-2 rounded-lg" style={{ backgroundColor: mflColors.surface }}>
-            <AppText className="text-xs text-muted" numberOfLines={2}>
-              {entry.notes}
-            </AppText>
+          <View className="flex-row items-center gap-1 mt-2">
+            <Feather name="image" size={12} color={mflColors.textMuted} />
+            <AppText className="text-[10px] text-muted">Proof attached — tap for details</AppText>
           </View>
         )}
 
