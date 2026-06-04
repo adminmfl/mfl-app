@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { StatusBar } from 'expo-status-bar';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { View, Pressable } from 'react-native';
 import { Button, Card, Chip } from 'heroui-native';
 
@@ -92,6 +92,20 @@ export default function DashboardScreen() {
     () => buildStreakDays(summary?.currentStreak ?? 0),
     [summary?.currentStreak],
   );
+
+  // Auto-navigate when user has exactly one active league — skip manual selection
+  const hasAutoNavigated = useRef(false);
+  useEffect(() => {
+    if (
+      hasAutoNavigated.current ||
+      leaguesQuery.isLoading ||
+      visibleLeagues.length !== 1
+    ) return;
+    hasAutoNavigated.current = true;
+    const only = visibleLeagues[0]!;
+    setActiveLeague(only);
+    router.replace('/(app)/league-overview' as any);
+  }, [leaguesQuery.isLoading, visibleLeagues, setActiveLeague, router]);
 
   // ── Loading state ──────────────────────────────────────────────────────
   if (dashboardQuery.isLoading) {
@@ -203,7 +217,7 @@ export default function DashboardScreen() {
                     league={league}
                     onPress={() => {
                       setActiveLeague(league);
-                      router.push(`/(app)/league-detail` as any);
+                      router.push(`/(app)/league-overview` as any);
                     }}
                   />
                 </View>
