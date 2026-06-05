@@ -1,14 +1,28 @@
 import { View } from 'react-native';
-import { AppText } from '../../../components/app-text';
-import { ScreenScrollView } from '../../../components/screen-scroll-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function TeamChatScreen() {
-  return (
-    <ScreenScrollView>
-      <View className="flex-1 items-center justify-center py-20">
-        <AppText className="text-lg font-semibold text-foreground">Team Chat</AppText>
-        <AppText className="text-sm text-muted mt-2">Coming soon</AppText>
+import { ScreenState } from '../../../components/screen-state';
+import { useLeagueContext } from '../../../contexts/league-context';
+import { TeamMessagingScreen } from '../../../features/messaging';
+
+export default function TeamChatRoute() {
+  const insets = useSafeAreaInsets();
+  const { activeLeague } = useLeagueContext();
+
+  if (!activeLeague) {
+    return (
+      <View
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      >
+        <ScreenState
+          screen="team-chat"
+          state="empty"
+          message="Select a league to view team chat."
+        />
       </View>
-    </ScreenScrollView>
-  );
+    );
+  }
+
+  return <TeamMessagingScreen league={activeLeague} />;
 }

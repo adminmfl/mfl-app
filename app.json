@@ -19,6 +19,8 @@
         "NSCameraUsageDescription": "MFL needs camera access for activity proof photos",
         "NSMicrophoneUsageDescription": "MFL needs microphone access for team chat",
         "NSPhotoLibraryUsageDescription": "MFL needs photo library access for uploading activity proofs",
+        "NSHealthShareUsageDescription": "MFL reads your workouts, steps, distance, and energy from Apple Health to log fitness activities for your league.",
+        "NSHealthUpdateUsageDescription": "MFL does not write to Apple Health. This entry is required by iOS when requesting Health access.",
         "UIViewControllerBasedStatusBarAppearance": false,
         "UIBackgroundModes": [
           "remote-notification"
@@ -30,11 +32,16 @@
         "foregroundImage": "./assets/android-adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "usesCleartextTraffic": true,
       "edgeToEdgeEnabled": true,
       "package": "com.mfl.app",
       "permissions": [
         "CAMERA",
-        "POST_NOTIFICATIONS"
+        "POST_NOTIFICATIONS",
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_TOTAL_CALORIES_BURNED"
       ]
     },
     "web": {
@@ -59,9 +66,31 @@
             "image": "./assets/splash-icon-dark.png",
             "backgroundColor": "#151718"
           },
-          "imageWidth": 120
+          "imageWidth": 200
         }
-      ]
+      ],
+      "expo-web-browser",
+      [
+        "react-native-health-connect",
+        {
+          "permissions": [
+            "android.permission.health.READ_EXERCISE",
+            "android.permission.health.READ_STEPS",
+            "android.permission.health.READ_DISTANCE",
+            "android.permission.health.READ_TOTAL_CALORIES_BURNED"
+          ]
+        }
+      ],
+      "./plugins/with-health-connect-delegate.js",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "MFL reads your workouts, steps, distance, and energy from Apple Health to log fitness activities for your league.",
+          "NSHealthUpdateUsageDescription": "MFL does not write to Apple Health. This entry is required by iOS when requesting Health access.",
+          "background": false
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "router": {

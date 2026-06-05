@@ -1,30 +1,27 @@
 import Feather from '@expo/vector-icons/Feather';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
 import { Alert, Pressable, View } from 'react-native';
+import { Avatar, Card, Chip, Separator } from 'heroui-native';
+import { withUniwind } from 'uniwind';
 import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { ThemeSelectorBar } from '../../components/theme-selector';
-import { useAuth } from '../../contexts/AuthContext';
+import { StatCard } from '../../components/stat-card';
+import { ScreenState } from '../../components/screen-state';
+import { SectionLabel } from '../../components/section-label';
+import { useAuth } from '../../core/auth';
+import { useUserProfile } from '../../features/profile/hooks/use-user-profile';
+import { useDashboardSummary } from '../../features/dashboard/hooks/use-dashboard-summary';
+import { useLeagueContext } from '../../contexts/league-context';
+import { mflColors } from '../../constants/colors';
 
-const MOCK_STATS = {
-  league: 'Legends Fitness League',
-  team: 'Alpha',
-  role: 'Captain',
-  joinedDate: 'Mar 15, 2026',
-  streak: 12,
-  totalPoints: 184,
-  activitiesLogged: 38,
-  rank: 3,
-};
+const StyledFeather = withUniwind(Feather);
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <View className="bg-card rounded-xl p-4 flex-1 min-w-[45%]">
-      <AppText className="text-2xl font-bold text-foreground">{value}</AppText>
-      <AppText className="text-xs text-muted mt-1">{label}</AppText>
-    </View>
-  );
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
+  return name.substring(0, 2).toUpperCase();
 }
 
 function MenuItem({
@@ -39,17 +36,26 @@ function MenuItem({
   danger?: boolean;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="flex-row items-center gap-3 px-4 py-3.5 bg-card rounded-xl"
-    >
-      <Feather name={icon} size={20} color={danger ? '#ef4444' : '#888'} />
+    <Pressable onPress={onPress} className="flex-row items-center gap-3 px-5 py-3">
+      <View
+        className={`w-8 h-8 rounded-lg items-center justify-center ${
+          danger ? 'bg-danger/10' : 'bg-default-100'
+        }`}
+      >
+        <Feather
+          name={icon}
+          size={18}
+          color={danger ? mflColors.danger : mflColors.textMuted}
+        />
+      </View>
       <AppText
-        className={`text-sm font-medium flex-1 ${danger ? 'text-danger' : 'text-foreground'}`}
+        className={`flex-1 text-base font-medium ${
+          danger ? 'text-danger' : 'text-foreground'
+        }`}
       >
         {label}
       </AppText>
-      <Feather name="chevron-right" size={18} color="#888" />
+      <StyledFeather name="chevron-right" size={16} className="text-muted" />
     </Pressable>
   );
 }
@@ -57,6 +63,25 @@ function MenuItem({
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const { activeLeague } = useLeagueContext();
+
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useUserProfile();
+
+  const {
+    data: summary,
+    isLoading: summaryLoading,
+    refetch: refetchSummary,
+  } = useDashboardSummary();
+
+  const isLoading = profileLoading || summaryLoading;
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchProfile(), refetchSummary()]);
+  }, [refetchProfile, refetchSummary]);
 
   const handleLogout = () => {
     Alert.alert('Log Out', 'Are you sure you want to log out?', [
@@ -69,94 +94,147 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const initials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`;
+  const displayName = profile?.username ?? user?.email ?? 'User';
+  const displayEmail = profile?.email ?? user?.email ?? '';
+
+  if (isLoading) {
+    return (
+      <ScreenScrollView>
+        <ScreenState screen="profile" state="loading" message="Loading profile..." />
+      </ScreenScrollView>
+    );
+  }
 
   return (
-    <ScreenScrollView>
-      <View className="px-5 py-6 gap-6">
+    <ScreenScrollView onRefresh={handleRefresh}>
+      <View className="py-6 gap-8">
         {/* Avatar + Name */}
         <View className="items-center gap-3">
-          <View className="h-24 w-24 rounded-full bg-accent items-center justify-center overflow-hidden">
-            {user?.avatar ? (
-              <Image
-                source={{ uri: user.avatar }}
-                style={{ width: 96, height: 96 }}
-                contentFit="cover"
-              />
-            ) : (
-              <AppText className="text-3xl font-bold text-white">{initials}</AppText>
-            )}
+          <Avatar size="lg" alt={displayName}>
+            {profile?.avatarUrl ? (
+              <Avatar.Image source={{ uri: profile.avatarUrl }} />
+            ) : null}
+            <Avatar.Fallback>
+              <AppText className="text-2xl font-bold">{getInitials(displayName)}</AppText>
+            </Avatar.Fallback>
+          </Avatar>
+          <View className="items-center gap-1">
+            <AppText className="text-2xl font-bold text-foreground">{displayName}</AppText>
+            <AppText className="text-sm text-muted">{displayEmail}</AppText>
           </View>
-          <View className="items-center">
-            <AppText className="text-xl font-bold text-foreground">
-              {user?.firstName} {user?.lastName}
-            </AppText>
-            <AppText className="text-sm text-muted">
-              {user?.email || user?.phone}
-            </AppText>
-          </View>
-          <View className="bg-accent/15 rounded-full px-3 py-1">
-            <AppText className="text-xs font-semibold text-accent">
-              {MOCK_STATS.role} - {MOCK_STATS.team}
-            </AppText>
-          </View>
+
+          {/* Role + Team tag */}
+          {activeLeague && (
+            <View className="flex-row gap-2 mt-1">
+              {activeLeague.roles.length > 0 && (
+                <Chip size="sm" variant="soft" style={{ backgroundColor: mflColors.accentLight }}>
+                  <Chip.Label style={{ color: mflColors.accent }}>
+                    {activeLeague.roles[0]!.charAt(0).toUpperCase() + activeLeague.roles[0]!.slice(1)}
+                  </Chip.Label>
+                </Chip>
+              )}
+              {activeLeague.teamName && (
+                <Chip size="sm" variant="soft" style={{ backgroundColor: mflColors.brandLight }}>
+                  <Chip.Label style={{ color: mflColors.brand }}>
+                    {activeLeague.teamName}
+                  </Chip.Label>
+                </Chip>
+              )}
+            </View>
+          )}
         </View>
 
         {/* League Info */}
-        <View className="bg-card rounded-xl p-4 flex-row items-center gap-3">
-          <Feather name="shield" size={20} color="#888" />
-          <View className="flex-1">
-            <AppText className="text-sm font-semibold text-foreground">
-              {MOCK_STATS.league}
-            </AppText>
-            <AppText className="text-xs text-muted">
-              Joined {MOCK_STATS.joinedDate}
-            </AppText>
-          </View>
-        </View>
+        {activeLeague && (
+          <Card className="shadow-none border border-separator">
+            <View className="flex-row items-center gap-3">
+              <View
+                className="w-10 h-10 rounded-lg items-center justify-center"
+                style={{ backgroundColor: mflColors.accentLight }}
+              >
+                <Feather name="shield" size={20} color={mflColors.accent} />
+              </View>
+              <View className="flex-1 gap-0.5">
+                <AppText className="text-base font-semibold text-foreground">
+                  {activeLeague.name}
+                </AppText>
+                <AppText className="text-sm text-muted">
+                  {activeLeague.numTeams} {activeLeague.numTeams === 1 ? 'team' : 'teams'}
+                  {activeLeague.status ? ` \u00B7 ${activeLeague.status}` : ''}
+                </AppText>
+              </View>
+            </View>
+          </Card>
+        )}
 
         {/* Stats Grid */}
-        <View className="flex-row flex-wrap gap-3">
-          <StatCard label="Current Streak" value={`${MOCK_STATS.streak} days`} />
-          <StatCard label="Total Points" value={MOCK_STATS.totalPoints} />
-          <StatCard label="Activities Logged" value={MOCK_STATS.activitiesLogged} />
-          <StatCard label="League Rank" value={`#${MOCK_STATS.rank}`} />
+        <View>
+          <SectionLabel label="Your Stats" />
+          <View className="flex-row gap-3 mb-3">
+            <StatCard
+              label="Current Streak"
+              value={summary ? `${summary.currentStreak}d` : '--'}
+              color={mflColors.brand}
+            />
+            <StatCard
+              label="Total Points"
+              value={summary?.totalPoints ?? '--'}
+              color={mflColors.accent}
+            />
+          </View>
+          <View className="flex-row gap-3 mb-3">
+            <StatCard
+              label="Activities Logged"
+              value={summary?.activitiesLogged ?? '--'}
+            />
+            <StatCard
+              label="Best Streak"
+              value={summary ? `${summary.bestStreak}d` : '--'}
+              color={mflColors.amber}
+            />
+          </View>
         </View>
 
         {/* Theme */}
         <View>
-          <AppText className="text-sm font-semibold text-foreground mb-2">App Theme</AppText>
+          <SectionLabel label="App Theme" />
           <ThemeSelectorBar />
         </View>
 
         {/* Menu Items */}
-        <View className="gap-2">
-          <MenuItem
-            icon="edit-3"
-            label="Edit Profile"
-            onPress={() => {
-              // TODO: navigate to edit profile
-            }}
-          />
-          <MenuItem
-            icon="bell"
-            label="Notifications"
-            onPress={() => router.push('/(app)/notifications')}
-          />
-          <MenuItem
-            icon="settings"
-            label="Settings"
-            onPress={() => router.push('/(app)/settings')}
-          />
-          <MenuItem
-            icon="help-circle"
-            label="Help & Support"
-            onPress={() => router.push('/(app)/help')}
-          />
+        <View>
+          <SectionLabel label="Account" />
+          <Card className="shadow-none border border-separator p-0">
+            <MenuItem
+              icon="edit-3"
+              label="Edit Profile"
+              onPress={() => router.push('/(app)/edit-profile')}
+            />
+            <Separator />
+            <MenuItem
+              icon="bell"
+              label="Notifications"
+              onPress={() => router.push('/(app)/notifications')}
+            />
+            <Separator />
+            <MenuItem
+              icon="settings"
+              label="Settings"
+              onPress={() => router.push('/(app)/settings')}
+            />
+            <Separator />
+            <MenuItem
+              icon="help-circle"
+              label="Help & Support"
+              onPress={() => router.push('/(app)/help')}
+            />
+          </Card>
         </View>
 
         {/* Logout */}
-        <MenuItem icon="log-out" label="Log Out" onPress={handleLogout} danger />
+        <Card className="shadow-none border border-separator p-0">
+          <MenuItem icon="log-out" label="Log Out" onPress={handleLogout} danger />
+        </Card>
       </View>
     </ScreenScrollView>
   );

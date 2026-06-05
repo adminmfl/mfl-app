@@ -36,16 +36,18 @@ import {
 import { focusManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '../../global.css';
 import { AppThemeProvider } from '../contexts/app-theme-context';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider } from '../core/auth';
+import { LeagueProvider } from '../contexts/league-context';
+import { RoleProvider } from '../contexts/role-context';
 import { setupNotificationHandler } from '../lib/push-notifications';
-import { initCrashReporting } from '../lib/crashlytics';
 import { logScreenView } from '../lib/analytics';
 
 // Configure foreground notification display (must be outside component tree)
 setupNotificationHandler();
 
-// Initialize global crash reporting (unhandled JS errors + promise rejections)
-initCrashReporting();
+// Crash reporting init is a no-op until Firebase platform is configured
+// import { initCrashReporting } from '../lib/crashlytics';
+// initCrashReporting();
 
 // Tell TanStack Query when the app gains/loses focus (required for React Native).
 // Without this, refetchOnWindowFocus does nothing on mobile.
@@ -62,19 +64,10 @@ focusManager.setEventListener((handleFocus) => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,               // Always treat data as stale — guarantees fresh data on every screen visit
-      gcTime: 10 * 60 * 1000,     // 10 minutes garbage collection
-      retry: 1,
-      refetchOnWindowFocus: true,  // Refetch when app returns to foreground
-    },
-    mutations: {
-      retry: 0,
-      onSuccess: () => {
-        // After any mutation (create/update/delete), invalidate all cached queries.
-        // Only queries mounted on the current screen refetch immediately;
-        // others are marked stale and refetch when the user navigates to them.
-        queryClient.invalidateQueries();
-      },
+      staleTime: 60 * 1000,        // 1 minute — data stays fresh for 1 min
+      gcTime: 5 * 60 * 1000,       // 5 minutes — garbage collect after 5 min
+      retry: 2,                     // Retry failed requests twice
+      refetchOnWindowFocus: false,  // Mobile doesn't have window focus events
     },
   },
 });
@@ -116,8 +109,12 @@ function AppContent() {
           }}
         >
           <AuthProvider>
-            <ScreenTracker />
-            <Slot />
+            <LeagueProvider>
+              <RoleProvider>
+                <ScreenTracker />
+                <Slot />
+              </RoleProvider>
+            </LeagueProvider>
           </AuthProvider>
         </HeroUINativeProvider>
       </QueryClientProvider>
