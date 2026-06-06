@@ -5,6 +5,7 @@ import { setInMemoryAccessToken, getInMemoryAccessToken } from '../api/client';
 import { getSecureRefreshToken } from '../storage/secure-store';
 import { getCachedUser, clearCachedUser } from '../storage/mmkv';
 import type { AuthUser, LoginRequest, GoogleLoginRequest, AuthState } from './auth-types';
+import { deregisterToken, registerToken } from '../../hooks/usePushNotifications';
 import { logUserLogin, logUserSignUp, setUser as analyticsSetUser } from '../../lib/analytics';
 import { setUser as crashlyticsSetUser, clearUser as crashlyticsClearUser } from '../../lib/crashlytics';
 
@@ -22,9 +23,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const initialized = useRef(false);
+  const userRef = useRef<AuthUser | null>(null);
 
   // Force logout handler (called by 401 interceptor when refresh fails)
   const forceLogout = useCallback(() => {
+    const currentUserId = userRef.current?.id ?? null;
+    if (currentUserId) {
+      void deregisterToken(currentUserId);
+    }
+
     setUser(null);
     setInMemoryAccessToken(null);
     clearCachedUser();
@@ -68,6 +75,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, [forceLogout]);
 
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
+  useEffect(() => {
+    if (!user?.id) {
+      return;
+    }
+
+    void registerToken(user.id);
+  }, [user?.id]);
+
   const login = useCallback(async (data: LoginRequest) => {
     const response = await authService.loginWithEmail(data);
     setUser(response.user);
@@ -92,6 +111,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    const currentUserId = userRef.current?.id ?? null;
+    if (currentUserId) {
+      await deregisterToken(currentUserId);
+    }
+
     await authService.logout();
     setUser(null);
     queryClient.clear();

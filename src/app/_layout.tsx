@@ -23,10 +23,11 @@ import {
   SpaceGrotesk_600SemiBold,
   SpaceGrotesk_700Bold,
 } from '@expo-google-fonts/space-grotesk';
-import { Slot, usePathname } from 'expo-router';
+import { Slot, usePathname, useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import Constants from 'expo-constants';
-import { HeroUINativeProvider } from 'heroui-native';
+import { HeroUINativeProvider, useToast } from 'heroui-native';
 import { AppState, type AppStateStatus, StyleSheet, Text, View } from 'react-native';
 import { Component, useEffect, useRef, type ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -156,6 +157,80 @@ function ScreenTracker() {
   return null;
 }
 
+type NotificationData = {
+  screen?: string;
+  [key: string]: string | undefined;
+};
+
+function normalizeNotificationRoute(screen?: string): string {
+  if (!screen) {
+    return '/(app)/(tabs)/dashboard';
+  }
+
+  if (screen.startsWith('/')) {
+    return screen;
+  }
+
+  if (screen.startsWith('(app)')) {
+    return `/${screen}`;
+  }
+
+  return `/(app)/${screen}`;
+}
+
+function PushNotificationBridge() {
+  const { toast } = useToast();
+  const router = useRouter();
+  const foregroundListenerRef = useRef<Notifications.Subscription | null>(null);
+  const responseListenerRef = useRef<Notifications.Subscription | null>(null);
+  const handledResponseIdsRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    const handleResponse = (response: Notifications.NotificationResponse) => {
+      const responseId = response.notification.request.identifier;
+      if (handledResponseIdsRef.current.has(responseId)) {
+        return;
+      }
+
+      handledResponseIdsRef.current.add(responseId);
+
+      const data = response.notification.request.content.data as NotificationData | undefined;
+      const targetRoute = normalizeNotificationRoute(data?.screen);
+
+      router.push(targetRoute as never);
+    };
+
+    foregroundListenerRef.current = Notifications.addNotificationReceivedListener((notification) => {
+      const title = notification.request.content.title?.trim() || 'Notification';
+      const body = notification.request.content.body?.trim();
+
+      toast.show({
+        label: title,
+        description: body,
+        variant: 'default',
+      });
+    });
+
+    responseListenerRef.current = Notifications.addNotificationResponseReceivedListener(handleResponse);
+
+    void Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) {
+        handleResponse(response);
+      }
+    });
+
+    return () => {
+      foregroundListenerRef.current?.remove();
+      foregroundListenerRef.current = null;
+
+      responseListenerRef.current?.remove();
+      responseListenerRef.current = null;
+    };
+  }, [router, toast]);
+
+  return null;
+}
+
 function AppContent() {
   return (
     <AppErrorBoundary>
@@ -172,6 +247,7 @@ function AppContent() {
               <LeagueProvider>
                 <RoleProvider>
                   <ScreenTracker />
+                  <PushNotificationBridge />
                   <Slot />
                 </RoleProvider>
               </LeagueProvider>
