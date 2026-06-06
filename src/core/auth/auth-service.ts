@@ -107,6 +107,8 @@ export function setupAuthInterceptor(onForceLogout: () => void): void {
           return Promise.reject(error);
         }
       }
+      
+      // Re-throw so the previous interceptor (in client.ts) can log it
       return Promise.reject(error);
     }
   );

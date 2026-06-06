@@ -29,6 +29,7 @@ import {
 import type { LeagueActivity, ResubmitParams } from '../types';
 import type { UserLeague } from '../../leagues/types/league.model';
 import type { UpsertEntryRequestDTO } from '../../submissions/types/submission.dto';
+import { logActivitySubmitted } from '../../../lib/analytics';
 
 const MIN_DURATION = 1;
 const MAX_DURATION = 1440;
@@ -275,6 +276,12 @@ export function WorkoutSubmission({
       };
 
       await upsert.mutateAsync(payload);
+
+      logActivitySubmitted({
+        league_id: leagueId,
+        activity_type: workoutType,
+        is_resubmit: !!resubmitParams?.resubmitId,
+      }).catch(() => {});
 
       Alert.alert('Success', 'Activity submitted successfully!', [
         { text: 'OK', onPress: onSuccess },
