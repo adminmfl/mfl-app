@@ -172,9 +172,6 @@ export function LeaderboardScreen() {
         <Animated.View entering={FadeInDown.duration(250)} className="gap-3">
           <View className="flex-row items-start justify-between gap-3">
             <View className="flex-1">
-              <AppText className="text-2xl font-bold text-foreground">
-                Leaderboard
-              </AppText>
               <AppText className="mt-1 text-sm text-muted" numberOfLines={1}>
                 {league?.league_name || activeLeague.name || 'Rankings'}
               </AppText>
