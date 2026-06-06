@@ -24,6 +24,7 @@ import {
 import type { Challenge } from '../types/challenge.model';
 import { ProofUploadField } from './proof-upload-field';
 import type { ProofImageFile } from './proof-upload-field';
+import { logChallengeCompleted } from '../../../lib/analytics';
 
 interface ChallengeSubmitFormProps {
   challenge: Challenge;
@@ -99,6 +100,11 @@ export function ChallengeSubmitForm({ challenge }: ChallengeSubmitFormProps) {
       },
       {
         onSuccess: () => {
+          logChallengeCompleted({
+            challenge_id: challenge.challengeId,
+            challenge_name: challenge.name,
+            league_id: challenge.leagueId,
+          }).catch(() => {});
           Alert.alert('Success', 'Proof submitted! Waiting for review.', [
             { text: 'OK', onPress: () => router.back() },
           ]);

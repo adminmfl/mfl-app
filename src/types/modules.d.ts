@@ -111,18 +111,51 @@ declare module 'expo-notifications' {
     type: string;
   }
 
+  export interface NotificationContent {
+    title?: string | null;
+    body?: string | null;
+    data?: Record<string, unknown>;
+  }
+
+  export interface NotificationRequest {
+    identifier: string;
+    content: NotificationContent;
+  }
+
+  export interface Notification {
+    request: NotificationRequest;
+  }
+
+  export interface NotificationResponse {
+    notification: Notification;
+    actionIdentifier: string;
+  }
+
+  export interface DevicePushToken {
+    data: string;
+    type: string;
+  }
+
   export function setNotificationHandler(handler: NotificationHandler): void;
   export function setNotificationChannelAsync(id: string, channel: NotificationChannelInput): Promise<any>;
   export function getPermissionsAsync(): Promise<{ status: string; granted: boolean }>;
   export function requestPermissionsAsync(): Promise<{ status: string; granted: boolean }>;
   export function getExpoPushTokenAsync(config?: { projectId?: string }): Promise<ExpoPushToken>;
+  export function getDevicePushTokenAsync(): Promise<DevicePushToken>;
+  export function getLastNotificationResponseAsync(): Promise<NotificationResponse | null>;
+  export function getLastNotificationResponse(): NotificationResponse | null;
   export interface Subscription {
     remove: () => void;
   }
 
   export function addNotificationReceivedListener(listener: (event: any) => void): Subscription;
-  export function addNotificationResponseReceivedListener(listener: (response: any) => void): Subscription;
+  export function addNotificationResponseReceivedListener(listener: (response: NotificationResponse) => void): Subscription;
   export function addPushTokenListener(listener: (event: any) => void): Subscription;
+}
+
+declare module '*.css' {
+  const content: string;
+  export default content;
 }
 
 declare module 'expo-auth-session' {
