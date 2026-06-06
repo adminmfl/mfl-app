@@ -57,13 +57,14 @@ function getDrawerNavSections(
     sections.push({
       title: '',
       items: [
-        { label: 'Overview', icon: 'grid', route: '(tabs)/dashboard' },
-        { label: 'My Challenges', icon: 'flag', route: 'challenges' },
+        { label: 'My Zone', icon: 'grid', route: '(tabs)/dashboard' },
+        { label: 'Challenges', icon: 'flag', route: 'challenges' },
         { label: 'My Team', icon: 'users', route: '(tabs)/my-team' },
         { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
+        { label: 'AI Coach', icon: 'cpu', route: 'ai-coach' },
+        { label: 'Wearables', icon: 'watch', route: 'wearables' },
         { label: 'Leaderboard', icon: 'bar-chart-2', route: '(tabs)/leaderboard' },
         { label: 'Rules', icon: 'book-open', route: 'league-rules' },
-        { label: 'Wearables', icon: 'watch', route: 'wearables' },
       ],
     });
   }
