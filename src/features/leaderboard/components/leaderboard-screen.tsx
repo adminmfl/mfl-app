@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Alert, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ScreenScrollView } from '../../../components/screen-scroll-view';
@@ -29,6 +29,7 @@ import {
   SponsorBanner,
 } from '../../sponsors';
 import { GrandeFinaleCelebration } from './grande-finale-celebration';
+import { logLeaderboardViewed } from '../../../lib/analytics';
 
 export function LeaderboardScreen() {
   const { activeLeague } = useLeagueContext();
@@ -55,10 +56,16 @@ export function LeaderboardScreen() {
     await leaderboardQuery.refetch();
   }, [leaderboardQuery]);
 
+  // Fire leaderboard_viewed once when the screen comes into focus (not on every refetch)
+  const hasLoggedView = useRef(false);
   useFocusEffect(
     useCallback(() => {
       leaderboardQuery.refetch();
-    }, [leaderboardQuery]),
+      if (!hasLoggedView.current && leagueId) {
+        hasLoggedView.current = true;
+        logLeaderboardViewed({ league_id: leagueId, tab: activeTab }).catch(() => {});
+      }
+    }, [leaderboardQuery, leagueId, activeTab]),
   );
 
   const data = leaderboardQuery.data;
