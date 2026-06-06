@@ -8,6 +8,7 @@ import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { DarkHeaderCard } from '../../components/dark-header-card';
 import { mflColors } from '../../constants/colors';
 import { useJoinLeague } from '../../features/leagues/hooks/use-join-league';
+import { logLeagueJoined } from '../../lib/analytics';
 
 export default function JoinLeagueScreen() {
   const router = useRouter();
@@ -32,6 +33,12 @@ export default function JoinLeagueScreen() {
           leagueName: result.leagueName,
           alreadyMember: result.alreadyMember,
         });
+        if (!result.alreadyMember) {
+          logLeagueJoined({
+            league_id: result.leagueId,
+            league_name: result.leagueName,
+          }).catch(() => {});
+        }
         // Navigate to dashboard after a short delay so the user sees the success message
         setTimeout(() => {
           router.replace('/(app)/(tabs)/dashboard');

@@ -28,8 +28,8 @@ import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import Constants from 'expo-constants';
 import { HeroUINativeProvider, useToast } from 'heroui-native';
-import { AppState, type AppStateStatus, StyleSheet } from 'react-native';
-import { useEffect, useRef } from 'react';
+import { AppState, type AppStateStatus, StyleSheet, Text, View } from 'react-native';
+import { Component, useEffect, useRef, type ReactNode } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import {
   KeyboardProvider,
@@ -42,13 +42,15 @@ import { LeagueProvider } from '../contexts/league-context';
 import { RoleProvider } from '../contexts/role-context';
 import { setupNotificationHandler } from '../lib/push-notifications';
 import { logScreenView } from '../lib/analytics';
+import { initCrashReporting, recordError } from '../lib/crashlytics';
 
 // Configure foreground notification display (must be outside component tree)
 setupNotificationHandler();
 
-// Crash reporting init is a no-op until Firebase platform is configured
-// import { initCrashReporting } from '../lib/crashlytics';
-// initCrashReporting();
+// Enable Crashlytics collection on startup
+initCrashReporting().catch(() => {
+  // Silently ignore — app continues without crash reporting
+});
 
 // Tell TanStack Query when the app gains/loses focus (required for React Native).
 // Without this, refetchOnWindowFocus does nothing on mobile.
@@ -80,10 +82,67 @@ if (Constants.appOwnership !== 'expo') {
   });
 }
 
-/**
- * Component that wraps app content inside KeyboardProvider
- * Contains the contentWrapper and HeroUINativeProvider configuration
- */
+// ─── JS Error Boundary ────────────────────────────────────────────────────────
+// Catches unhandled JS crashes, reports them to Crashlytics, and shows a
+// minimal fallback so the app doesn't display a blank white screen.
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class AppErrorBoundary extends Component<
+  { children: ReactNode },
+  ErrorBoundaryState
+> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: { componentStack: string }) {
+    recordError(error, `componentStack: ${info.componentStack}`);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={errorStyles.container}>
+          <Text style={errorStyles.title}>Something went wrong</Text>
+          <Text style={errorStyles.body}>
+            The app encountered an unexpected error. Please restart the app.
+          </Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const errorStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 8,
+  },
+  body: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+});
+
+// ─── Screen Tracker ───────────────────────────────────────────────────────────
+
 function ScreenTracker() {
   const pathname = usePathname();
   const prevPathname = useRef<string | null>(null);
@@ -174,27 +233,29 @@ function PushNotificationBridge() {
 
 function AppContent() {
   return (
-    <AppThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <HeroUINativeProvider
-          config={{
-            devInfo: {
-              stylingPrinciples: false,
-            },
-          }}
-        >
-          <AuthProvider>
-            <LeagueProvider>
-              <RoleProvider>
-                <ScreenTracker />
-                <PushNotificationBridge />
-                <Slot />
-              </RoleProvider>
-            </LeagueProvider>
-          </AuthProvider>
-        </HeroUINativeProvider>
-      </QueryClientProvider>
-    </AppThemeProvider>
+    <AppErrorBoundary>
+      <AppThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <HeroUINativeProvider
+            config={{
+              devInfo: {
+                stylingPrinciples: false,
+              },
+            }}
+          >
+            <AuthProvider>
+              <LeagueProvider>
+                <RoleProvider>
+                  <ScreenTracker />
+                  <PushNotificationBridge />
+                  <Slot />
+                </RoleProvider>
+              </LeagueProvider>
+            </AuthProvider>
+          </HeroUINativeProvider>
+        </QueryClientProvider>
+      </AppThemeProvider>
+    </AppErrorBoundary>
   );
 }
 

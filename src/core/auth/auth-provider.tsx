@@ -6,6 +6,8 @@ import { getSecureRefreshToken } from '../storage/secure-store';
 import { getCachedUser, clearCachedUser } from '../storage/mmkv';
 import type { AuthUser, LoginRequest, GoogleLoginRequest, AuthState } from './auth-types';
 import { deregisterToken, registerToken } from '../../hooks/usePushNotifications';
+import { logUserLogin, logUserSignUp, setUser as analyticsSetUser } from '../../lib/analytics';
+import { setUser as crashlyticsSetUser, clearUser as crashlyticsClearUser } from '../../lib/crashlytics';
 
 interface AuthContextType extends AuthState {
   login: (data: LoginRequest) => Promise<void>;
@@ -88,11 +90,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (data: LoginRequest) => {
     const response = await authService.loginWithEmail(data);
     setUser(response.user);
+    // Track login event and set user identity in Analytics + Crashlytics
+    logUserLogin('email').catch(() => {});
+    analyticsSetUser(response.user.id).catch(() => {});
+    crashlyticsSetUser(response.user.id);
   }, []);
 
   const loginWithGoogle = useCallback(async (data: GoogleLoginRequest) => {
     const response = await authService.loginWithGoogle(data);
     setUser(response.user);
+    // Track signup vs login and set user identity
+    if (response.isNewUser) {
+      logUserSignUp('google').catch(() => {});
+    } else {
+      logUserLogin('google').catch(() => {});
+    }
+    analyticsSetUser(response.user.id).catch(() => {});
+    crashlyticsSetUser(response.user.id);
     return { isNewUser: response.isNewUser };
   }, []);
 
@@ -105,6 +119,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await authService.logout();
     setUser(null);
     queryClient.clear();
+    // Clear user identity from Analytics + Crashlytics on logout
+    analyticsSetUser('').catch(() => {});
+    crashlyticsClearUser();
   }, [queryClient]);
 
   return (
