@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, Share, View } from 'react-native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import { Button } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
@@ -11,6 +12,11 @@ import {
   type WizardData,
   type WizardResult,
 } from './quick-start.types';
+
+function reportError(error: unknown): void {
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  crashlytics().recordError(normalizedError);
+}
 
 interface Props {
   data: WizardData;
@@ -42,8 +48,8 @@ export function StepReviewLaunch({ data, onBack, onSubmit, loading, result }: Pr
   const handleShare = async (text: string) => {
     try {
       await Share.share({ message: text });
-    } catch {
-      // cancelled
+    } catch (error: unknown) {
+      reportError(error);
     }
   };
 

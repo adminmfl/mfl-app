@@ -1,6 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
+import crashlytics from '@react-native-firebase/crashlytics';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import {
@@ -10,6 +11,11 @@ import {
   type CloneableLeague,
 } from './quick-start.types';
 import { fetchCloneableLeagues, fetchCloneData } from './quick-start.service';
+
+function reportError(error: unknown): void {
+  const normalizedError = error instanceof Error ? error : new Error(String(error));
+  crashlytics().recordError(normalizedError);
+}
 
 interface Props {
   data: WizardData;
@@ -25,10 +31,16 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
   useEffect(() => {
     if (!showClone) return;
     setLoadingClone(true);
-    fetchCloneableLeagues()
-      .then(setCloneLeagues)
-      .catch(() => {})
-      .finally(() => setLoadingClone(false));
+    void (async () => {
+      try {
+        const leagues = await fetchCloneableLeagues();
+        setCloneLeagues(leagues);
+      } catch (error: unknown) {
+        reportError(error);
+      } finally {
+        setLoadingClone(false);
+      }
+    })();
   }, [showClone]);
 
   const handleSelectTemplate = useCallback(
@@ -54,8 +66,8 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
         const cloneData = await fetchCloneData(leagueId);
         onUpdate(cloneData);
         onNext();
-      } catch {
-        // stay on step
+      } catch (error: unknown) {
+        reportError(error);
       } finally {
         setLoadingClone(false);
       }
