@@ -1,3 +1,5 @@
+// 1. Core Native/Expo dependencies MUST come first
+import firebase from '@react-native-firebase/app';
 import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -5,6 +7,13 @@ import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-nat
 import { Drawer as DrawerLayout } from 'react-native-drawer-layout';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../../components/app-text';
+
+// 2. CRITICAL: Initialize Firebase right here, BEFORE importing internal app files!
+if (!firebase.apps.length) {
+  firebase.app();
+}
+
+// 3. Now it is completely safe to import files that use analytics / crashlytics
 import { useAuth } from '../../core/auth';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useRole, type LeagueRole } from '../../contexts/role-context';
@@ -61,8 +70,8 @@ function getDrawerNavSections(
         { label: 'Challenges', icon: 'flag', route: 'challenges' },
         { label: 'My Team', icon: 'users', route: '(tabs)/my-team' },
         { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
-        { label: 'AI Coach', icon: 'cpu', route: 'ai-coach' },
-        { label: 'Wearables', icon: 'watch', route: 'wearables' },
+        { label: 'AI Coach (Beta)', icon: 'cpu', route: 'ai-coach' },
+        { label: 'Wearables (Trial)', icon: 'watch', route: 'wearables' },
         { label: 'Leaderboard', icon: 'bar-chart-2', route: '(tabs)/leaderboard' },
         { label: 'Rules', icon: 'book-open', route: 'league-rules' },
       ],
@@ -86,7 +95,7 @@ function getDrawerNavSections(
       { label: 'Player Activities', icon: 'clipboard', route: 'submission-validation' },
       { label: 'Leaderboard', icon: 'bar-chart-2', route: '(tabs)/leaderboard' },
       { label: 'Configure Challenges', icon: 'flag', route: 'challenge-config' },
-      { label: 'Manual Workout Entry', icon: 'user-check', route: 'manual-entry' },
+      { label: 'Manual Activity Entry', icon: 'user-check', route: 'manual-entry' },
       { label: 'Approve Donations', icon: 'heart', route: 'rest-day-donations' },
       { label: 'Team Chat', icon: 'message-circle', route: '(tabs)/team-chat' },
       { label: 'AI Manager', icon: 'cpu', route: 'ai-manager' },

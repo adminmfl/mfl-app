@@ -86,12 +86,6 @@ export function validateWorkoutForm(input: ValidationInput): SubmissionFormError
     errors.proof = 'Proof screenshot is required';
   }
 
-  // Notes requirement
-  const notesReq = selectedActivity.notes_requirement ?? 'optional';
-  if (notesReq === 'mandatory' && !input.notes.trim()) {
-    errors.notes = 'Notes are required for this activity';
-  }
-
   // Outcome requirement
   if (selectedActivity.outcome_config) {
     const cfg = selectedActivity.outcome_config as any;

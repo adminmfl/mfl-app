@@ -499,7 +499,7 @@ export function ChatComposer({
             onPress={() => attachStaticLink('activities')}
           />
           <AppText className="px-1 pt-2 text-xs font-semibold text-muted">
-            Recent Workouts
+            Recent Activities
           </AppText>
           <MessagePickerContent
             isLoading={workoutsQuery.isLoading}

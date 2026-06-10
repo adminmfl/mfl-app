@@ -44,6 +44,6 @@ export function useMobileLeaderboard(
       return buildLeaderboardViewData(leaderboardResponse.data, teamsResponse);
     },
     enabled: !!leagueId,
-    staleTime: 60 * 1000,
+    staleTime: 0,
   });
 }

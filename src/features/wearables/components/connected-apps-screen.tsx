@@ -74,7 +74,7 @@ export function ConnectedAppsScreen() {
     if (!granted) {
       Alert.alert(
         'Permission Required',
-        'Allow MFL to read workouts, steps, distance, and calories in Health Connect. Tap Open Settings if the permission screen did not appear.',
+        'Allow MFL to read activities, steps, distance, and calories in Health Connect. Tap Open Settings if the permission screen did not appear.',
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Open Settings', onPress: () => void hc.openSettings() },
@@ -99,8 +99,8 @@ export function ConnectedAppsScreen() {
       const activities = await hc.readRecentWorkouts(7);
       if (activities.length === 0) {
         Alert.alert(
-          'No Workouts',
-          'No new workouts found in Health Connect for the last 7 days.',
+          'No Activities',
+          'No new activities found in Health Connect for the last 7 days.',
         );
         setLastSyncCount(0);
         return;
@@ -116,7 +116,7 @@ export function ConnectedAppsScreen() {
       if (result.imported > 0) {
         Alert.alert(
           'Sync Complete',
-          `${result.imported} workout${result.imported !== 1 ? 's' : ''} imported.${
+          `${result.imported} activit${result.imported !== 1 ? 'ies' : 'y'} imported.${
             result.duplicates > 0
               ? ` ${result.duplicates} duplicate(s) skipped.`
               : ''
@@ -125,11 +125,11 @@ export function ConnectedAppsScreen() {
       } else {
         Alert.alert(
           'Sync Complete',
-          'No new workouts to import. All are already synced.',
+          'No new activities to import. All are already synced.',
         );
       }
     } catch {
-      Alert.alert('Sync Failed', 'Failed to sync workouts. Please try again.');
+      Alert.alert('Sync Failed', 'Failed to sync activities. Please try again.');
     }
   }, [hc, syncHcMutation, leagueId, hcConnection]);
 
@@ -174,8 +174,8 @@ export function ConnectedAppsScreen() {
       const activities = await hk.readRecentWorkouts(7);
       if (activities.length === 0) {
         Alert.alert(
-          'No Workouts',
-          'No new workouts found in Apple Health for the last 7 days.',
+          'No Activities',
+          'No new activities found in Apple Health for the last 7 days.',
         );
         setLastSyncCount(0);
         return;
@@ -191,7 +191,7 @@ export function ConnectedAppsScreen() {
       if (result.imported > 0) {
         Alert.alert(
           'Sync Complete',
-          `${result.imported} workout${result.imported !== 1 ? 's' : ''} imported.${
+          `${result.imported} activit${result.imported !== 1 ? 'ies' : 'y'} imported.${
             result.duplicates > 0
               ? ` ${result.duplicates} duplicate(s) skipped.`
               : ''
@@ -200,11 +200,11 @@ export function ConnectedAppsScreen() {
       } else {
         Alert.alert(
           'Sync Complete',
-          'No new workouts to import. All are already synced.',
+          'No new activities to import. All are already synced.',
         );
       }
     } catch {
-      Alert.alert('Sync Failed', 'Failed to sync workouts. Please try again.');
+      Alert.alert('Sync Failed', 'Failed to sync activities. Please try again.');
     }
   }, [hk, syncHkMutation, leagueId, hkConnection]);
 
@@ -238,7 +238,7 @@ export function ConnectedAppsScreen() {
       } catch (error) {
         Alert.alert(
           'Could not confirm',
-          getApiErrorMessage(error, 'Failed to confirm workout.'),
+          getApiErrorMessage(error, 'Failed to confirm activity.'),
         );
       } finally {
         setConfirmingId(null);
@@ -255,7 +255,7 @@ export function ConnectedAppsScreen() {
       } catch (error) {
         Alert.alert(
           'Could not reject',
-          getApiErrorMessage(error, 'Failed to reject workout.'),
+          getApiErrorMessage(error, 'Failed to reject activity.'),
         );
       } finally {
         setRejectingId(null);
@@ -307,9 +307,14 @@ export function ConnectedAppsScreen() {
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
       <View className="gap-6 py-4">
-        <AppText className="text-lg font-bold text-foreground">
-          Connected Apps & Wearables
-        </AppText>
+        <View className="gap-1">
+          <AppText className="text-lg font-bold text-foreground">
+            Connected Apps & Wearables
+          </AppText>
+          <AppText className="text-xs font-medium" style={{ color: mflColors.amber }}>
+            Trial — sync activities from your health apps
+          </AppText>
+        </View>
 
         {isIos && (
           <HealthKitCard
@@ -399,7 +404,7 @@ export function ConnectedAppsScreen() {
         {pendingWorkouts.length === 0 && isConnectedToProvider && (
           <View className="rounded-2xl bg-content1 p-4 items-center">
             <AppText className="text-sm text-muted text-center">
-              No pending workouts. Sync from{' '}
+              No pending activities. Sync from{' '}
               {isIos ? 'Apple Health' : 'Health Connect'} to import new
               activities.
             </AppText>
