@@ -1,7 +1,11 @@
 import { useState, useCallback, useMemo } from 'react';
 import { View, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
+<<<<<<< HEAD
 import { Avatar, Button, Card, Tabs } from 'heroui-native';
+=======
+import { Avatar, Button, Card, Chip, Surface, Tabs } from 'heroui-native';
+>>>>>>> 7617daf (fix(mobile): implement phase 2 host-facing parity updates)
 import { TeamViewRoster } from '../../../features/team/components/team-view-roster';
 import { useRouter } from 'expo-router';
 import { AppText } from '../../../components/app-text';
@@ -17,8 +21,7 @@ import { useTeams } from '../../../features/team/hooks/use-teams';
 import { useUnallocatedMembers } from '../../../features/team/hooks/use-unallocated-members';
 import { useAssignMember } from '../../../features/team/hooks/use-assign-member';
 import { mflColors } from '../../../constants/colors';
-import type { TeamMember } from '../../../features/team/types/team.model';
-import type { LeagueMember } from '../../../features/team/types/team.model';
+import type { TeamMember, LeagueMember, MyTeamStats } from '../../../features/team/types/team.model';
 
 type TabKey = 'Roster' | 'Teams';
 const TABS = ['Roster', 'Teams'] as const;
@@ -173,13 +176,7 @@ interface RosterTabProps {
   overviewData:
     | {
         members: TeamMember[];
-        stats: {
-          teamRank: string;
-          teamPoints: number;
-          teamAvgRR: number;
-          teamName: string | null;
-          memberCapacity: number;
-        };
+        stats: MyTeamStats;
       }
     | undefined;
   isLeader: boolean;

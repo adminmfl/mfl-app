@@ -11,6 +11,7 @@ import { StatCard } from '../../components/stat-card';
 import { mflColors } from '../../constants/colors';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useAnalytics } from '../../features/analytics/hooks/use-analytics';
+import { useLeagueActivities } from '../../features/leagues/hooks/use-league-activities';
 
 // ─── Bar Chart (View-based) ──────────────────────────────────────────────────
 
@@ -82,6 +83,16 @@ export default function AnalyticsScreen() {
     isError,
     refetch,
   } = useAnalytics(leagueId);
+
+  const { data: activities } = useLeagueActivities(leagueId);
+
+  const isMonthlyLeague = useMemo(() => {
+    return (
+      activities &&
+      activities.length > 0 &&
+      activities.every((a) => a.frequency_type === 'monthly')
+    );
+  }, [activities]);
 
   if (!activeLeague) {
     return (
@@ -336,21 +347,25 @@ export default function AnalyticsScreen() {
       </Card>
 
       {/* Daily Submissions */}
-      <SectionLabel label="Daily Submissions" style={{ marginTop: 8 }} />
-      <Card className="p-4 mb-4">
-        {participation.dailyData.length > 0 ? (
-          <>
-            <DailyBarChart data={participation.dailyData} />
-            <AppText className="text-xs text-muted text-center mt-2">
-              Avg {participation.avgDailySubmissions.toFixed(1)} submissions/day
-            </AppText>
-          </>
-        ) : (
-          <AppText className="text-sm text-muted text-center py-5">
-            No submission data available
-          </AppText>
-        )}
-      </Card>
+      {!isMonthlyLeague && (
+        <>
+          <SectionLabel label="Daily Submissions" style={{ marginTop: 8 }} />
+          <Card className="p-4 mb-4">
+            {participation.dailyData.length > 0 ? (
+              <>
+                <DailyBarChart data={participation.dailyData} />
+                <AppText className="text-xs text-muted text-center mt-2">
+                  Avg {participation.avgDailySubmissions.toFixed(1)} submissions/day
+                </AppText>
+              </>
+            ) : (
+              <AppText className="text-sm text-muted text-center py-5">
+                No submission data available
+              </AppText>
+            )}
+          </Card>
+        </>
+      )}
 
       {/* Rest Day Analytics — hidden when rest_days = 0 */}
       {restDayAnalytics.totalUsed > 0 && (

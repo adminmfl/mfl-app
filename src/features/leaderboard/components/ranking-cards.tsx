@@ -1,5 +1,5 @@
 import { Image, View } from 'react-native';
-import { Avatar, Card, Chip } from 'heroui-native';
+import { Avatar, Card } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import type { IndividualRankingDTO, TeamRankingDTO } from '../types/leaderboard.dto';
@@ -19,54 +19,59 @@ export function TeamRankingCard({
 }) {
   return (
     <Card
-      className="p-4"
+      className="py-2 px-3"
       style={team.rank <= 3 ? { borderWidth: 1, borderColor: mflColors.brandLight } : undefined}
     >
-      <View className="flex-row items-center gap-3">
-        <RankBadge rank={team.rank} tier={team.rank_tier} band={team.rank_band} />
+      <View className="flex-row items-center justify-between gap-3">
+        {/* Left: Rank, Logo, Team Name */}
+        <View className="flex-row items-center gap-2.5 flex-1">
+          <RankBadge rank={team.rank} tier={team.rank_tier} band={team.rank_band} />
 
-        <View
-          className="h-11 w-11 items-center justify-center rounded-lg"
-          style={{ backgroundColor: mflColors.inkLight, overflow: 'hidden' }}
-        >
-          {team.logo_url ? (
-            <Image
-              source={{ uri: team.logo_url }}
-              className="h-11 w-11"
-              resizeMode="cover"
-            />
-          ) : (
-            <AppText className="text-xs font-bold text-muted">
-              {getInitials(team.team_name)}
+          <View
+            className="h-8 w-8 items-center justify-center rounded-lg"
+            style={{ backgroundColor: mflColors.inkLight, overflow: 'hidden' }}
+          >
+            {team.logo_url ? (
+              <Image
+                source={{ uri: team.logo_url }}
+                className="h-8 w-8"
+                resizeMode="cover"
+              />
+            ) : (
+              <AppText className="text-[10px] font-bold text-muted">
+                {getInitials(team.team_name)}
+              </AppText>
+            )}
+          </View>
+
+          <View className="flex-1">
+            <AppText className="text-sm font-bold text-foreground" numberOfLines={1}>
+              {team.team_name}
             </AppText>
-          )}
-        </View>
-
-        <View className="flex-1">
-          <AppText className="text-sm font-bold text-foreground" numberOfLines={1}>
-            {team.team_name}
-          </AppText>
-          <View className="mt-1 flex-row flex-wrap gap-2">
-            <Chip size="sm" variant="soft" style={{ backgroundColor: mflColors.surface }}>
-              <Chip.Label style={{ color: mflColors.textSub }}>
-                {team.member_count} members
-              </Chip.Label>
-            </Chip>
-            {showAvgRR ? (
-              <Chip size="sm" variant="soft" style={{ backgroundColor: '#FEF9C3' }}>
-                <Chip.Label style={{ color: '#A16207' }}>
-                  RR {team.avg_rr.toFixed(2)}
-                </Chip.Label>
-              </Chip>
-            ) : null}
+            <AppText className="text-[10px] text-muted mt-0.5">
+              {team.member_count} members
+            </AppText>
           </View>
         </View>
 
+        {/* Right: Points, Logs, RR */}
         <View className="items-end">
-          <AppText className="text-lg font-bold" style={{ color: mflColors.brand }}>
-            {formatNumber(team.total_points)}
+          <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
+            {formatNumber(team.total_points)} pts
           </AppText>
-          <AppText className="text-[10px] text-muted">Points</AppText>
+          <View className="flex-row items-center gap-1.5 mt-0.5">
+            <AppText className="text-[10px] text-muted">
+              {team.submission_count} logs
+            </AppText>
+            {showAvgRR && (
+              <>
+                <AppText className="text-[10px] text-muted">·</AppText>
+                <AppText className="text-[10px] font-semibold text-amber">
+                  RR {team.avg_rr.toFixed(2)}
+                </AppText>
+              </>
+            )}
+          </View>
         </View>
       </View>
 
@@ -80,8 +85,8 @@ export function TeamRankingCard({
       </View>
 
       {team.normalized_points !== undefined ? (
-        <AppText className="mt-1 text-xs text-muted">
-          Activity points normalized by team size: {formatNumber(team.normalized_points)}
+        <AppText className="mt-1.5 text-[10px] text-muted" style={{ borderTopWidth: 0.5, borderTopColor: mflColors.border, paddingTop: 4 }}>
+          Normalized activity points: {formatNumber(team.normalized_points)}
         </AppText>
       ) : null}
     </Card>
@@ -96,51 +101,53 @@ export function IndividualRankingCard({
   showAvgRR: boolean;
 }) {
   return (
-    <Card className="p-4">
-      <View className="flex-row items-center gap-3">
-        <RankBadge rank={player.rank} tier={player.rank_tier} band={player.rank_band} />
+    <Card className="py-2 px-3">
+      <View className="flex-row items-center justify-between gap-3">
+        {/* Left: Rank, Avatar, Player Name */}
+        <View className="flex-row items-center gap-2.5 flex-1">
+          <RankBadge rank={player.rank} tier={player.rank_tier} band={player.rank_band} />
 
-        <Avatar size="sm" alt={player.username}>
-          {player.profile_picture_url ? (
-            <Avatar.Image source={{ uri: player.profile_picture_url }} />
-          ) : null}
-          <Avatar.Fallback>
-            <AppText className="text-xs font-semibold text-foreground">
-              {getInitials(player.username)}
-            </AppText>
-          </Avatar.Fallback>
-        </Avatar>
+          <Avatar size="sm" alt={player.username} style={{ width: 32, height: 32 }}>
+            {player.profile_picture_url ? (
+              <Avatar.Image source={{ uri: player.profile_picture_url }} />
+            ) : null}
+            <Avatar.Fallback>
+              <AppText className="text-[10px] font-semibold text-foreground">
+                {getInitials(player.username)}
+              </AppText>
+            </Avatar.Fallback>
+          </Avatar>
 
-        <View className="flex-1">
-          <AppText className="text-sm font-bold text-foreground" numberOfLines={1}>
-            {capitalizeName(player.username)}
-          </AppText>
-          {player.team_name ? (
-            <AppText className="text-xs text-muted mt-0.5" numberOfLines={1}>
-              {player.team_name}
+          <View className="flex-1">
+            <AppText className="text-sm font-bold text-foreground" numberOfLines={1}>
+              {capitalizeName(player.username)}
             </AppText>
-          ) : null}
-          <View className="mt-1 flex-row flex-wrap gap-2">
-            <Chip size="sm" variant="soft" style={{ backgroundColor: mflColors.surface }}>
-              <Chip.Label style={{ color: mflColors.textSub }}>
-                {player.submission_count} submissions
-              </Chip.Label>
-            </Chip>
-            {showAvgRR ? (
-              <Chip size="sm" variant="soft" style={{ backgroundColor: '#FEF9C3' }}>
-                <Chip.Label style={{ color: '#A16207' }}>
-                  RR {player.avg_rr.toFixed(2)}
-                </Chip.Label>
-              </Chip>
+            {player.team_name ? (
+              <AppText className="text-[10px] text-muted mt-0.5" numberOfLines={1}>
+                {player.team_name}
+              </AppText>
             ) : null}
           </View>
         </View>
 
+        {/* Right: Points, Logs, RR */}
         <View className="items-end">
-          <AppText className="text-lg font-bold" style={{ color: mflColors.brand }}>
-            {formatNumber(player.points)}
+          <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
+            {formatNumber(player.points)} pts
           </AppText>
-          <AppText className="text-[10px] text-muted">Points</AppText>
+          <View className="flex-row items-center gap-1.5 mt-0.5">
+            <AppText className="text-[10px] text-muted">
+              {player.submission_count} logs
+            </AppText>
+            {showAvgRR && (
+              <>
+                <AppText className="text-[10px] text-muted">·</AppText>
+                <AppText className="text-[10px] font-semibold text-amber">
+                  RR {player.avg_rr.toFixed(2)}
+                </AppText>
+              </>
+            )}
+          </View>
         </View>
       </View>
 
