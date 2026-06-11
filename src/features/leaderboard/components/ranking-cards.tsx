@@ -138,7 +138,7 @@ export function IndividualRankingCard({
 
         <View className="items-end">
           <AppText className="text-lg font-bold" style={{ color: mflColors.brand }}>
-            {formatNumber(player.points + (player.challenge_points ?? 0))}
+            {formatNumber(player.points)}
           </AppText>
           <AppText className="text-[10px] text-muted">Points</AppText>
         </View>

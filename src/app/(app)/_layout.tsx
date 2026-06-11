@@ -1,5 +1,4 @@
 // 1. Core Native/Expo dependencies MUST come first
-import firebase from '@react-native-firebase/app';
 import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Stack, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
@@ -8,12 +7,7 @@ import { Drawer as DrawerLayout } from 'react-native-drawer-layout';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '../../components/app-text';
 
-// 2. CRITICAL: Initialize Firebase right here, BEFORE importing internal app files!
-if (!firebase.apps.length) {
-  firebase.app();
-}
-
-// 3. Now it is completely safe to import files that use analytics / crashlytics
+// 2. Internal app imports
 import { useAuth } from '../../core/auth';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useRole, type LeagueRole } from '../../contexts/role-context';

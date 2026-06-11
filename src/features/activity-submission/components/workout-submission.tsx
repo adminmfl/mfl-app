@@ -26,7 +26,6 @@ import {
   getIANATimezone,
   getTZOffsetMinutes,
 } from '../utils';
-import { confirmOcrValue } from '../utils/ocr-confirm';
 import type { LeagueActivity, ResubmitParams } from '../types';
 import type { UserLeague } from '../../leagues/types/league.model';
 import type { UpsertEntryRequestDTO } from '../../submissions/types/submission.dto';
@@ -575,20 +574,32 @@ export function WorkoutSubmission({
                 const extraction = await proofOcr.extract(img);
                 if (extraction) {
                   const fill = getAutoFillFields(extraction);
-                  const applyField = (field: string, value: string) => {
-                    if (field === 'duration') setDuration(value);
-                    else if (field === 'distance') setDistance(value);
-                    else if (field === 'steps') setSteps(value);
-                    setRRPreview(null);
-                  };
-                  if (fill.duration !== undefined) {
-                    confirmOcrValue('duration', fill.duration, () => applyField('duration', fill.duration!));
-                  }
-                  if (fill.distance !== undefined) {
-                    confirmOcrValue('distance', fill.distance, () => applyField('distance', fill.distance!));
-                  }
-                  if (fill.steps !== undefined) {
-                    confirmOcrValue('steps', fill.steps, () => applyField('steps', fill.steps!));
+                  if (fill.autoFilledFields.length > 0) {
+                    // Build a single consolidated confirmation listing all detected fields.
+                    // Firing separate Alert.alert() calls per field stacks alerts on Android
+                    // and the user only sees the last one.
+                    const lines = fill.autoFilledFields.map((f) => {
+                      if (f === 'duration') return `Duration: ${fill.duration} min`;
+                      if (f === 'distance') return `Distance: ${fill.distance} km`;
+                      if (f === 'steps') return `Steps: ${fill.steps}`;
+                      return f;
+                    });
+                    Alert.alert(
+                      'Auto-fill Detected Values?',
+                      lines.join('\n'),
+                      [
+                        { text: 'Skip', style: 'cancel' },
+                        {
+                          text: 'Apply All',
+                          onPress: () => {
+                            if (fill.duration !== undefined) setDuration(fill.duration);
+                            if (fill.distance !== undefined) setDistance(fill.distance);
+                            if (fill.steps !== undefined) setSteps(fill.steps);
+                            setRRPreview(null);
+                          },
+                        },
+                      ],
+                    );
                   }
                 }
               }
@@ -608,12 +619,10 @@ export function WorkoutSubmission({
           autoFilledFields={ocrFill?.autoFilledFields ?? []}
           suggestedFields={ocrFill?.suggestedFields ?? []}
           onApplySuggestion={(field, value) => {
-            confirmOcrValue(field, value, () => {
-              if (field === 'duration') setDuration(value);
-              else if (field === 'distance') setDistance(value);
-              else if (field === 'steps') setSteps(value);
-              setRRPreview(null);
-            });
+            if (field === 'duration') setDuration(value);
+            else if (field === 'distance') setDistance(value);
+            else if (field === 'steps') setSteps(value);
+            setRRPreview(null);
           }}
         />
         {/* Second proof image (only if activity allows 2+ images) */}
@@ -648,15 +657,24 @@ export function WorkoutSubmission({
       {/* Optional fields */}
       {(selectedActivity?.notes_requirement ?? 'optional') !== 'not_required' && (
         <View className="gap-2">
-          <AppText className="text-sm font-semibold text-muted">Notes (optional)</AppText>
+          <AppText className="text-sm font-semibold text-muted">
+            {selectedActivity?.notes_requirement === 'mandatory' ? 'Notes *' : 'Notes (optional)'}
+          </AppText>
           <TextInput
             style={{ ...inputStyle, minHeight: 48, textAlignVertical: 'top' }}
             value={notes}
             onChangeText={setNotes}
-            placeholder="Optional notes about your activity"
+            placeholder={
+              selectedActivity?.notes_requirement === 'mandatory'
+                ? 'Required — add notes about your activity'
+                : 'Optional notes about your activity'
+            }
             placeholderTextColor={mflColors.textMuted}
             multiline
           />
+          {errors.notes && (
+            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.notes}</AppText>
+          )}
         </View>
       )}
 
