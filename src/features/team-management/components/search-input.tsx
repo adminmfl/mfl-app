@@ -1,17 +1,7 @@
 import { TextInput } from 'react-native';
 
 import { mflColors } from '../../../constants/colors';
-
-const inputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: mflColors.text,
-};
+import { inputStyle } from '../utils/input-style';
 
 interface SearchInputProps {
   value: string;

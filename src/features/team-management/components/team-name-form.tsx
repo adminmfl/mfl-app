@@ -1,19 +1,8 @@
-import { View } from 'react-native';
-import { TextInput } from 'react-native';
+import { View, TextInput } from 'react-native';
 import { Button, Spinner } from 'heroui-native';
 
+import { inputStyle } from '../utils/input-style';
 import { mflColors } from '../../../constants/colors';
-
-const inputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: mflColors.text,
-};
 
 interface TeamNameFormProps {
   value: string;
