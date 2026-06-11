@@ -9,6 +9,7 @@ import { ScreenScrollView } from '../../../components/screen-scroll-view';
 import { ScreenState } from '../../../components/screen-state';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useMySubmissions } from '../../../features/submissions/hooks/use-my-submissions';
+import { useLeagueActivities } from '../../../features/leagues/hooks/use-league-activities';
 import type { SubmissionEntry, SubmissionStats } from '../../../features/submissions/types/submission.model';
 import { isReuploadWindowOpen } from '../../../features/submissions/utils/reupload-window';
 import { mflColors } from '../../../constants/colors';
@@ -286,6 +287,64 @@ function SubmissionCard({
 }
 
 // ---------------------------------------------------------------------------
+// Monthly Grouped List
+// ---------------------------------------------------------------------------
+
+function getMonthLabel(isoDate: string): string {
+  const d = new Date(isoDate);
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function MonthlyGroupedList({
+  submissions,
+  resubmittableIds,
+  onPressEntry,
+  onReupload,
+}: {
+  submissions: SubmissionEntry[];
+  resubmittableIds: Set<string>;
+  onPressEntry: (id: string) => void;
+  onReupload: (id: string) => void;
+}) {
+  // Group by month label, preserving sort order (newest first)
+  const grouped = useMemo(() => {
+    const map = new Map<string, SubmissionEntry[]>();
+    for (const s of submissions) {
+      const label = getMonthLabel(s.date);
+      const existing = map.get(label) ?? [];
+      existing.push(s);
+      map.set(label, existing);
+    }
+    return Array.from(map.entries());
+  }, [submissions]);
+
+  return (
+    <View className="gap-4">
+      {grouped.map(([month, entries]) => (
+        <View key={month} className="gap-2">
+          <AppText className="text-xs font-bold uppercase tracking-wider text-muted px-1">
+            {month}
+          </AppText>
+          <View className="gap-3">
+            {entries.map((entry) => (
+              <SubmissionCard
+                key={entry.id}
+                entry={entry}
+                onPress={() => onPressEntry(entry.id)}
+                canResubmit={resubmittableIds.has(entry.id)}
+                onReupload={
+                  resubmittableIds.has(entry.id) ? () => onReupload(entry.id) : undefined
+                }
+              />
+            ))}
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Screen
 // ---------------------------------------------------------------------------
 
@@ -296,6 +355,23 @@ export default function MyActivityScreen() {
   const isChallengesOnly = activeLeague?.leagueMode === 'challenges_only';
 
   const { data: submissionsData, isLoading, isError, refetch } = useMySubmissions(leagueId);
+  const { data: activities } = useLeagueActivities(leagueId || null);
+
+  // Determine the dominant frequency type across configured activities.
+  // Monthly leagues must NOT show a daily history view (Phase 2 requirement).
+  const dominantFrequency = useMemo<'daily' | 'weekly' | 'monthly'>(() => {
+    if (!activities || activities.length === 0) return 'weekly';
+    const counts = { daily: 0, weekly: 0, monthly: 0 };
+    for (const a of activities) {
+      const ft = a.frequency_type;
+      if (ft === 'monthly') counts.monthly++;
+      else if (ft === 'daily') counts.daily++;
+      else counts.weekly++;
+    }
+    if (counts.monthly > 0 && counts.monthly >= counts.weekly && counts.monthly >= counts.daily) return 'monthly';
+    if (counts.daily > counts.weekly) return 'daily';
+    return 'weekly';
+  }, [activities]);
 
   const submissions = submissionsData?.submissions ?? [];
   const stats = submissionsData?.stats ?? { total: 0, pending: 0, approved: 0, rejected: 0 };
@@ -390,7 +466,31 @@ export default function MyActivityScreen() {
           </Tabs.List>
         </Tabs>
 
-        {/* Submission list */}
+        {/* Frequency context banner — monthly leagues show submissions per period, not per day */}
+        {dominantFrequency === 'monthly' && (
+          <View
+            className="flex-row items-center gap-2 rounded-xl px-4 py-3"
+            style={{ backgroundColor: mflColors.brandLight, borderWidth: 1, borderColor: `${mflColors.brand}33` }}
+          >
+            <Feather name="calendar" size={14} color={mflColors.brand} />
+            <AppText className="flex-1 text-xs" style={{ color: mflColors.brand }}>
+              This league tracks activity monthly. Submissions are grouped by month.
+            </AppText>
+          </View>
+        )}
+        {dominantFrequency === 'weekly' && filteredSubmissions.length > 0 && (
+          <View
+            className="flex-row items-center gap-2 rounded-xl px-4 py-3"
+            style={{ backgroundColor: mflColors.inkLight }}
+          >
+            <Feather name="calendar" size={13} color={mflColors.textMuted} />
+            <AppText className="flex-1 text-xs text-muted">
+              Weekly league — one activity per week counts toward points.
+            </AppText>
+          </View>
+        )}
+
+        {/* Submission list — monthly leagues group by month, others show flat */}
         {filteredSubmissions.length === 0 ? (
           <ScreenState
             screen="my-activity"
@@ -405,6 +505,18 @@ export default function MyActivityScreen() {
               activeTab === 'All' && !isChallengesOnly
                 ? () => router.push('/(app)/log-activity' as any)
                 : undefined
+            }
+          />
+        ) : dominantFrequency === 'monthly' ? (
+          // Monthly view: group submissions by calendar month
+          <MonthlyGroupedList
+            submissions={filteredSubmissions}
+            resubmittableIds={resubmittableIds}
+            onPressEntry={(id) =>
+              router.push({ pathname: '/(app)/submission-detail' as any, params: { submissionId: id } })
+            }
+            onReupload={(id) =>
+              router.push({ pathname: '/(app)/reupload-submission' as any, params: { submissionId: id } })
             }
           />
         ) : (
