@@ -365,9 +365,9 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
                 className="mt-3 flex-row items-center gap-2 rounded-xl px-5 py-3"
                 style={{ backgroundColor: mflColors.brand }}
               >
-                <Feather name="zap" size={15} color={mflColors.white} />
+                <Feather name={isCaptainRole ? 'zap' : 'message-circle'} size={15} color={mflColors.white} />
                 <AppText className="text-sm font-semibold" style={{ color: mflColors.white }}>
-                  Send Motivation
+                  {isCaptainRole ? 'Send Motivation' : 'Start Chatting'}
                 </AppText>
               </Pressable>
             ) : null}
