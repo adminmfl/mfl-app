@@ -205,7 +205,7 @@ export default function ManualEntryScreen() {
         return 'Duration is required for this workout.';
       }
       if (computedRR < 1) {
-        return 'Workout RR must be at least 1.0 based on the entered values.';
+        return 'Activity RR must be at least 1.0 based on the entered values.';
       }
       if (editMode === 'overwrite' && !proofImage && !form.proofUrl.trim()) {
         return 'Proof image is required when overwriting an entry.';
@@ -359,7 +359,7 @@ export default function ManualEntryScreen() {
             <Feather name="arrow-left" size={24} color={mflColors.text} />
           </Pressable>
           <AppText className="flex-1 text-xl font-bold text-foreground text-center">
-            Manual Workout Entry
+            Manual Activity Entry
           </AppText>
           <View style={{ width: 40 }} />
         </View>

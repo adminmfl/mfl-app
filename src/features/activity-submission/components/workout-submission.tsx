@@ -244,7 +244,7 @@ export function WorkoutSubmission({
 
     // Block if RR < 1.0 for standard formula
     if (rrFormula === 'standard' && clientRREstimate !== null && clientRREstimate < 1.0) {
-      Alert.alert('Insufficient Effort', 'Workout RR must be at least 1.0. Please increase your effort.');
+      Alert.alert('Insufficient Effort', 'Activity RR must be at least 1.0. Please increase your effort.');
       return;
     }
 
@@ -349,37 +349,73 @@ export function WorkoutSubmission({
         </View>
       )}
 
-      {/* Activity Type Picker */}
+      {/* Activity Type + Activity Day */}
       <View className="gap-2">
-        <AppText className="text-sm font-semibold text-muted">Activity Type</AppText>
-        <View className="flex-row flex-wrap gap-2">
-          {activities.map((activity) => {
-            const isSelected = workoutType === activity.value;
-            return (
-              <Pressable
-                key={activity.activity_id}
-                onPress={() => {
-                  setWorkoutType(activity.value);
-                  setRRPreview(null);
-                  setCustomFieldValue('');
-                  setCustomFieldValue2('');
-                  setOutcome('');
-                }}
-                className={`px-5 py-2 rounded-full border ${
-                  isSelected ? 'border-transparent' : 'border-default-200 bg-card'
-                }`}
-                style={isSelected ? { backgroundColor: mflColors.brand, borderColor: mflColors.brand } : undefined}
-              >
-                <AppText className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-foreground'}`}>
-                  {activity.activity_name}
+        <View className="flex-row gap-3 items-start">
+          <View className="flex-1 gap-2">
+            <AppText className="text-sm font-semibold text-muted">Activity Type</AppText>
+            <View className="flex-row flex-wrap gap-1.5">
+              {activities.map((activity) => {
+                const isSelected = workoutType === activity.value;
+                return (
+                  <Pressable
+                    key={activity.activity_id}
+                    onPress={() => {
+                      setWorkoutType(activity.value);
+                      setRRPreview(null);
+                      setCustomFieldValue('');
+                      setCustomFieldValue2('');
+                      setOutcome('');
+                    }}
+                    className={`px-3 py-1.5 rounded-full border ${
+                      isSelected ? 'border-transparent' : 'border-default-200 bg-card'
+                    }`}
+                    style={isSelected ? { backgroundColor: mflColors.brand, borderColor: mflColors.brand } : undefined}
+                  >
+                    <AppText className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                      {activity.activity_name}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {errors.workoutType && (
+              <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.workoutType}</AppText>
+            )}
+          </View>
+
+          <View className="gap-2" style={{ width: 148 }}>
+            <View className="flex-row items-center gap-1">
+              <AppText className="text-sm font-semibold text-muted">Activity Day</AppText>
+              {isResubmit && (
+                <View className="bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">
+                  <AppText className="text-[10px] text-amber-700 dark:text-amber-400">Locked</AppText>
+                </View>
+              )}
+            </View>
+            <View className="bg-card rounded-xl border border-separator p-2">
+              <View className="flex-row items-center justify-between">
+                <Pressable onPress={() => shiftDate(-1)} hitSlop={8} disabled={isResubmit}>
+                  <Feather name="chevron-left" size={18} color={isResubmit ? mflColors.textMuted : mflColors.text} />
+                </Pressable>
+                <AppText className="text-xs font-medium text-foreground text-center">
+                  {formatDisplayDate(entryDate)}
                 </AppText>
-              </Pressable>
-            );
-          })}
+                <Pressable
+                  onPress={() => shiftDate(1)}
+                  hitSlop={8}
+                  disabled={isResubmit || compareDates(entryDate, maxActivityDate) >= 0}
+                >
+                  <Feather
+                    name="chevron-right"
+                    size={18}
+                    color={isResubmit || compareDates(entryDate, maxActivityDate) >= 0 ? mflColors.textMuted : mflColors.text}
+                  />
+                </Pressable>
+              </View>
+            </View>
+          </View>
         </View>
-        {errors.workoutType && (
-          <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.workoutType}</AppText>
-        )}
       </View>
 
       {/* Duration */}
@@ -511,60 +547,6 @@ export function WorkoutSubmission({
         </View>
       )}
 
-      {/* Custom Field 1 */}
-      {selectedActivity?.custom_field_label && (
-        <View className="gap-2">
-          <AppText className="text-sm font-semibold text-muted">{selectedActivity.custom_field_label} *</AppText>
-          <TextInput
-            style={{ ...inputStyle, minHeight: 60, textAlignVertical: 'top' }}
-            value={customFieldValue}
-            onChangeText={setCustomFieldValue}
-            placeholder={selectedActivity.custom_field_placeholder || selectedActivity.custom_field_label}
-            placeholderTextColor={mflColors.textMuted}
-            multiline
-          />
-          {errors.customField && (
-            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.customField}</AppText>
-          )}
-        </View>
-      )}
-
-      {/* Custom Field 2 */}
-      {selectedActivity?.custom_field_label_2 && (
-        <View className="gap-2">
-          <AppText className="text-sm font-semibold text-muted">{selectedActivity.custom_field_label_2} *</AppText>
-          <TextInput
-            style={{ ...inputStyle, minHeight: 60, textAlignVertical: 'top' }}
-            value={customFieldValue2}
-            onChangeText={setCustomFieldValue2}
-            placeholder={selectedActivity.custom_field_placeholder_2 || selectedActivity.custom_field_label_2}
-            placeholderTextColor={mflColors.textMuted}
-            multiline
-          />
-          {errors.customField2 && (
-            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.customField2}</AppText>
-          )}
-        </View>
-      )}
-
-      {/* Notes */}
-      <View className="gap-2">
-        <AppText className="text-sm font-semibold text-muted">
-          Notes{(selectedActivity?.notes_requirement === 'mandatory') ? ' *' : ''}
-        </AppText>
-        <TextInput
-          style={{ ...inputStyle, minHeight: 60, textAlignVertical: 'top' }}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Optional notes about your activity"
-          placeholderTextColor={mflColors.textMuted}
-          multiline
-        />
-        {errors.notes && (
-          <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.notes}</AppText>
-        )}
-      </View>
-
       {/* Proof Upload */}
       <View className="gap-2">
         <AppText className="text-sm font-semibold text-muted">
@@ -593,11 +575,31 @@ export function WorkoutSubmission({
                 if (extraction) {
                   const fill = getAutoFillFields(extraction);
                   if (fill.autoFilledFields.length > 0) {
-                    if (fill.duration !== undefined) setDuration(fill.duration);
-                    if (fill.distance !== undefined) setDistance(fill.distance);
-                    if (fill.steps !== undefined) setSteps(fill.steps);
-                    setRRPreview(null);
-                    Alert.alert('Auto-filled', `Auto-filled: ${fill.autoFilledFields.join(', ')}`);
+                    // Build a single consolidated confirmation listing all detected fields.
+                    // Firing separate Alert.alert() calls per field stacks alerts on Android
+                    // and the user only sees the last one.
+                    const lines = fill.autoFilledFields.map((f) => {
+                      if (f === 'duration') return `Duration: ${fill.duration} min`;
+                      if (f === 'distance') return `Distance: ${fill.distance} km`;
+                      if (f === 'steps') return `Steps: ${fill.steps}`;
+                      return f;
+                    });
+                    Alert.alert(
+                      'Auto-fill Detected Values?',
+                      lines.join('\n'),
+                      [
+                        { text: 'Skip', style: 'cancel' },
+                        {
+                          text: 'Apply All',
+                          onPress: () => {
+                            if (fill.duration !== undefined) setDuration(fill.duration);
+                            if (fill.distance !== undefined) setDistance(fill.distance);
+                            if (fill.steps !== undefined) setSteps(fill.steps);
+                            setRRPreview(null);
+                          },
+                        },
+                      ],
+                    );
                   }
                 }
               }
@@ -621,7 +623,6 @@ export function WorkoutSubmission({
             else if (field === 'distance') setDistance(value);
             else if (field === 'steps') setSteps(value);
             setRRPreview(null);
-            Alert.alert('Applied', `Applied ${field}: ${value}`);
           }}
         />
         {/* Second proof image (only if activity allows 2+ images) */}
@@ -653,38 +654,63 @@ export function WorkoutSubmission({
         )}
       </View>
 
-      {/* Date Picker */}
-      <View className="gap-2">
-        <View className="flex-row items-center gap-2">
-          <AppText className="text-sm font-semibold text-muted">Date</AppText>
-          {isResubmit && (
-            <View className="bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded">
-              <AppText className="text-xs text-amber-700 dark:text-amber-400">Locked to original date</AppText>
-            </View>
+      {/* Optional fields */}
+      {(selectedActivity?.notes_requirement ?? 'optional') !== 'not_required' && (
+        <View className="gap-2">
+          <AppText className="text-sm font-semibold text-muted">
+            {selectedActivity?.notes_requirement === 'mandatory' ? 'Notes *' : 'Notes (optional)'}
+          </AppText>
+          <TextInput
+            style={{ ...inputStyle, minHeight: 48, textAlignVertical: 'top' }}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={
+              selectedActivity?.notes_requirement === 'mandatory'
+                ? 'Required — add notes about your activity'
+                : 'Optional notes about your activity'
+            }
+            placeholderTextColor={mflColors.textMuted}
+            multiline
+          />
+          {errors.notes && (
+            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.notes}</AppText>
           )}
         </View>
-        <View className="bg-card rounded-xl border border-separator p-3">
-          <View className="flex-row items-center justify-between">
-            <Pressable onPress={() => shiftDate(-1)} hitSlop={8} disabled={isResubmit}>
-              <Feather name="chevron-left" size={22} color={isResubmit ? mflColors.textMuted : mflColors.text} />
-            </Pressable>
-            <AppText className="text-base font-medium text-foreground">
-              {formatDisplayDate(entryDate)}
-            </AppText>
-            <Pressable
-              onPress={() => shiftDate(1)}
-              hitSlop={8}
-              disabled={isResubmit || compareDates(entryDate, maxActivityDate) >= 0}
-            >
-              <Feather
-                name="chevron-right"
-                size={22}
-                color={isResubmit || compareDates(entryDate, maxActivityDate) >= 0 ? mflColors.textMuted : mflColors.text}
-              />
-            </Pressable>
-          </View>
+      )}
+
+      {selectedActivity?.custom_field_label && (
+        <View className="gap-2">
+          <AppText className="text-sm font-semibold text-muted">{selectedActivity.custom_field_label} *</AppText>
+          <TextInput
+            style={{ ...inputStyle, minHeight: 48, textAlignVertical: 'top' }}
+            value={customFieldValue}
+            onChangeText={setCustomFieldValue}
+            placeholder={selectedActivity.custom_field_placeholder || selectedActivity.custom_field_label}
+            placeholderTextColor={mflColors.textMuted}
+            multiline
+          />
+          {errors.customField && (
+            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.customField}</AppText>
+          )}
         </View>
-      </View>
+      )}
+
+      {selectedActivity?.custom_field_label_2 && (
+        <View className="gap-2">
+          <AppText className="text-sm font-semibold text-muted">{selectedActivity.custom_field_label_2} *</AppText>
+          <TextInput
+            style={{ ...inputStyle, minHeight: 48, textAlignVertical: 'top' }}
+            value={customFieldValue2}
+            onChangeText={setCustomFieldValue2}
+            placeholder={selectedActivity.custom_field_placeholder_2 || selectedActivity.custom_field_label_2}
+            placeholderTextColor={mflColors.textMuted}
+            multiline
+          />
+          {errors.customField2 && (
+            <AppText className="text-sm" style={{ color: mflColors.danger }}>{errors.customField2}</AppText>
+          )}
+        </View>
+      )}
 
       {/* RR Preview */}
       {showRR && (

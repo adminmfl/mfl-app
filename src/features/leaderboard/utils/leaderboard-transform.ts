@@ -27,15 +27,20 @@ function assignRankTiers<T extends { rank: number }>(
   );
 
   const middleNudges = [
-    "You're in the middle of the pack, keep pushing!",
-    'A few more points to break into the top tier!',
-    'Consistency is key, keep it up!',
+    "You're in the middle of the pack — keep pushing!",
+    'A few more activity points could break you into the top tier.',
+    'Consistency beats intensity. Log today and climb tomorrow.',
+    'Your team is counting on you — one more submission makes a difference.',
+    'Small daily efforts add up. Stay in the race!',
   ];
   const bottomNudges = [
-    "Every step counts. You've got this!",
-    "Don't give up! Keep building those habits.",
+    "Every activity counts. You've got this!",
+    "Don't give up — building habits is the real win.",
+    'A comeback starts with one log. Make today count.',
     'Your fitness journey is a marathon, not a sprint.',
+    'Log an activity today and start your climb up the board.',
   ];
+  const daySeed = Math.floor(Date.now() / 86_400_000);
 
   return items.map((item, index) => {
     if (index < topCutoff) return { ...item, rank_tier: 'top' as const };
@@ -45,13 +50,13 @@ function assignRankTiers<T extends { rank: number }>(
         ...item,
         rank_tier: 'middle' as const,
         rank_band: `Top ${bandPct}%`,
-        motivational_nudge: middleNudges[index % middleNudges.length],
+        motivational_nudge: middleNudges[(index + daySeed) % middleNudges.length],
       };
     }
     return {
       ...item,
       rank_tier: 'bottom' as const,
-      motivational_nudge: bottomNudges[index % bottomNudges.length],
+      motivational_nudge: bottomNudges[(index + daySeed) % bottomNudges.length],
     };
   });
 }
