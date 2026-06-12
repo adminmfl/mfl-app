@@ -33,7 +33,7 @@ import type {
 } from '../types/messaging.model';
 import { messagingQueryKeys } from '../utils/messaging-query-keys';
 import { ChatChannelSelector } from './chat-channel-selector';
-import { ChatComposer } from './chat-composer';
+import { ChatComposer, type ChatComposerHandle } from './chat-composer';
 import { ChatMessageBubble } from './chat-message-bubble';
 import { MessagingChip } from './messaging-chip';
 
@@ -69,6 +69,9 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const [filter, setFilter] = useState<ChatFilter>('all');
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Ref to let the empty-state CTA focus the composer input
+  const composerRef = useRef<ChatComposerHandle>(null);
 
   useEffect(() => {
     if (!selectedTeamId) setAdminView(false);
@@ -256,7 +259,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         </View>
       </View>
 
-      <View className="gap-3 px-4 py-3">
+      <View className="gap-2 px-4 pt-3 pb-2">
         {isLeader ? (
           <ChatChannelSelector
             teams={teams}
@@ -272,7 +275,13 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
           />
         ) : null}
 
-        <View className="flex-row flex-wrap gap-2">
+        {/* Filter chips — horizontal scroll prevents overflow on narrow screens */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingRight: 8 }}
+          keyboardShouldPersistTaps="handled"
+        >
           {FILTER_OPTIONS.map((option) => (
             <MessagingChip
               key={option.value}
@@ -281,7 +290,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
               onPress={() => setFilter(option.value)}
             />
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       {pinnedMessage ? (
@@ -328,19 +337,40 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             contentContainerStyle={{
               flexGrow: 1,
               justifyContent: 'center',
-              paddingHorizontal: 16,
+              alignItems: 'center',
+              paddingHorizontal: 24,
               paddingVertical: 48,
+              gap: 8,
             }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={refresh} />
             }
             keyboardShouldPersistTaps="handled"
           >
-            <AppText className="text-sm text-muted text-center">
-              {filter === 'all'
-                ? 'No messages yet.'
-                : `No ${FILTER_OPTIONS.find((option) => option.value === filter)?.label.toLowerCase()} messages.`}
+            <View
+              className="w-14 h-14 rounded-2xl items-center justify-center mb-2"
+              style={{ backgroundColor: mflColors.brandLight }}
+            >
+              <Feather name="message-circle" size={28} color={mflColors.brand} />
+            </View>
+            <AppText className="text-sm font-semibold text-foreground text-center">
+              {filter === 'all' ? 'No messages yet' : `No ${FILTER_OPTIONS.find((o) => o.value === filter)?.label.toLowerCase()} messages`}
             </AppText>
+            <AppText className="text-xs text-muted text-center">
+              {filter === 'all' ? 'Be the first to start the conversation!' : 'Try switching to "All" to see all messages.'}
+            </AppText>
+            {filter === 'all' ? (
+              <Pressable
+                onPress={() => composerRef.current?.focusInput()}
+                className="mt-3 flex-row items-center gap-2 rounded-xl px-5 py-3"
+                style={{ backgroundColor: mflColors.brand }}
+              >
+                <Feather name={isCaptainRole ? 'zap' : 'message-circle'} size={15} color={mflColors.white} />
+                <AppText className="text-sm font-semibold" style={{ color: mflColors.white }}>
+                  {isCaptainRole ? 'Send Motivation' : 'Start Chatting'}
+                </AppText>
+              </Pressable>
+            ) : null}
           </ScrollView>
         ) : (
           <FlatList
@@ -374,6 +404,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
       ) : (
         <View style={{ paddingBottom: Math.max(insets.bottom, 8), backgroundColor: mflColors.card }}>
           <ChatComposer
+            ref={composerRef}
             leagueId={leagueId}
             teamId={channelTeamId}
             currentRole={activeRole}
@@ -382,8 +413,10 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             replyTo={replyTo}
             onCancelReply={() => setReplyTo(null)}
             onSent={() => {
-              messagesQuery.refetch();
-              unreadQuery.refetch();
+              // Invalidate in the background — keeps optimistic message visible
+              // until the server response replaces it, preventing the disappearance bug.
+              queryClient.invalidateQueries({ queryKey: activeQueryKey });
+              queryClient.invalidateQueries({ queryKey: messagingQueryKeys.unread(leagueId) });
             }}
             senderId={user?.id}
             senderUsername={profileQuery.data?.username}
@@ -417,3 +450,4 @@ function getDeepLinkSection(path: string): string | null {
   if (match?.[1]) return match[1].split('/')[0] ?? null;
   return normalized.split('/').filter(Boolean).at(-1) ?? null;
 }
+
