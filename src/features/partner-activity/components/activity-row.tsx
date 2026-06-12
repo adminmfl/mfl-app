@@ -24,7 +24,7 @@ export function ActivityRow({ activity }: ActivityRowProps) {
           {activity.playerName}
         </AppText>
         <AppText className="text-xs text-muted capitalize" numberOfLines={1}>
-          {activity.workoutType || activity.type || 'Workout'}
+          {activity.workoutType || activity.type || 'Activity'}
         </AppText>
       </View>
 

@@ -156,7 +156,7 @@ export async function uploadManagedTeamLogo(
     uri: file.uri,
     name: file.name,
     type: file.type,
-  } as any);
+  } as unknown as Blob);
 
   const res = await api.post(
     `/api/leagues/${leagueId}/teams/${teamId}/logo`,

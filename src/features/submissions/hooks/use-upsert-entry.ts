@@ -13,8 +13,19 @@ export function useUpsertEntry() {
       const dto = await upsertEntry(data);
       return toSubmissionEntry(dto.data);
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.entries.all });
+      if (variables.league_id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.leagues.leaderboard(variables.league_id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.leagues.dashboardSummary(variables.league_id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.leagues.mySubmissions(variables.league_id),
+        });
+      }
     },
   });
 }

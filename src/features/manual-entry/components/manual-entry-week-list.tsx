@@ -87,7 +87,7 @@ export function ManualEntryWeekList({
                     size={16}
                     color={isApproved ? mflColors.text : mflColors.white}
                   />
-                  <Button.Label>{isApproved ? 'Overwrite' : 'Add workout'}</Button.Label>
+                  <Button.Label>{isApproved ? 'Overwrite' : 'Add activity'}</Button.Label>
                 </Button>
               </View>
             </View>

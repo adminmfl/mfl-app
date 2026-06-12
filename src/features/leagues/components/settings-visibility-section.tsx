@@ -49,15 +49,15 @@ export function SettingsVisibilitySection({
         />
         <Divider />
         <ToggleRow
-          label="Team Workout Visibility"
-          description="Players can view their teammates' last 5 approved workouts."
+          label="Team Activity Visibility"
+          description="Players can view their teammates' last 5 approved activities."
           value={playerTeamWorkoutVisibility}
           onToggle={onToggleTeamWorkout}
         />
         <Divider />
         <ToggleRow
-          label="Cross-Team Workout Visibility"
-          description="Players can search and view other teams' member workouts."
+          label="Cross-Team Activity Visibility"
+          description="Players can search and view other teams' member activities."
           value={playerLeagueWorkoutVisibility}
           onToggle={onToggleLeagueWorkout}
         />

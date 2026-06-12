@@ -4,7 +4,7 @@ export interface ChecklistItem {
 }
 
 export const LEAGUE_CONCEPT_POINTS = [
-  'Members log fitness activities (workouts, rest days, challenges)',
+  'Members log fitness activities (activities, rest days, challenges)',
   'You approve/reject submissions and award points',
   'Leaderboards automatically rank members by points',
   'League runs for a fixed duration (days you set)',

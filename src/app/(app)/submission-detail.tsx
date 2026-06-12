@@ -22,7 +22,7 @@ function formatWorkoutType(
   customActivityName?: string,
 ): string {
   if (customActivityName) return customActivityName;
-  if (!workoutType) return 'General Workout';
+  if (!workoutType) return 'General Activity';
   return workoutType
     .split('_')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
@@ -179,7 +179,7 @@ export default function SubmissionDetailScreen() {
           <Feather name="arrow-left" size={24} color={mflColors.text} />
         </Pressable>
         <AppText className="flex-1 text-xl font-bold text-foreground text-center">
-          {isWorkout ? 'Workout Submission' : 'Rest Day'}
+          {isWorkout ? 'Activity Submission' : 'Rest Day'}
         </AppText>
         <View style={{ width: 40 }} />
       </View>

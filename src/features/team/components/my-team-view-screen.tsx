@@ -92,7 +92,7 @@ export function MyTeamViewScreen() {
         <ScreenState
           screen="my-team"
           state="empty"
-          message="You haven't been assigned to a team yet. Please wait for the host or governor to assign you."
+          message="You haven't been assigned to a team yet. Please contact your host to be assigned to a team."
         />
       </ScreenScrollView>
     );
