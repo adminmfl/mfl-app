@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { View, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { Avatar, Button, Card, Chip, Tabs } from 'heroui-native';
+import { Avatar, Button, Card, Tabs } from 'heroui-native';
 import { TeamViewRoster } from '../../../features/team/components/team-view-roster';
 import { useRouter } from 'expo-router';
 import { AppText } from '../../../components/app-text';
@@ -125,7 +125,6 @@ export default function MyTeamScreen() {
             teamName={overviewData?.stats.teamName ?? activeLeague.teamName}
             teamLogoUrl={activeLeague.teamLogoUrl}
             overviewData={overviewData}
-            teamCapacity={teamCapacity}
             isLeader={isLeader}
             isCaptain={isCaptain}
             isViceCaptain={isViceCaptain}
@@ -183,7 +182,6 @@ interface RosterTabProps {
         };
       }
     | undefined;
-  teamCapacity: number;
   isLeader: boolean;
   isCaptain: boolean;
   isViceCaptain: boolean;
@@ -199,7 +197,6 @@ function RosterTab({
   teamName,
   teamLogoUrl,
   overviewData,
-  teamCapacity,
   isLeader,
   isCaptain,
   isViceCaptain,
@@ -243,7 +240,7 @@ function RosterTab({
       <ScreenState
         screen="my-team"
         state="empty"
-        message="You are not assigned to a team yet"
+        message="You are not assigned to a team yet. Please contact your host to be assigned to a team."
       />
     );
   }
@@ -274,17 +271,12 @@ function RosterTab({
         ) : null}
       </DarkHeaderCard>
 
-      {/* Stats Row */}
+      {/* Stats Summary Cards — Team Points · Run Rate · Ranking */}
       {stats && (
         <View className="flex-row gap-2">
-          <StatCard value={stats.teamRank} label="Rank" color={mflColors.amber} />
-          <StatCard value={String(stats.teamPoints)} label="Points" color={mflColors.brand} />
-          <StatCard value={stats.teamAvgRR.toFixed(1)} label="Avg RR" color={mflColors.blue} />
-          <StatCard
-            value={`${members.length}/${teamCapacity}`}
-            label="Members"
-            color={mflColors.ink}
-          />
+          <StatCard value={stats.teamRank} label="Team Ranking" color={mflColors.amber} />
+          <StatCard value={String(stats.teamPoints)} label="Team Points" color={mflColors.brand} />
+          <StatCard value={stats.teamAvgRR.toFixed(1)} label="Run Rate" color={mflColors.blue} />
         </View>
       )}
 
@@ -498,9 +490,14 @@ function UnallocatedMembersModal({
                     {member.username ?? 'Unknown'}
                   </AppText>
                   {member.roles.includes('host') && (
-                    <Chip size="sm" variant="soft">
-                      <Chip.Label>Host</Chip.Label>
-                    </Chip>
+                    <View
+                      className="rounded-full px-2 py-0.5"
+                      style={{ backgroundColor: mflColors.amberLight }}
+                    >
+                      <AppText className="text-[10px] font-semibold" style={{ color: mflColors.amber }}>
+                        Host
+                      </AppText>
+                    </View>
                   )}
                 </Pressable>
               );
@@ -567,9 +564,9 @@ function TeamsTab({ teams }: TeamsTabProps) {
               <AppText className="text-sm font-semibold text-foreground" numberOfLines={1}>
                 {team.teamName}
               </AppText>
-              <Chip size="sm" variant="soft">
-                <Chip.Label>{`${team.memberCount} ${team.memberCount === 1 ? 'member' : 'members'}`}</Chip.Label>
-              </Chip>
+              <AppText className="text-xs text-muted">
+                {`${team.memberCount} ${team.memberCount === 1 ? 'member' : 'members'}`}
+              </AppText>
             </View>
           </View>
         </Card>

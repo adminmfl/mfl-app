@@ -283,7 +283,7 @@ export function getEntrySummary(
   activityNameMap: Map<string, string>,
 ) {
   if (!entry) return 'No submission';
-  const typeLabel = entry.type === 'workout' ? 'Workout' : 'Rest Day';
+  const typeLabel = entry.type === 'workout' ? 'Activity' : 'Rest Day';
   const workout = resolveWorkoutType(entry.workout_type, activityNameMap);
   const status = entry.status ? ` - ${entry.status}` : '';
   return `${typeLabel}${workout ? ` - ${workout}` : ''}${status}`;

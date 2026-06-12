@@ -11,6 +11,7 @@ import { SectionLabel } from '../../../components/section-label';
 import { StatCard } from '../../../components/stat-card';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
+import { useLeagueDashboardSummary } from '../../dashboard/hooks/use-league-dashboard-summary';
 import { useLeagueDetail } from '../hooks/use-league-detail';
 import { useLeaguePhase } from '../hooks/use-league-phase';
 import { isLeagueEnded } from '../utils/league-status';
@@ -65,6 +66,7 @@ export function LeagueOverviewScreen() {
   const leagueId = activeLeague?.leagueId ?? '';
   const detailQuery = useLeagueDetail(leagueId);
   const phaseQuery = useLeaguePhase(leagueId);
+  const summaryQuery = useLeagueDashboardSummary(leagueId || null);
   const { data: sponsorSlots } = useLeagueSponsors(leagueId);
 
   const league = detailQuery.data;
@@ -89,8 +91,12 @@ export function LeagueOverviewScreen() {
   );
 
   const handleRefresh = useCallback(async () => {
-    await Promise.all([detailQuery.refetch(), phaseQuery.refetch()]);
-  }, [detailQuery, phaseQuery]);
+    await Promise.all([
+      detailQuery.refetch(),
+      phaseQuery.refetch(),
+      summaryQuery.refetch(),
+    ]);
+  }, [detailQuery, phaseQuery, summaryQuery]);
 
   const handleShare = useCallback(async () => {
     if (!league?.inviteCode) return;
@@ -121,18 +127,22 @@ export function LeagueOverviewScreen() {
   }
 
   // ── Loaded ───────────────────────────────────────────────────────────────
+  const summary = summaryQuery.data;
+  const showRR = summary?.rrFormula === 'standard';
+  const showRest = (summary?.restDays ?? league.restDays) > 0;
+
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
-      <View className="gap-4">
+      <View className="gap-3">
         {/* ── League Header ──────────────────────────────────────── */}
-        <Card className="p-4">
+        <Card className="p-3">
           <View className="flex-row items-start justify-between">
             <View className="flex-1 mr-3">
               <AppText className="text-lg font-bold text-foreground" numberOfLines={2}>
                 {league.name}
               </AppText>
               {league.description ? (
-                <AppText className="text-sm text-muted mt-1" numberOfLines={3}>
+                <AppText className="text-sm text-muted mt-0.5" numberOfLines={2}>
                   {league.description}
                 </AppText>
               ) : null}
@@ -161,19 +171,6 @@ export function LeagueOverviewScreen() {
               </Chip.Label>
             </Chip>
           </View>
-
-          {/* Invite / Share */}
-          {league.inviteCode && !ended && (
-            <Pressable
-              onPress={handleShare}
-              className="flex-row items-center gap-2 mt-3 self-start"
-            >
-              <Feather name="share-2" size={14} color={mflColors.brand} />
-              <AppText className="text-xs font-semibold" style={{ color: mflColors.brand }}>
-                Share Invite
-              </AppText>
-            </Pressable>
-          )}
         </Card>
 
         {/* ── Title Sponsor ─────────────────────────────────────── */}
@@ -207,103 +204,158 @@ export function LeagueOverviewScreen() {
           </Card>
         )}
 
-        {/* ── Quick Actions (visible without scrolling) ─────────── */}
-        {!ended && (
-          <View className="flex-row gap-2">
-            {league.startDate && league.endDate && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onPress={() => router.push('/(app)/analytics' as any)}
-                className="flex-1"
-              >
-                <Feather name="clipboard" size={14} color={mflColors.brand} />
-                <Button.Label>My Summary</Button.Label>
-              </Button>
-            )}
-            {!isChallengesOnly && (
-              <Button
-                variant="primary"
-                size="sm"
-                onPress={() => router.push('/(app)/(tabs)/my-activity' as any)}
-                className="flex-1"
-              >
-                <Feather name="plus-circle" size={14} color="#fff" />
-                <Button.Label>Log Activity</Button.Label>
-              </Button>
-            )}
+        {/* ── Quick Actions ─────────────────────────────────────── */}
+        {!ended && !isChallengesOnly && (
+          <Button
+            variant="primary"
+            size="sm"
+            onPress={() => router.push('/(app)/(tabs)/my-activity' as any)}
+            className="w-full"
+          >
+            <Feather name="plus-circle" size={14} color="#fff" />
+            <Button.Label>Log Activity</Button.Label>
+          </Button>
+        )}
+
+        {/* ── My Summary ──────────────────────────────────────── */}
+        {!ended && summary && !summary.isChallengesOnly && (
+          <View>
+            <SectionLabel
+              label="MY SUMMARY"
+              actionLabel={summaryQuery.isFetching ? undefined : 'Refresh'}
+              onAction={() => void summaryQuery.refetch()}
+            />
+            <View className="gap-2 mt-1">
+              <View className="flex-row gap-2">
+                <StatCard
+                  value={summary.mySummary.points.toLocaleString()}
+                  label="Total Points"
+                  color={mflColors.brand}
+                />
+                {showRR && (
+                  <StatCard
+                    value={summary.mySummary.avgRR?.toFixed(2) ?? '—'}
+                    label="Avg RR"
+                    color={mflColors.brand}
+                  />
+                )}
+              </View>
+              {showRest && (
+                <View className="flex-row gap-2">
+                  <StatCard
+                    value={summary.mySummary.restUsed}
+                    label="Rest Days Used"
+                    color={mflColors.amber}
+                  />
+                  <StatCard
+                    value={`${summary.mySummary.restUnused ?? '—'} / ${summary.restDays}`}
+                    label="Remaining"
+                    color={mflColors.blue}
+                  />
+                  <StatCard
+                    value={summary.mySummary.missedDays}
+                    label="Missed Days"
+                    color={mflColors.textSub}
+                  />
+                </View>
+              )}
+              <View className="flex-row gap-2">
+                <StatCard
+                  value={summary.rejectedCount}
+                  label="Rejected"
+                  color={summary.rejectedCount > 0 ? mflColors.danger : mflColors.textSub}
+                />
+                {summary.mySummary.teamRank != null && (
+                  <StatCard
+                    value={`#${summary.mySummary.teamRank}`}
+                    label="Team Rank"
+                    color={mflColors.amber}
+                  />
+                )}
+              </View>
+            </View>
           </View>
         )}
 
-        {/* ── Progress Bar (active phases only) ──────────────────── */}
-        {progress && !ended && ACTIVE_PHASES.includes(league.phase as LeaguePhase) && (
-          <Card variant="secondary" className="p-4">
-            <View className="flex-row items-center justify-between mb-2">
-              <View className="flex-row items-center gap-2">
-                <Feather name="trending-up" size={14} color={mflColors.brand} />
-                <AppText className="text-sm font-semibold text-foreground">
-                  League Progress
-                </AppText>
-              </View>
-              <AppText className="text-sm font-bold" style={{ color: mflColors.brand }}>
-                {progress.pct}%
-              </AppText>
-            </View>
-            <View className="h-2 rounded-full bg-default-200 overflow-hidden">
-              <View
-                className="h-2 rounded-full"
-                style={{ width: `${progress.pct}%`, backgroundColor: mflColors.brand }}
-              />
-            </View>
-            <View className="flex-row justify-between mt-2">
-              <AppText className="text-xs text-muted">
-                {progress.daysElapsed} days elapsed
-              </AppText>
-              <AppText className="text-xs text-muted">
-                {progress.daysRemaining} days left
-              </AppText>
-            </View>
-          </Card>
-        )}
-
-        {/* ── Phase Indicator (slim) ───────────────────────────────── */}
-        {phaseQuery.isLoading ? (
-          <Card variant="secondary" className="px-4 py-2.5" style={{ borderStyle: 'dashed' }}>
-            <AppText className="text-xs text-muted">Loading phase...</AppText>
-          </Card>
-        ) : phaseInfo ? (
-          <Card variant="secondary" className="px-4 py-2.5">
+        {/* ── League Standings ────────────────────────────────── */}
+        <View>
+          <SectionLabel
+            label="LEAGUE STANDINGS"
+            actionLabel="View All"
+            onAction={() => router.push('/(app)/(tabs)/leaderboard' as any)}
+          />
+          <Card variant="secondary" className="p-3 mt-1">
             <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2 flex-1">
-                <AppText className="text-[10px] font-semibold text-muted uppercase tracking-wider">
-                  PHASE
+              <View className="flex-1">
+                <AppText className="text-sm font-semibold text-foreground">
+                  {activeLeague?.teamName ?? 'Leaderboard'}
                 </AppText>
-                <AppText className="text-sm font-semibold text-foreground" numberOfLines={1}>
-                  {PHASE_LABELS[phaseInfo.phase as LeaguePhase] ?? phaseInfo.phase_label}
+                <AppText className="text-xs text-muted mt-0.5">
+                  {league.numTeams} {league.numTeams === 1 ? 'team' : 'teams'} competing
                 </AppText>
               </View>
-              {phaseInfo.days_remaining != null && (
-                <View className="flex-row items-center gap-1">
-                  <Feather name="clock" size={12} color={mflColors.amber} />
-                  <AppText className="text-[11px] font-medium" style={{ color: mflColors.amber }}>
-                    {phaseInfo.days_remaining}d left
+              <Pressable
+                onPress={() => void handleRefresh()}
+                hitSlop={8}
+                className="p-2"
+              >
+                <Feather
+                  name="refresh-cw"
+                  size={16}
+                  color={mflColors.brand}
+                />
+              </Pressable>
+            </View>
+          </Card>
+        </View>
+
+        {/* ── League Information (includes phase + progress) ───── */}
+        <View>
+          <SectionLabel label="LEAGUE INFORMATION" />
+          <Card variant="secondary" className="p-3 mt-1 gap-3">
+            {phaseInfo && (
+              <View className="flex-row items-center justify-between pb-2 border-b border-default-200">
+                <View>
+                  <AppText className="text-[10px] font-semibold text-muted uppercase tracking-wider">
+                    League Phase
+                  </AppText>
+                  <AppText className="text-sm font-semibold text-foreground mt-0.5">
+                    {PHASE_LABELS[phaseInfo.phase as LeaguePhase] ?? phaseInfo.phase_label}
                   </AppText>
                 </View>
-              )}
-            </View>
-          </Card>
-        ) : null}
+                {phaseInfo.days_remaining != null && (
+                  <AppText className="text-xs font-medium" style={{ color: mflColors.amber }}>
+                    {phaseInfo.days_remaining}d left
+                  </AppText>
+                )}
+              </View>
+            )}
 
-        {/* ── League Info Section ────────────────────────────────── */}
-        <View>
-          <SectionLabel label="LEAGUE DETAILS" />
-          <View className="gap-2 mt-1">
-            {/* Date row */}
+            {progress && !ended && ACTIVE_PHASES.includes(league.phase as LeaguePhase) && (
+              <View className="gap-2 pb-2 border-b border-default-200">
+                <View className="flex-row items-center justify-between">
+                  <AppText className="text-sm font-semibold text-foreground">League Progress</AppText>
+                  <AppText className="text-sm font-bold" style={{ color: mflColors.brand }}>
+                    {progress.pct}%
+                  </AppText>
+                </View>
+                <View className="h-2 rounded-full bg-default-200 overflow-hidden">
+                  <View
+                    className="h-2 rounded-full"
+                    style={{ width: `${progress.pct}%`, backgroundColor: mflColors.brand }}
+                  />
+                </View>
+                <View className="flex-row justify-between">
+                  <AppText className="text-xs text-muted">{progress.daysElapsed} days elapsed</AppText>
+                  <AppText className="text-xs text-muted">{progress.daysRemaining} days left</AppText>
+                </View>
+              </View>
+            )}
+
             <View className="flex-row gap-2">
               <StatCard value={formatDate(league.startDate)} label="Start Date" />
               <StatCard value={formatDate(league.endDate)} label="End Date" />
             </View>
-            {/* Capacity row */}
             <View className="flex-row gap-2">
               <StatCard value={league.numTeams} label="Teams" color={mflColors.blue} />
               <StatCard
@@ -315,28 +367,21 @@ export function LeagueOverviewScreen() {
                 <StatCard value={league.restDays} label="Rest Days" color={mflColors.amber} />
               )}
             </View>
-            {/* Visibility & Join Type */}
-            <Card variant="secondary" className="p-3">
-              <View className="flex-row gap-4">
-                <View className="flex-1 items-center">
-                  <AppText className="text-[10px] text-muted mb-1">Visibility</AppText>
-                  <Chip size="sm" variant="soft">
-                    <Chip.Label>
-                      {league.isPublic ? 'Public' : 'Private'}
-                    </Chip.Label>
-                  </Chip>
-                </View>
-                <View className="flex-1 items-center">
-                  <AppText className="text-[10px] text-muted mb-1">Join Type</AppText>
-                  <Chip size="sm" variant="soft">
-                    <Chip.Label>
-                      {league.isExclusive ? 'Invite Only' : 'Open'}
-                    </Chip.Label>
-                  </Chip>
-                </View>
+            <View className="flex-row gap-4">
+              <View className="flex-1 items-center">
+                <AppText className="text-[10px] text-muted mb-1">Visibility</AppText>
+                <Chip size="sm" variant="soft">
+                  <Chip.Label>{league.isPublic ? 'Public' : 'Private'}</Chip.Label>
+                </Chip>
               </View>
-            </Card>
-          </View>
+              <View className="flex-1 items-center">
+                <AppText className="text-[10px] text-muted mb-1">Join Type</AppText>
+                <Chip size="sm" variant="soft">
+                  <Chip.Label>{league.isExclusive ? 'Invite Only' : 'Open'}</Chip.Label>
+                </Chip>
+              </View>
+            </View>
+          </Card>
         </View>
 
         {/* ── Challenges Link (challenges-only) ──────────────────── */}
@@ -375,6 +420,27 @@ export function LeagueOverviewScreen() {
                 subtitle="Gift rest days to a teammate"
                 onPress={() => router.push('/(app)/rest-day-donations' as any)}
               />
+            </Card>
+          </View>
+        )}
+
+        {/* ── Invite (bottom) ───────────────────────────────────── */}
+        {league.inviteCode && !ended && (
+          <View>
+            <SectionLabel label="INVITE OTHERS" />
+            <Card variant="secondary" className="p-3 mt-1 gap-2">
+              <AppText className="text-xs text-muted">
+                Share your league invite so friends can join this fitness league and compete on your leaderboard.
+              </AppText>
+              <Pressable
+                onPress={handleShare}
+                className="flex-row items-center gap-2 self-start"
+              >
+                <Feather name="share-2" size={14} color={mflColors.brand} />
+                <AppText className="text-sm font-semibold" style={{ color: mflColors.brand }}>
+                  Share Invite Code
+                </AppText>
+              </Pressable>
             </Card>
           </View>
         )}

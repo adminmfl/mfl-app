@@ -66,12 +66,21 @@ export function TeamRankingCard({
           <AppText className="text-lg font-bold" style={{ color: mflColors.brand }}>
             {formatNumber(team.total_points)}
           </AppText>
-          <AppText className="text-[10px] text-muted">points</AppText>
+          <AppText className="text-[10px] text-muted">Points</AppText>
         </View>
       </View>
 
+      <View className="mt-2 flex-row flex-wrap gap-3">
+        <AppText className="text-xs text-muted">
+          Activity Points: {formatNumber(team.points)}
+        </AppText>
+        <AppText className="text-xs text-muted">
+          Challenge Points: {formatNumber(team.challenge_bonus + (team.individual_challenge_points ?? 0))}
+        </AppText>
+      </View>
+
       {team.normalized_points !== undefined ? (
-        <AppText className="mt-2 text-xs text-muted">
+        <AppText className="mt-1 text-xs text-muted">
           Activity points normalized by team size: {formatNumber(team.normalized_points)}
         </AppText>
       ) : null}
@@ -131,8 +140,19 @@ export function IndividualRankingCard({
           <AppText className="text-lg font-bold" style={{ color: mflColors.brand }}>
             {formatNumber(player.points)}
           </AppText>
-          <AppText className="text-[10px] text-muted">points</AppText>
+          <AppText className="text-[10px] text-muted">Points</AppText>
         </View>
+      </View>
+
+      <View className="mt-2 flex-row flex-wrap gap-3">
+        <AppText className="text-xs text-muted">
+          Activity Points: {formatNumber(player.points)}
+        </AppText>
+        {(player.challenge_points ?? 0) > 0 && (
+          <AppText className="text-xs text-muted">
+            Challenge Points: {formatNumber(player.challenge_points ?? 0)}
+          </AppText>
+        )}
       </View>
     </Card>
   );

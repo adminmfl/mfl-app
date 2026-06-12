@@ -39,7 +39,7 @@ export function formatRelativeMessageTime(iso: string): string {
 }
 
 export function formatWorkoutTypeLabel(type: string | null): string {
-  if (!type || uuidPattern.test(type)) return 'Workout';
+  if (!type || uuidPattern.test(type)) return 'Activity';
   return type
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -75,7 +75,7 @@ export function getDeepLinkLabel(path: string): string {
   const section = match?.[1]?.split('/')[0] ?? normalized.split('/').filter(Boolean).at(-1);
 
   const labels: Record<string, string> = {
-    submit: 'Submit Workout',
+    submit: 'Submit Activity',
     challenges: 'Challenges',
     leaderboard: 'Leaderboard',
     activities: 'Activities',
