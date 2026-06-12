@@ -40,7 +40,7 @@ export function TeamViewStats({
               ? stats.activityPoints.toLocaleString()
               : '\u2014'
           }
-          label="Activity Pts"
+          label="Activity Points"
           color={mflColors.brand}
         />
         <StatCard
@@ -49,7 +49,7 @@ export function TeamViewStats({
               ? stats.challengePoints.toLocaleString()
               : '\u2014'
           }
-          label="Challenge Pts"
+          label="Challenge Points"
           color={mflColors.blue}
         />
       </View>

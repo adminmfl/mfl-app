@@ -178,7 +178,7 @@ export default function AiCoachScreen() {
     >
       {/* Header */}
       <View style={{ marginHorizontal: 16, marginTop: 12, marginBottom: 4 }}>
-        <DarkHeaderCard title="AI Coach" subtitle="Powered by AI" />
+        <DarkHeaderCard title="AI Coach" subtitle="Beta · Powered by AI" />
         <View className="flex-row items-center gap-1 mt-1 self-end">
           <Feather name="lock" size={10} color={mflColors.textMuted} />
           <AppText className="text-[10px] text-muted">Private to you</AppText>

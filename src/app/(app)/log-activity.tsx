@@ -130,18 +130,18 @@ export default function LogActivityScreen() {
       <ScrollView
         className="flex-1 bg-background"
         style={{ paddingTop: insets.top }}
-        contentContainerClassName="px-5 gap-5 pb-12"
+        contentContainerClassName="px-5 gap-4 pb-10"
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <View className="flex-row items-center pt-3 pb-2">
+        <View className="flex-row items-center pt-2 pb-1">
           <Pressable
             onPress={() => router.back()}
             hitSlop={12}
-            className="w-10 h-10 justify-center items-center rounded-full"
+            className="w-8 h-8 justify-center items-center rounded-full"
           >
-            <Feather name="arrow-left" size={24} color={mflColors.text} />
+            <Feather name="arrow-left" size={20} color={mflColors.textMuted} />
           </Pressable>
           <AppText className="flex-1 text-xl font-bold text-foreground text-center">
             Log Activity
@@ -163,14 +163,17 @@ export default function LogActivityScreen() {
 
         {/* Team Assignment Warning */}
         {noTeamAssigned && (
-          <View className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-3 border border-amber-200">
+          <View className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-3 border border-amber-200 gap-1">
+            <AppText className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              Waiting for Team Assignment
+            </AppText>
             <AppText className="text-sm text-amber-700 dark:text-amber-400">
-              You must be assigned to a team to submit activities.
+              Please contact your host to be assigned to a team before submitting activities.
             </AppText>
           </View>
         )}
 
-        {/* Workout / Rest Tabs */}
+        {/* Activity / Rest Tabs */}
         {showRestDays && !resubmitParams && (
           <View className="flex-row bg-default-100 rounded-xl p-1">
             <Pressable
@@ -184,7 +187,7 @@ export default function LogActivityScreen() {
                   tab === 'workout' ? 'text-foreground' : 'text-muted'
                 }`}
               >
-                Workout
+                Activity
               </AppText>
             </Pressable>
             <Pressable

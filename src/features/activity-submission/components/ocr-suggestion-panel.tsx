@@ -91,46 +91,37 @@ export function OcrSuggestionPanel({
         </View>
       )}
 
-      {/* Low-confidence suggestions */}
+      {/* Suggestions needing confirmation */}
       {suggestedFields.length > 0 && (
         <View className="gap-1.5">
-          <View className="flex-row items-center gap-2">
-            <Feather name="alert-triangle" size={16} color={mflColors.amber} />
-            <AppText className="text-sm" style={{ color: mflColors.amber }}>
-              Low confidence — review before applying:
-            </AppText>
-          </View>
-          {suggestedFields.map((s) => (
-            <View
-              key={s.field}
-              className="flex-row items-center justify-between rounded-lg border px-2.5 py-1.5"
-              style={{ borderColor: '#FDE68A', backgroundColor: '#FFFBEB' }}
-            >
-              <View className="flex-row items-center gap-2 flex-shrink">
-                <AppText className="text-sm font-medium text-foreground">
-                  {FIELD_LABELS[s.field] || s.field}:
+          {suggestedFields.map((s) => {
+            const label = (FIELD_LABELS[s.field] || s.field).toLowerCase();
+            const unit =
+              s.field === 'duration' ? ' min' : s.field === 'distance' ? ' km' : s.field === 'steps' ? ' steps' : '';
+            return (
+              <View
+                key={s.field}
+                className="rounded-lg border px-3 py-2.5 gap-2"
+                style={{ borderColor: '#FDE68A', backgroundColor: '#FFFBEB' }}
+              >
+                <AppText className="text-sm text-foreground">
+                  Detected {label}: {s.value}{unit}. Is this correct?
                 </AppText>
-                <AppText className="text-sm text-foreground">{s.value}</AppText>
-                {s.raw && (
-                  <AppText className="text-xs text-muted">("{s.raw}")</AppText>
+                {s.field !== 'calories' && (
+                  <View className="flex-row gap-3">
+                    <Pressable
+                      onPress={() => onApplySuggestion(s.field, s.value)}
+                      hitSlop={6}
+                      className="px-3 py-1 rounded"
+                      style={{ backgroundColor: mflColors.brand }}
+                    >
+                      <AppText className="text-xs font-semibold text-white">Apply</AppText>
+                    </Pressable>
+                  </View>
                 )}
-                <AppText className="text-xs text-muted">
-                  {Math.round(s.confidence * 100)}%
-                </AppText>
               </View>
-              {s.field !== 'calories' && (
-                <Pressable
-                  onPress={() => onApplySuggestion(s.field, s.value)}
-                  hitSlop={6}
-                  className="px-2 py-1 rounded"
-                >
-                  <AppText className="text-xs font-medium" style={{ color: mflColors.brand }}>
-                    Apply
-                  </AppText>
-                </Pressable>
-              )}
-            </View>
-          ))}
+            );
+          })}
         </View>
       )}
     </View>

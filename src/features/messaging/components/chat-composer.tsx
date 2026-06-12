@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as ImagePicker from 'expo-image-picker';
 import type React from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -39,6 +39,11 @@ import { MessagingChip } from './messaging-chip';
 
 type ComposerModal = 'quick' | 'mention' | 'link' | null;
 
+/** Imperative handle exposed to parent via ref */
+export interface ChatComposerHandle {
+  focusInput: () => void;
+}
+
 interface ChatComposerProps {
   leagueId: string;
   teamId: string | null;
@@ -54,7 +59,7 @@ interface ChatComposerProps {
   onSendFailed?: (messageId: string) => void;
 }
 
-export function ChatComposer({
+export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(function ChatComposer({
   leagueId,
   teamId,
   currentRole,
@@ -67,7 +72,7 @@ export function ChatComposer({
   senderUsername,
   onOptimisticMessage,
   onSendFailed,
-}: ChatComposerProps) {
+}: ChatComposerProps, ref) {
   const sendMutation = useSendChatMessage();
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState<ChatVisibility>('all');
@@ -78,6 +83,13 @@ export function ChatComposer({
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [motivating, setMotivating] = useState(false);
   const [modal, setModal] = useState<ComposerModal>(null);
+
+  // Ref to the text input so the empty-state CTA can focus it
+  const inputRef = useRef<TextInput>(null);
+
+  useImperativeHandle(ref, () => ({
+    focusInput: () => inputRef.current?.focus(),
+  }));
 
   const cannedQuery = useCannedMessages(leagueId, modal === 'quick');
   const membersQuery = useChatMembers(leagueId, modal === 'mention');
@@ -399,7 +411,7 @@ export function ChatComposer({
           ) : null}
           {isCaptainRole && teamId ? (
             <MessagingChip
-              label={motivating ? 'Writing' : 'Motivate'}
+              label={motivating ? 'Writing...' : 'Send Motivation'}
               icon="zap"
               disabled={motivating}
               onPress={handleMotivate}
@@ -411,6 +423,7 @@ export function ChatComposer({
 
       <View className="flex-row items-end gap-2">
         <TextInput
+          ref={inputRef}
           className="flex-1 rounded-2xl px-4 py-2 text-sm"
           style={{
             minHeight: 42,
@@ -499,7 +512,7 @@ export function ChatComposer({
             onPress={() => attachStaticLink('activities')}
           />
           <AppText className="px-1 pt-2 text-xs font-semibold text-muted">
-            Recent Workouts
+            Recent Activities
           </AppText>
           <MessagePickerContent
             isLoading={workoutsQuery.isLoading}
@@ -518,7 +531,7 @@ export function ChatComposer({
       </PickerModal>
     </View>
   );
-}
+});
 
 function PickerModal({
   visible,

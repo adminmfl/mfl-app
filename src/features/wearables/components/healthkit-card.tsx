@@ -109,7 +109,7 @@ export function HealthKitCard({
           className="text-xs mb-3"
           style={{ color: mflColors.brand }}
         >
-          {lastSyncCount} workout{lastSyncCount !== 1 ? 's' : ''} imported from
+          {lastSyncCount} activit{lastSyncCount !== 1 ? 'ies' : 'y'} imported from
           last sync
         </AppText>
       )}
