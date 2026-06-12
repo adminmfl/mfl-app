@@ -10,8 +10,6 @@ export function LeaderboardStatsBar({ stats }: { stats: LeaderboardStatsDTO }) {
     stats.total_submissions > 0
       ? Math.round((stats.approved / stats.total_submissions) * 100)
       : 0;
-  const rejected = stats.total_submissions - stats.approved - stats.pending;
-
   return (
     <View className="gap-3">
       <AppText className="text-xs font-semibold uppercase tracking-wider text-muted text-center">
@@ -25,7 +23,7 @@ export function LeaderboardStatsBar({ stats }: { stats: LeaderboardStatsDTO }) {
           color={mflColors.brand}
         />
         <Stat label="Pending" value={formatNumber(stats.pending)} color={mflColors.amber} />
-        <Stat label="Rejected" value={formatNumber(rejected)} color={mflColors.danger} />
+        <Stat label="Rejected" value={formatNumber(stats.rejected)} color={mflColors.danger} />
       </View>
     </View>
   );

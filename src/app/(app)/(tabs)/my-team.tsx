@@ -240,7 +240,7 @@ function RosterTab({
       <ScreenState
         screen="my-team"
         state="empty"
-        message="You are not assigned to a team yet"
+        message="You are not assigned to a team yet. Please contact your host to be assigned to a team."
       />
     );
   }

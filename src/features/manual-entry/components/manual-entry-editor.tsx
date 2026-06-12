@@ -76,7 +76,7 @@ export function ManualEntryEditor({
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1">
           <AppText className="text-base font-semibold text-foreground">
-            {mode === 'overwrite' ? 'Overwrite entry' : 'Add workout'}
+            {mode === 'overwrite' ? 'Overwrite entry' : 'Add activity'}
           </AppText>
           <AppText className="text-xs text-muted mt-1">{row.label}</AppText>
         </View>
@@ -89,7 +89,7 @@ export function ManualEntryEditor({
         <SectionLabel label="Type" />
         <View className="flex-row gap-2">
           <ChoiceChip
-            label="Workout"
+            label="Activity"
             isSelected={form.type === 'workout'}
             onPress={() => onChange({ type: 'workout' })}
           />
@@ -103,7 +103,7 @@ export function ManualEntryEditor({
 
       {isWorkout && (
         <View className="gap-2">
-          <SectionLabel label="Workout Type" />
+          <SectionLabel label="Activity Type" />
           {isLoadingActivities ? (
             <View className="rounded-xl border border-default-200 p-4 bg-default-50">
               <AppText className="text-sm text-muted">Loading activities...</AppText>
@@ -228,7 +228,7 @@ export function ManualEntryEditor({
               {computedRR.toFixed(2)}
             </AppText>
             <AppText className="text-xs text-muted mt-1">
-              Auto-calculated from workout type, duration, distance, steps, or holes.
+              Auto-calculated from activity type, duration, distance, steps, or holes.
             </AppText>
           </View>
         </View>
@@ -281,7 +281,7 @@ export function ManualEntryEditor({
             <AppText className="text-xs text-muted">
               {mode === 'overwrite'
                 ? 'Required when overwriting: upload or paste proof for the replacement entry.'
-                : 'Optional for new workouts; upload above to attach proof.'}
+                : 'Optional for new activities; upload above to attach proof.'}
             </AppText>
           </View>
         </View>
