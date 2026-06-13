@@ -42,6 +42,17 @@ export function HostLeagueSettingsScreen() {
     handleDelete,
   } = useHostLeagueSettingsForm();
 
+  if (!leagueId) {
+    return (
+      <ScreenState
+        screen="settings"
+        state="empty"
+        message="No active league selected."
+        actionLabel="Go Back"
+        onAction={() => router.back()}
+      />
+    );
+  }
 
   if (!hasHostRole) {
     return (

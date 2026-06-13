@@ -19,6 +19,7 @@ interface LeagueTeamsStepProps {
   maxParticipants: string;
   numTeams: number;
   estimatedParticipants: number;
+  isNextDisabled: boolean;
   onChangeMaxParticipants: (value: string) => void;
   onChangeNumTeams: (value: number) => void;
   onNext: () => void;
@@ -62,6 +63,7 @@ export function LeagueTeamsStep({
   maxParticipants,
   numTeams,
   estimatedParticipants,
+  isNextDisabled,
   onChangeMaxParticipants,
   onChangeNumTeams,
   onNext,
@@ -110,7 +112,7 @@ export function LeagueTeamsStep({
         <Button variant="secondary" size="lg" onPress={onBack} className="flex-1">
           <Button.Label>Back</Button.Label>
         </Button>
-        <Button variant="primary" size="lg" onPress={onNext} className="flex-1">
+        <Button variant="primary" size="lg" onPress={onNext} isDisabled={isNextDisabled} className="flex-1">
           <Button.Label>Review</Button.Label>
         </Button>
       </View>

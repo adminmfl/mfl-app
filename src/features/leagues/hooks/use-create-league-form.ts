@@ -1,7 +1,8 @@
 import crashlytics from '@react-native-firebase/crashlytics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '../../../core/config';
 import { useCreateLeague } from './use-create-league';
 import { useTiers } from './use-tiers';
 import { fetchLeagueDetail } from '../services/league.service';
@@ -35,6 +36,7 @@ function reportError(error: unknown): void {
 
 export function useCreateLeagueForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const createMutation = useCreateLeague();
   const params = useLocalSearchParams<{ source_league_id?: string | string[] }>();
   const sourceLeagueId = Array.isArray(params.source_league_id)
@@ -234,6 +236,7 @@ export function useCreateLeagueForm() {
         };
 
         await createMutation.mutateAsync(input);
+        await queryClient.invalidateQueries({ queryKey: queryKeys.user.leagues() });
 
         if (sourceLeagueId) {
           void trackConversionEvent('created', sourceLeagueId).catch((caughtError: unknown) => {
