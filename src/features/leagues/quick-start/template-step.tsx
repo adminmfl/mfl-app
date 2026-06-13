@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
-import crashlytics from '@react-native-firebase/crashlytics';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
+import { reportError } from '../../../core/utils/report-error';
 import {
   TEMPLATES,
   type LeagueTypeOption,
@@ -11,11 +11,6 @@ import {
   type CloneableLeague,
 } from './quick-start.types';
 import { fetchCloneableLeagues, fetchCloneData } from './quick-start.service';
-
-function reportError(error: unknown): void {
-  const normalizedError = error instanceof Error ? error : new Error(String(error));
-  crashlytics().recordError(normalizedError);
-}
 
 interface Props {
   data: WizardData;

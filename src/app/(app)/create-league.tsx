@@ -5,11 +5,11 @@ import { Pressable, View } from 'react-native';
 import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { mflColors } from '../../constants/colors';
-import { LeagueBasicsStep } from '../../features/leagues/components/create-league/LeagueBasicsStep';
-import { LeagueActivitiesStep } from '../../features/leagues/components/create-league/LeagueActivitiesStep';
-import { LeagueTeamsStep } from '../../features/leagues/components/create-league/LeagueTeamsStep';
-import { LeagueReviewStep } from '../../features/leagues/components/create-league/LeagueReviewStep';
-import { LeagueCreatedSuccess } from '../../features/leagues/components/create-league/LeagueCreatedSuccess';
+import { LeagueBasicsStep } from '../../features/leagues/components/create-league/league-basics-step';
+import { LeagueActivitiesStep } from '../../features/leagues/components/create-league/league-activities-step';
+import { LeagueTeamsStep } from '../../features/leagues/components/create-league/league-teams-step';
+import { LeagueReviewStep } from '../../features/leagues/components/create-league/league-review-step';
+import { LeagueCreatedSuccess } from '../../features/leagues/components/create-league/league-created-success';
 import { useCreateLeagueForm } from '../../features/leagues/hooks/use-create-league-form';
 
 const STEP_TITLES = ['Basics', 'Activities', 'Teams', 'Review'] as const;

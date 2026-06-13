@@ -1,10 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, Share, View } from 'react-native';
-import crashlytics from '@react-native-firebase/crashlytics';
 import { Button } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
+import { reportError } from '../../../core/utils/report-error';
 import {
   TEMPLATES,
   addDaysToDate,
@@ -12,11 +12,6 @@ import {
   type WizardData,
   type WizardResult,
 } from './quick-start.types';
-
-function reportError(error: unknown): void {
-  const normalizedError = error instanceof Error ? error : new Error(String(error));
-  crashlytics().recordError(normalizedError);
-}
 
 interface Props {
   data: WizardData;
