@@ -90,7 +90,7 @@ export default function AnalyticsScreen() {
     return (
       activities &&
       activities.length > 0 &&
-      activities.every((a) => a.frequency_type === 'monthly')
+      activities.every((a) => a.frequency_type != null && a.frequency_type === 'monthly')
     );
   }, [activities]);
 

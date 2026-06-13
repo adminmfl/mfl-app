@@ -62,7 +62,7 @@ export function useMyTeamOverview(leagueId: string, teamId: string | null, teamC
           teamName = team.team_name ?? null;
           challengePoints =
             typeof team.challenge_bonus === 'number'
-              ? Math.max(0, team.challenge_bonus)
+              ? team.challenge_bonus
               : null;
         }
       }

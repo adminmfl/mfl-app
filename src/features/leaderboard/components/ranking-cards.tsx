@@ -142,7 +142,7 @@ export function IndividualRankingCard({
             {showAvgRR && (
               <>
                 <AppText className="text-[10px] text-muted">·</AppText>
-                <AppText className="text-[10px] font-semibold text-amber">
+                <AppText className="text-[10px] font-semibold" style={{ color: mflColors.amber }}>
                   RR {player.avg_rr.toFixed(2)}
                 </AppText>
               </>

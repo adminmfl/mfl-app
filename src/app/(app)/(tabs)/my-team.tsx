@@ -1,11 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { View, Modal, Pressable, ScrollView, TextInput } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-<<<<<<< HEAD
 import { Avatar, Button, Card, Tabs } from 'heroui-native';
-=======
-import { Avatar, Button, Card, Chip, Surface, Tabs } from 'heroui-native';
->>>>>>> 7617daf (fix(mobile): implement phase 2 host-facing parity updates)
 import { TeamViewRoster } from '../../../features/team/components/team-view-roster';
 import { useRouter } from 'expo-router';
 import { AppText } from '../../../components/app-text';
@@ -274,6 +270,11 @@ function RosterTab({
           <StatCard value={stats.teamRank} label="Team Ranking" color={mflColors.amber} />
           <StatCard value={String(stats.teamPoints)} label="Team Points" color={mflColors.brand} />
           <StatCard value={stats.teamAvgRR.toFixed(1)} label="Run Rate" color={mflColors.blue} />
+          <StatCard
+            value={typeof stats.challengePoints === 'number' ? stats.challengePoints.toLocaleString() : '\u2014'}
+            label="Challenge Points"
+            color={mflColors.blue}
+          />
         </View>
       )}
 
