@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
+import { reportError } from '../../../core/utils/report-error';
 import {
   TEMPLATES,
   type LeagueTypeOption,
@@ -25,10 +26,16 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
   useEffect(() => {
     if (!showClone) return;
     setLoadingClone(true);
-    fetchCloneableLeagues()
-      .then(setCloneLeagues)
-      .catch(() => {})
-      .finally(() => setLoadingClone(false));
+    void (async () => {
+      try {
+        const leagues = await fetchCloneableLeagues();
+        setCloneLeagues(leagues);
+      } catch (error: unknown) {
+        reportError(error);
+      } finally {
+        setLoadingClone(false);
+      }
+    })();
   }, [showClone]);
 
   const handleSelectTemplate = useCallback(
@@ -54,8 +61,8 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
         const cloneData = await fetchCloneData(leagueId);
         onUpdate(cloneData);
         onNext();
-      } catch {
-        // stay on step
+      } catch (error: unknown) {
+        reportError(error);
       } finally {
         setLoadingClone(false);
       }
