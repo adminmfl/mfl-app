@@ -1,8 +1,3 @@
-export interface DashboardSummary {
-  activitiesLogged: number;
-  challengePoints: number;
-  totalPoints: number;
-  currentStreak: number;
-  bestStreak: number;
-  hasLeagues: boolean;
-}
+import type { DashboardSummaryDTO } from './dashboard.dto';
+
+export type DashboardSummary = DashboardSummaryDTO['data'];

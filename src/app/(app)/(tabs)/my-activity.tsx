@@ -13,6 +13,8 @@ import type { SubmissionEntry, SubmissionStats } from '../../../features/submiss
 import { isReuploadWindowOpen } from '../../../features/submissions/utils/reupload-window';
 import { mflColors } from '../../../constants/colors';
 
+import { AppRoutes } from '../../../core/config/routes';
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -403,7 +405,7 @@ export default function MyActivityScreen() {
             actionLabel={activeTab === 'All' && !isChallengesOnly ? 'Log Activity' : undefined}
             onAction={
               activeTab === 'All' && !isChallengesOnly
-                ? () => router.push('/(app)/log-activity' as any)
+                ? () => router.push(AppRoutes.logActivity)
                 : undefined
             }
           />
@@ -415,7 +417,7 @@ export default function MyActivityScreen() {
                 entry={entry}
                 onPress={() =>
                   router.push({
-                    pathname: '/(app)/submission-detail' as any,
+                    pathname: AppRoutes.submissionDetail,
                     params: { submissionId: entry.id },
                   })
                 }
@@ -424,7 +426,7 @@ export default function MyActivityScreen() {
                   resubmittableIds.has(entry.id)
                     ? () =>
                         router.push({
-                          pathname: '/(app)/reupload-submission' as any,
+                          pathname: AppRoutes.reuploadSubmission,
                           params: { submissionId: entry.id },
                         })
                     : undefined
@@ -448,7 +450,7 @@ export default function MyActivityScreen() {
             shadowRadius: 8,
             elevation: 6,
           }}
-          onPress={() => router.push('/(app)/log-activity' as any)}
+          onPress={() => router.push(AppRoutes.logActivity)}
         >
           {({ pressed }) => (
             <View style={pressed ? { opacity: 0.85, transform: [{ scale: 0.95 }] } : undefined}>
