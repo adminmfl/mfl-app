@@ -1,4 +1,3 @@
-import crashlytics from '@react-native-firebase/crashlytics';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -11,6 +10,7 @@ import { trackConversionEvent } from '../../conversion/services/conversion.servi
 import { recommendTier } from '../types/tier';
 import type { CreateLeagueInput } from '../types/league-management.model';
 import type { PriceBreakdown, TierValidationResult } from '../types/tier';
+import { reportError } from '../../../core/utils/report-error';
 
 type CreateLeagueStep = 0 | 1 | 2 | 3 | 'success';
 
@@ -27,11 +27,6 @@ function addDays(dateString: string, days: number): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
     date.getDate(),
   ).padStart(2, '0')}`;
-}
-
-function reportError(error: unknown): void {
-  const normalizedError = error instanceof Error ? error : new Error(String(error));
-  crashlytics().recordError(normalizedError);
 }
 
 export function useCreateLeagueForm() {

@@ -3,16 +3,11 @@ import { useState } from 'react';
 import { View, Alert, Image } from 'react-native';
 import { Button, Card, Spinner } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
-import crashlytics from '@react-native-firebase/crashlytics';
 import { AppText } from '../../../components/app-text';
 import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
 import { api } from '../../../core/api';
-
-function reportError(error: unknown): void {
-  const normalizedError = error instanceof Error ? error : new Error(String(error));
-  crashlytics().recordError(normalizedError);
-}
+import { reportError } from '../../../core/utils/report-error';
 
 interface Props {
   leagueId: string;
@@ -42,7 +37,7 @@ export function SettingsLogoSection({ leagueId, logoUrl, onLogoChange }: Props) 
       const filename = uri.split('/').pop() || 'logo.jpg';
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : 'image/jpeg';
-      const file = { uri, name: filename, type } as unknown as Blob;
+      const file = { uri, name: filename, type };
 
       form.append('file', file);
 
