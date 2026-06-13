@@ -58,6 +58,25 @@ export function OverallLeaderboard({
         {showAvgRR ? <TiebreakerInfo /> : null}
       </View>
 
+      {nudges.length > 0 ? (
+        <View className="gap-2">
+          {nudges.map((item) => (
+            <View
+              key={item.teamName}
+              className="rounded-lg p-3"
+              style={{ backgroundColor: mflColors.surface }}
+            >
+              <AppText className="text-[10px] font-semibold uppercase text-muted mb-1">
+                {item.teamName}
+              </AppText>
+              <AppText className="text-xs text-muted">
+                {item.nudge}
+              </AppText>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
       <View className="gap-3">
         <SectionLabel label="Top Performers in League" />
         {topIndividuals.length === 0 ? (
@@ -80,25 +99,6 @@ export function OverallLeaderboard({
       </View>
 
       <LeaderboardStatsBar stats={data.stats} />
-
-      {nudges.length > 0 ? (
-        <View className="gap-2">
-          {nudges.map((item) => (
-            <View
-              key={item.teamName}
-              className="rounded-lg p-3"
-              style={{ backgroundColor: mflColors.surface }}
-            >
-              <AppText className="text-[10px] font-semibold uppercase text-muted mb-1">
-                {item.teamName}
-              </AppText>
-              <AppText className="text-xs text-muted">
-                {item.nudge}
-              </AppText>
-            </View>
-          ))}
-        </View>
-      ) : null}
     </View>
   );
 }
