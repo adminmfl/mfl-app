@@ -7,6 +7,11 @@ import { SectionLabel } from '../../../../components/section-label';
 import { mflColors } from '../../../../constants/colors';
 import type { PriceBreakdown, TierConfig, TierValidationResult } from '../../types/tier';
 
+const RR_FORMULAS = [
+  { value: 'standard', label: 'Standard (Run Rate)' },
+  { value: 'simple', label: 'Simple' },
+  { value: 'points_only', label: 'Points Only' },
+] as const;
 interface LeagueReviewStepProps {
   leagueName: string;
   description: string;
@@ -256,7 +261,7 @@ export function LeagueReviewStep({
         <SummaryRow label="Participants" value={String(maxParticipantsNum)} />
         <SummaryRow label="Teams" value={String(numTeams)} />
         <SummaryRow label="Rest Days" value={String(restDays)} />
-        <SummaryRow label="Scoring" value={rrFormula.replace('_', ' ')} />
+        <SummaryRow label="Scoring" value={RR_FORMULAS.find((f) => f.value === rrFormula)?.label ?? rrFormula.replace('_', ' ')} />
         <SummaryRow label="Visibility" value={isPublic ? 'Public' : 'Private'} />
         {selectedTier && <SummaryRow label="Plan" value={selectedTier.display_name} />}
       </Card>

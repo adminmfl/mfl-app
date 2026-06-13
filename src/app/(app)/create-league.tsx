@@ -129,6 +129,7 @@ export default function CreateLeagueScreen() {
             maxParticipants={form.maxParticipants}
             numTeams={form.numTeams}
             estimatedParticipants={form.estimatedParticipants}
+            isNextDisabled={!form.stepTwoValid}
             onChangeMaxParticipants={form.setMaxParticipants}
             onChangeNumTeams={form.setNumTeams}
             onNext={() => {
