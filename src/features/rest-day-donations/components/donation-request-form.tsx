@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { Button, Card, Spinner } from 'heroui-native';
 
@@ -28,6 +28,15 @@ const ALLOWED_PROOF_TYPES = [
   'image/webp',
   'application/pdf',
 ];
+const textInputStyle = {
+    backgroundColor: mflColors.white,
+    borderColor: mflColors.border,
+    borderRadius: 12,
+    borderWidth: 1,
+    color: mflColors.text,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  } as const;
 
 interface Props {
   members: RestDayDonationMember[];
@@ -142,7 +151,7 @@ export function DonationRequestForm({
     [members, selectedTeam, userMemberId],
   );
 
-  const pickImage = async () => {
+  const pickImage = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
       Alert.alert(
@@ -173,9 +182,9 @@ export function DonationRequestForm({
       name: fileName,
       type: ALLOWED_PROOF_TYPES.includes(fileType) ? fileType : 'image/jpeg',
     });
-  };
+  }, []);
 
-  const pickPdf = async () => {
+  const pickPdf = useCallback(async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: 'application/pdf',
@@ -204,7 +213,7 @@ export function DonationRequestForm({
     } catch {
       Alert.alert('File Picker Error', 'Unable to select a proof file.');
     }
-  };
+  }, []);
 
   const handleSubmit = () => {
     const daysTransferred = Number.parseInt(daysText, 10);
@@ -299,16 +308,7 @@ export function DonationRequestForm({
             keyboardType="number-pad"
             placeholder="1"
             placeholderTextColor={mflColors.textMuted}
-            style={{
-              backgroundColor: mflColors.white,
-              borderColor: mflColors.border,
-              borderRadius: 12,
-              borderWidth: 1,
-              color: mflColors.text,
-              fontSize: 16,
-              paddingHorizontal: 14,
-              paddingVertical: 12,
-            }}
+            style={{ ...textInputStyle, fontSize: 16 }}
           />
         </View>
 
@@ -320,18 +320,7 @@ export function DonationRequestForm({
             multiline
             placeholder="Reason for donation..."
             placeholderTextColor={mflColors.textMuted}
-            style={{
-              backgroundColor: mflColors.white,
-              borderColor: mflColors.border,
-              borderRadius: 12,
-              borderWidth: 1,
-              color: mflColors.text,
-              fontSize: 14,
-              minHeight: 72,
-              paddingHorizontal: 14,
-              paddingVertical: 12,
-              textAlignVertical: 'top',
-            }}
+            style={{ ...textInputStyle, fontSize: 14, minHeight: 72, textAlignVertical: 'top' }}
           />
         </View>
 
