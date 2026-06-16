@@ -142,7 +142,13 @@ function SubmissionCard({
   const chipStyle = getStatusChipStyle(entry.status);
   const isWorkout = entry.type === 'workout';
   const isExemption = isExemptionRequest(entry);
-  const points = entry.effectivePoints ?? entry.rrValue;
+  const rawPoints = entry.effectivePoints ?? entry.rrValue;
+  const points =
+    rawPoints != null
+      ? Number.isInteger(rawPoints)
+        ? rawPoints
+        : parseFloat(rawPoints.toFixed(2))
+      : null;
 
   return (
     <Pressable onPress={onPress}>
