@@ -93,6 +93,7 @@ export function LeaderboardFilterBar({
           style={{ backgroundColor: mflColors.surface }}
           onPress={onRefresh}
           disabled={isRefreshing}
+          hitSlop={4}
         >
           {isRefreshing ? (
             <Spinner size="sm" />
@@ -156,6 +157,7 @@ function FilterChip({
         borderColor: selected ? mflColors.brand : mflColors.border,
       }}
       onPress={onPress}
+      hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
     >
       {icon ? (
         <Feather
@@ -191,7 +193,7 @@ function DateInput({
       placeholderTextColor={mflColors.textMuted}
       keyboardType="numbers-and-punctuation"
       maxLength={10}
-      className="flex-1 rounded-lg px-3 py-2 text-sm"
+      className="flex-1 rounded-lg px-3 py-2.5 text-sm"
       style={{
         backgroundColor: mflColors.surface,
         borderWidth: 1,

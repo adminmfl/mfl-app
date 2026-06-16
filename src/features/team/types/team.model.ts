@@ -36,6 +36,7 @@ export interface MyTeamStats {
   teamAvgRR: number;
   teamName: string | null;
   memberCapacity: number;
+  challengePoints?: number | null;
 }
 
 export interface TeamViewStats extends MyTeamStats {

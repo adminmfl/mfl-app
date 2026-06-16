@@ -49,6 +49,7 @@ export function useMyTeamOverview(leagueId: string, teamId: string | null, teamC
       let teamPoints = 0;
       let teamAvgRR = 0;
       let teamName: string | null = null;
+      let challengePoints: number | null = null;
 
       if (lbRes?.success && lbRes.data?.teams) {
         const team = lbRes.data.teams.find(
@@ -59,12 +60,23 @@ export function useMyTeamOverview(leagueId: string, teamId: string | null, teamC
           teamPoints = team.total_points ?? team.points ?? 0;
           teamAvgRR = team.avg_rr ?? 0;
           teamName = team.team_name ?? null;
+          challengePoints =
+            typeof team.challenge_bonus === 'number'
+              ? team.challenge_bonus
+              : null;
         }
       }
 
       return {
         members,
-        stats: { teamRank, teamPoints, teamAvgRR, teamName, memberCapacity: teamCapacity },
+        stats: {
+          teamRank,
+          teamPoints,
+          teamAvgRR,
+          teamName,
+          memberCapacity: teamCapacity,
+          challengePoints,
+        },
       };
     },
     enabled: !!leagueId && !!teamId,

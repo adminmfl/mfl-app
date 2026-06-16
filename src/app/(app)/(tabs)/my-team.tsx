@@ -17,8 +17,7 @@ import { useTeams } from '../../../features/team/hooks/use-teams';
 import { useUnallocatedMembers } from '../../../features/team/hooks/use-unallocated-members';
 import { useAssignMember } from '../../../features/team/hooks/use-assign-member';
 import { mflColors } from '../../../constants/colors';
-import type { TeamMember } from '../../../features/team/types/team.model';
-import type { LeagueMember } from '../../../features/team/types/team.model';
+import type { TeamMember, LeagueMember, MyTeamStats } from '../../../features/team/types/team.model';
 
 type TabKey = 'Roster' | 'Teams';
 const TABS = ['Roster', 'Teams'] as const;
@@ -173,13 +172,7 @@ interface RosterTabProps {
   overviewData:
     | {
         members: TeamMember[];
-        stats: {
-          teamRank: string;
-          teamPoints: number;
-          teamAvgRR: number;
-          teamName: string | null;
-          memberCapacity: number;
-        };
+        stats: MyTeamStats;
       }
     | undefined;
   isLeader: boolean;
@@ -277,6 +270,11 @@ function RosterTab({
           <StatCard value={stats.teamRank} label="Team Ranking" color={mflColors.amber} />
           <StatCard value={String(stats.teamPoints)} label="Team Points" color={mflColors.brand} />
           <StatCard value={stats.teamAvgRR.toFixed(1)} label="Run Rate" color={mflColors.blue} />
+          <StatCard
+            value={typeof stats.challengePoints === 'number' ? stats.challengePoints.toLocaleString() : '\u2014'}
+            label="Challenge Points"
+            color={mflColors.blue}
+          />
         </View>
       )}
 
