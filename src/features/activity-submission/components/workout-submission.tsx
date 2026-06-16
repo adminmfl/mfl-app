@@ -18,7 +18,6 @@ import { OcrSuggestionPanel } from './ocr-suggestion-panel';
 import {
   validateWorkoutForm,
   todayISO,
-  yesterdayISO,
   formatDisplayDate,
   shiftDateISO,
   clampDate,
@@ -78,7 +77,6 @@ export function WorkoutSubmission({
 
   // -- Date boundaries --
   const today = todayISO();
-  const yesterday = yesterdayISO();
 
   const leagueStartDate = useMemo(() => {
     if (!league.startDate) return null;
@@ -104,16 +102,17 @@ export function WorkoutSubmission({
     // Monthly: any date from league start
     if (isMonthlyFrequency && leagueStartDate) return leagueStartDate;
     // Per-activity submission_window_days
-    if (selectedActivity?.submission_window_days) {
-      const windowStart = shiftDateISO(today, -(selectedActivity.submission_window_days - 1));
+    const swd = selectedActivity?.submission_window_days;
+    if (typeof swd === 'number' && swd >= 1) {
+      const windowStart = shiftDateISO(today, -swd);
       if (leagueStartDate && compareDates(windowStart, leagueStartDate) < 0) {
         return leagueStartDate;
       }
       return windowStart;
     }
-    // Default: yesterday or maxActivityDate (whichever is earlier)
-    return compareDates(maxActivityDate, yesterday) < 0 ? maxActivityDate : yesterday;
-  }, [maxActivityDate, yesterday, leagueStartDate, today, isMonthlyFrequency, selectedActivity]);
+    // Default: today only
+    return compareDates(maxActivityDate, today) < 0 ? maxActivityDate : today;
+  }, [maxActivityDate, leagueStartDate, today, isMonthlyFrequency, selectedActivity]);
 
   // -- Rest of form state --
   const [duration, setDuration] = useState(resubmitParams?.duration ?? '30');
@@ -395,8 +394,8 @@ export function WorkoutSubmission({
             </View>
             <View className="bg-card rounded-xl border border-separator p-2">
               <View className="flex-row items-center justify-between">
-                <Pressable onPress={() => shiftDate(-1)} hitSlop={8} disabled={isResubmit}>
-                  <Feather name="chevron-left" size={18} color={isResubmit ? mflColors.textMuted : mflColors.text} />
+                <Pressable onPress={() => shiftDate(-1)} hitSlop={8} disabled={isResubmit || compareDates(entryDate, minActivityDate) <= 0}>
+                  <Feather name="chevron-left" size={18} color={isResubmit || compareDates(entryDate, minActivityDate) <= 0 ? mflColors.textMuted : mflColors.text} />
                 </Pressable>
                 <AppText className="text-xs font-medium text-foreground text-center">
                   {formatDisplayDate(entryDate)}

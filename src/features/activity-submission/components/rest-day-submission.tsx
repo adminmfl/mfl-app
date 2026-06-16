@@ -8,7 +8,6 @@ import { useUpsertEntry } from '../../submissions';
 import { useRestDays } from '../../rest-days';
 import {
   todayISO,
-  yesterdayISO,
   formatDisplayDate,
   shiftDateISO,
   clampDate,
@@ -29,7 +28,6 @@ export function RestDaySubmission({ leagueId, league, onSuccess }: Props) {
   const { data: restDayStats, isLoading: statsLoading } = useRestDays(leagueId);
 
   const today = todayISO();
-  const yesterday = yesterdayISO();
 
   const leagueStartDate = useMemo(() => {
     if (!league.startDate) return null;
@@ -50,8 +48,9 @@ export function RestDaySubmission({ leagueId, league, onSuccess }: Props) {
     if (leagueStartDate && compareDates(today, leagueStartDate) < 0) {
       return shiftDateISO(leagueStartDate, -3);
     }
-    return compareDates(maxDate, yesterday) < 0 ? maxDate : yesterday;
-  }, [maxDate, yesterday, leagueStartDate, today]);
+    // Default: today only
+    return compareDates(maxDate, today) < 0 ? maxDate : today;
+  }, [maxDate, today, leagueStartDate]);
 
   const [entryDate, setEntryDate] = useState(() => clampDate(today, minDate, maxDate));
   const [reason, setReason] = useState('');
@@ -147,8 +146,8 @@ export function RestDaySubmission({ leagueId, league, onSuccess }: Props) {
         <AppText className="text-sm font-semibold text-muted">Date</AppText>
         <View className="bg-card rounded-xl border border-separator p-3">
           <View className="flex-row items-center justify-between">
-            <Pressable onPress={() => shiftDate(-1)} hitSlop={8}>
-              <Feather name="chevron-left" size={22} color={mflColors.text} />
+            <Pressable onPress={() => shiftDate(-1)} hitSlop={8} disabled={compareDates(entryDate, minDate) <= 0}>
+              <Feather name="chevron-left" size={22} color={compareDates(entryDate, minDate) <= 0 ? mflColors.textMuted : mflColors.text} />
             </Pressable>
             <AppText className="text-base font-medium text-foreground">
               {formatDisplayDate(entryDate)}
