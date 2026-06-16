@@ -246,7 +246,6 @@ export function MyTeamViewScreen() {
         {stats && (
           <TeamViewStats
             stats={stats}
-            memberCount={members.length}
             showRR={showRR}
             showRestDays={showRestDays}
           />
