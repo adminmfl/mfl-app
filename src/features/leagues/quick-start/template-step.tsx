@@ -212,7 +212,7 @@ export function StepLeagueType({ data, onUpdate, onNext }: Props) {
                     {league.league_name}
                   </AppText>
                   <AppText className="text-xs text-muted">
-                    {league.num_teams} teams · {league.rest_days} rest days/wk
+                    {league.num_teams} teams · {league.rest_days} total rest days
                   </AppText>
                 </View>
                 <Feather name="copy" size={14} color={mflColors.textMuted} />

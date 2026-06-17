@@ -14,6 +14,8 @@ import type { SubmissionEntry, SubmissionStats } from '../../../features/submiss
 import { isReuploadWindowOpen } from '../../../features/submissions/utils/reupload-window';
 import { mflColors } from '../../../constants/colors';
 
+import { AppRoutes } from '../../../core/config/routes';
+
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
@@ -140,7 +142,13 @@ function SubmissionCard({
   const chipStyle = getStatusChipStyle(entry.status);
   const isWorkout = entry.type === 'workout';
   const isExemption = isExemptionRequest(entry);
-  const points = entry.effectivePoints ?? entry.rrValue;
+  const rawPoints = entry.effectivePoints ?? entry.rrValue;
+  const points =
+    rawPoints != null
+      ? Number.isInteger(rawPoints)
+        ? rawPoints
+        : parseFloat(rawPoints.toFixed(2))
+      : null;
 
   return (
     <Pressable onPress={onPress}>
@@ -503,7 +511,7 @@ export default function MyActivityScreen() {
             actionLabel={activeTab === 'All' && !isChallengesOnly ? 'Log Activity' : undefined}
             onAction={
               activeTab === 'All' && !isChallengesOnly
-                ? () => router.push('/(app)/log-activity' as any)
+                ? () => router.push(AppRoutes.logActivity)
                 : undefined
             }
           />
@@ -527,7 +535,7 @@ export default function MyActivityScreen() {
                 entry={entry}
                 onPress={() =>
                   router.push({
-                    pathname: '/(app)/submission-detail' as any,
+                    pathname: AppRoutes.submissionDetail,
                     params: { submissionId: entry.id },
                   })
                 }
@@ -536,7 +544,7 @@ export default function MyActivityScreen() {
                   resubmittableIds.has(entry.id)
                     ? () =>
                         router.push({
-                          pathname: '/(app)/reupload-submission' as any,
+                          pathname: AppRoutes.reuploadSubmission,
                           params: { submissionId: entry.id },
                         })
                     : undefined
@@ -560,7 +568,7 @@ export default function MyActivityScreen() {
             shadowRadius: 8,
             elevation: 6,
           }}
-          onPress={() => router.push('/(app)/log-activity' as any)}
+          onPress={() => router.push(AppRoutes.logActivity)}
         >
           {({ pressed }) => (
             <View style={pressed ? { opacity: 0.85, transform: [{ scale: 0.95 }] } : undefined}>

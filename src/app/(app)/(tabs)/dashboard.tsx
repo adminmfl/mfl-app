@@ -21,6 +21,8 @@ import { isLeagueEnded } from '../../../features/leagues/utils/league-status';
 import { LeagueCard } from '../../../features/dashboard/components/league-card';
 import { mflColors } from '../../../constants/colors';
 
+import { AppRoutes } from '../../../core/config/routes';
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -104,7 +106,7 @@ export default function DashboardScreen() {
     hasAutoNavigated.current = true;
     const only = visibleLeagues[0]!;
     setActiveLeague(only);
-    router.replace('/(app)/league-overview' as any);
+    router.replace(AppRoutes.leagueOverview);
   }, [leaguesQuery.isLoading, visibleLeagues, setActiveLeague, router]);
 
   // ── Loading state ──────────────────────────────────────────────────────
@@ -176,7 +178,7 @@ export default function DashboardScreen() {
           <Button
             variant="secondary"
             size="sm"
-            onPress={() => router.push('/(app)/league-overview' as any)}
+            onPress={() => router.push(AppRoutes.leagueOverview)}
             className="self-start"
           >
             <Feather name="grid" size={14} color={mflColors.brand} />
@@ -191,7 +193,7 @@ export default function DashboardScreen() {
             actionLabel={leagues.length > 0 ? 'View All' : undefined}
             onAction={
               leagues.length > 0
-                ? () => router.push('/(app)/leagues' as any)
+                ? () => router.push(AppRoutes.leagues)
                 : undefined
             }
           />
@@ -217,7 +219,7 @@ export default function DashboardScreen() {
                     league={league}
                     onPress={() => {
                       setActiveLeague(league);
-                      router.push(`/(app)/league-overview` as any);
+                      router.push(AppRoutes.leagueOverview);
                     }}
                   />
                 </View>
@@ -231,7 +233,7 @@ export default function DashboardScreen() {
               <Button
                 variant="secondary"
                 size="sm"
-                onPress={() => router.push('/(app)/join-league' as any)}
+                onPress={() => router.push(AppRoutes.joinLeague)}
                 className="w-full"
               >
                 <Button.Label>Join</Button.Label>
@@ -241,7 +243,7 @@ export default function DashboardScreen() {
               <Button
                 variant="secondary"
                 size="sm"
-                onPress={() => router.push('/(app)/create-league' as any)}
+                onPress={() => router.push(AppRoutes.createLeague)}
                 className="w-full"
               >
                 <Button.Label>Create</Button.Label>
@@ -251,7 +253,7 @@ export default function DashboardScreen() {
               <Button
                 variant="primary"
                 size="sm"
-                onPress={() => router.push('/(app)/quick-start-league' as any)}
+                onPress={() => router.push(AppRoutes.quickStartLeague)}
                 className="w-full"
               >
                 <Button.Label>Quick Start</Button.Label>
@@ -331,7 +333,7 @@ export default function DashboardScreen() {
             actionLabel="View All"
             onAction={() => {
               if (activeLeague) {
-                router.push('/(app)/(tabs)/leaderboard' as any);
+                router.push(AppRoutes.leaderboard);
               }
             }}
           />
@@ -383,7 +385,7 @@ export default function DashboardScreen() {
           <Button
             variant="primary"
             size="lg"
-            onPress={() => router.push('/(app)/challenges' as any)}
+            onPress={() => router.push(AppRoutes.challenges)}
             className="w-full"
           >
             <Button.Label>View Challenges</Button.Label>
@@ -392,7 +394,7 @@ export default function DashboardScreen() {
           <Button
             variant="primary"
             size="lg"
-            onPress={() => router.push('/(app)/(tabs)/my-activity' as any)}
+            onPress={() => router.push(AppRoutes.myActivity)}
             className="w-full"
           >
             <Button.Label>Log Activity</Button.Label>
@@ -408,28 +410,28 @@ export default function DashboardScreen() {
                 <QuickLink
                   icon="shield"
                   label="Validation Queue"
-                  onPress={() => router.push('/(app)/submission-validation' as any)}
+                  onPress={() => router.push(AppRoutes.submissionValidation)}
                 />
               )}
               {isHost && (
                 <QuickLink
                   icon="settings"
                   label="League Settings"
-                  onPress={() => router.push('/(app)/league-settings' as any)}
+                  onPress={() => router.push(AppRoutes.leagueSettings)}
                 />
               )}
               {(isHost || isGovernor) && (
                 <QuickLink
                   icon="briefcase"
                   label="Governor Dashboard"
-                  onPress={() => router.push('/(app)/governor' as any)}
+                  onPress={() => router.push(AppRoutes.governor)}
                 />
               )}
               {(isHost || isGovernor) && (
                 <QuickLink
                   icon="user-plus"
                   label="Team Management"
-                  onPress={() => router.push('/(app)/team-management' as any)}
+                  onPress={() => router.push(AppRoutes.teamManagement)}
                 />
               )}
             </Card>
@@ -443,32 +445,32 @@ export default function DashboardScreen() {
             <QuickLink
               icon="award"
               label="Challenges"
-              onPress={() => router.push('/(app)/challenges' as any)}
+              onPress={() => router.push(AppRoutes.challenges)}
             />
             <QuickLink
               icon="cpu"
               label="AI Coach"
-              onPress={() => router.push('/(app)/ai-coach' as any)}
+              onPress={() => router.push(AppRoutes.aiCoach)}
             />
             <QuickLink
               icon="bar-chart-2"
               label="Analytics"
-              onPress={() => router.push('/(app)/analytics' as any)}
+              onPress={() => router.push(AppRoutes.analytics)}
             />
             <QuickLink
               icon="users"
               label="Communities"
-              onPress={() => router.push('/(app)/communities' as any)}
+              onPress={() => router.push(AppRoutes.communities)}
             />
             <QuickLink
               icon="heart"
               label="Rest Day Donations"
-              onPress={() => router.push('/(app)/rest-day-donations' as any)}
+              onPress={() => router.push(AppRoutes.restDayDonations)}
             />
             <QuickLink
               icon="file-text"
               label="Rules"
-              onPress={() => router.push('/(app)/league-rules' as any)}
+              onPress={() => router.push(AppRoutes.leagueRules)}
             />
           </Card>
         </View>
