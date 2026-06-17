@@ -4,8 +4,8 @@ import type { AwardCard, FinaleAwards } from '../types/awards.model';
 function getInitials(name: string): string {
   const parts = name.trim().split(' ').filter(Boolean);
   if (parts.length === 0) return 'NA';
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  if (parts.length === 1) return (parts[0] ?? '').slice(0, 2).toUpperCase();
+  return `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase();
 }
 
 export function computeFinaleAwards(
@@ -24,11 +24,11 @@ export function computeFinaleAwards(
     }
   }
 
-  const winnerLabels = ['Champion Team', 'First Runner-Up', 'Second Runner-Up'];
+  const winnerLabels: string[] = ['Champion Team', 'First Runner-Up', 'Second Runner-Up'];
   const winnerAwards: AwardCard[] = topTeams.map((team, index) => {
     const representative = bestIndividualByTeam.get(team.team_id);
     return {
-      title: winnerLabels[index] || 'Winner Award',
+      title: winnerLabels[index] ?? 'Winner Award' as string,
       subtitle: `Rank #${team.rank}`,
       recipient: team.team_name,
       fallback: getInitials(representative?.username || team.team_name),
@@ -36,7 +36,7 @@ export function computeFinaleAwards(
     };
   });
 
-  const teamCharacterNames = [
+  const teamCharacterNames: [string, ...string[]] = [
     'Spirit Squad Award',
     'Consistency Crew Award',
     'Comeback Crew Award',
@@ -48,7 +48,7 @@ export function computeFinaleAwards(
   const teamCharacterAwards: AwardCard[] = remainingTeams.map((team, index) => {
     const representative = bestIndividualByTeam.get(team.team_id);
     return {
-      title: teamCharacterNames[index % teamCharacterNames.length],
+      title: teamCharacterNames[index % teamCharacterNames.length] ?? 'Team Character Award',
       subtitle: 'Team Character Award',
       recipient: team.team_name,
       fallback: getInitials(representative?.username || team.team_name),

@@ -38,7 +38,7 @@ export async function uploadCeremonyPhoto(
     uri: fileUri,
     name: fileName,
     type: mimeType,
-  } as any);
+  });
 
   const res = await api.post<{ success: boolean; data: { path: string; url: string } }>(
     `/api/leagues/${leagueId}/ceremony-photos`,
