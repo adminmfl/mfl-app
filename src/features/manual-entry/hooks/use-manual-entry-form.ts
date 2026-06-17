@@ -20,7 +20,6 @@ import type { LeagueActivity } from '../../leagues/hooks/use-league-activities';
 interface UseManualEntryFormProps {
   leagueId: string;
   selectedMemberId: string;
-  showRR: boolean;
   activities: LeagueActivity[];
   onSaveSuccess: () => void;
 }
@@ -219,6 +218,8 @@ export function useManualEntryForm({
     setProofImage(null);
   }, []);
 
+  const handleRemoveImage = useCallback(() => setProofImage(null), []);
+
   return {
     editRow,
     editMode,
@@ -235,7 +236,7 @@ export function useManualEntryForm({
     handleOpenRow,
     handleFormChange,
     handlePickImage,
-    handleRemoveImage: () => setProofImage(null),
+    handleRemoveImage,
     handleCancelEdit,
     handleSubmit,
   };

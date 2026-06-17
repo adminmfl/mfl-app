@@ -68,7 +68,6 @@ export default function ManualEntryScreen() {
   const entryForm = useManualEntryForm({
     leagueId,
     selectedMemberId,
-    showRR,
     activities,
     onSaveSuccess: () => { void week.refetch(); },
   });
@@ -78,13 +77,13 @@ export default function ManualEntryScreen() {
     setSelectedMemberId('');
     setWeekOffset(0);
     entryForm.handleCancelEdit();
-  }, [entryForm]);
+  }, [entryForm.handleCancelEdit]);
 
   const handleSelectMember = useCallback((memberId: string) => {
     setSelectedMemberId(memberId);
     setWeekOffset(0);
     entryForm.handleCancelEdit();
-  }, [entryForm]);
+  }, [entryForm.handleCancelEdit]);
 
   if (!activeLeague) {
     return (
