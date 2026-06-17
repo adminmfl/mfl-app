@@ -7,6 +7,7 @@ import { Card, Separator } from 'heroui-native';
 
 import { AppText } from '../../components/app-text';
 import { ScreenState } from '../../components/screen-state';
+import { AppRoutes } from '../../core/config/routes';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useMySubmissions } from '../../features/submissions/hooks/use-my-submissions';
 import { isReuploadWindowOpen } from '../../features/submissions/utils/reupload-window';
@@ -21,7 +22,6 @@ import {
   getStatusColor,
   isExemptionRequest,
 } from '../../features/submissions/utils/submission-detail-helpers';
-
 
 // ---------------------------------------------------------------------------
 // Screen
