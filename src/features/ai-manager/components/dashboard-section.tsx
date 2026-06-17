@@ -30,6 +30,18 @@ export function DashboardSection({
 }: DashboardSectionProps) {
   const unreadDigest = digestItems.filter((d) => d.status === 'unread');
   const pendingAlerts = interventions.filter((i) => i.status === 'pending');
+  const groupedAlerts = pendingAlerts.reduce<Record<string, Intervention[]>>((acc, alert) => {
+    const key = alert.triggerType ?? 'other';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(alert);
+    return acc;
+  }, {});
+  const severityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
+  const sortedGroupEntries = Object.entries(groupedAlerts).sort(([, a], [, b]) => {
+    const aSeverity = severityOrder[a[0]?.severity ?? ''] ?? 3;
+    const bSeverity = severityOrder[b[0]?.severity ?? ''] ?? 3;
+    return aSeverity - bSeverity;
+  });
 
   return (
     <View>
@@ -37,7 +49,9 @@ export function DashboardSection({
       <View className="flex-row items-center justify-between mb-2">
         <SectionLabel label="Alerts" />
         {pendingAlerts.length > 0 && (
-          <AppText className="text-xs text-muted">({pendingAlerts.length} pending)</AppText>
+          <AppText className="text-xs text-muted">
+            ({pendingAlerts.length} pending · {Object.keys(groupedAlerts).length} types)
+          </AppText>
         )}
       </View>
 
@@ -48,14 +62,33 @@ export function DashboardSection({
           </AppText>
         </Card>
       ) : (
-        interventions.map((alert) => (
-          <AlertCard
-            key={alert.id}
-            alert={alert}
-            isGenerating={generatingIntId === alert.id}
-            onGenerateDraft={onGenerateDraft}
-            onDismiss={(id) => onDismissIntervention([id])}
-          />
+        sortedGroupEntries.map(([triggerType, alerts]) => (
+          <View key={triggerType} className="mb-3">
+            <View className="flex-row items-center justify-between mb-1.5">
+              <AppText
+                className="text-xs font-semibold uppercase tracking-wide"
+                style={{ color: mflColors.textSub }}
+              >
+                {triggerType.replace(/_/g, ' ')} · {alerts.length}
+              </AppText>
+              {alerts.length > 1 && (
+                <Pressable onPress={() => onDismissIntervention(alerts.map((a) => a.id))}>
+                  <AppText className="text-xs font-medium" style={{ color: mflColors.danger }}>
+                    Dismiss all
+                  </AppText>
+                </Pressable>
+              )}
+            </View>
+            {alerts.map((alert) => (
+              <AlertCard
+                key={alert.id}
+                alert={alert}
+                isGenerating={generatingIntId === alert.id}
+                onGenerateDraft={onGenerateDraft}
+                onDismiss={(id) => onDismissIntervention([id])}
+              />
+            ))}
+          </View>
         ))
       )}
 
