@@ -10,6 +10,16 @@ import {
 } from '../utils/leaderboard-format';
 import { RankBadge } from './rank-badge';
 
+function stringToColor(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    hash ^= hash >>> 16;
+  }
+  const h = ((Math.abs(hash) * 2654435761) >>> 0) % 360;
+  return `hsl(${h}, 55%, 82%)`;
+}
+
 export function TeamRankingCard({
   team,
   showAvgRR,
@@ -29,7 +39,7 @@ export function TeamRankingCard({
 
           <View
             className="h-8 w-8 items-center justify-center rounded-lg"
-            style={{ backgroundColor: mflColors.inkLight, overflow: 'hidden' }}
+            style={{ backgroundColor: stringToColor(team.team_name), overflow: 'hidden' }}
           >
             {team.logo_url ? (
               <Image
@@ -38,7 +48,7 @@ export function TeamRankingCard({
                 resizeMode="cover"
               />
             ) : (
-              <AppText className="text-[10px] font-bold text-muted">
+              <AppText className="text-[10px] font-bold" style={{ color: '#1a1a1a' }}>
                 {getInitials(team.team_name)}
               </AppText>
             )}
