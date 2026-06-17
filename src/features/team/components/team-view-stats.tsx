@@ -5,23 +5,20 @@ import type { TeamViewStats as TeamViewStatsType } from '../types/team.model';
 
 interface TeamViewStatsProps {
   stats: TeamViewStatsType;
-  memberCount: number;
   showRR: boolean;
   showRestDays: boolean;
 }
 
 export function TeamViewStats({
   stats,
-  memberCount,
   showRR,
   showRestDays,
 }: TeamViewStatsProps) {
   return (
     <View className="gap-2">
-      {/* Primary stats row */}
+      {/* Stats row - 4 compact cards in a single row */}
       <View className="flex-row gap-2">
-        <StatCard value={stats.teamRank} label="Team Rank" color={mflColors.amber} />
-        <StatCard value={String(memberCount)} label="Members" color={mflColors.ink} />
+        <StatCard value={stats.teamRank} label="Team Ranking" color={mflColors.amber} />
         <StatCard value={String(stats.teamPoints)} label="Team Points" color={mflColors.brand} />
       </View>
 
@@ -30,7 +27,7 @@ export function TeamViewStats({
         {showRR && (
           <StatCard
             value={stats.teamAvgRR.toFixed(1)}
-            label="RR"
+            label="Run Rate"
             color={mflColors.blue}
           />
         )}

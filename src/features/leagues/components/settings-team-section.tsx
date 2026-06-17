@@ -51,12 +51,12 @@ export function SettingsTeamSection({
         />
         <Divider />
         <Stepper
-          label="Rest Days per Week"
+          label="Total Rest Days"
           value={restDays}
-          onIncrement={() => onChangeRestDays(Math.min(restDays + 1, 7))}
+          onIncrement={() => onChangeRestDays(Math.min(restDays + 1, 99))}
           onDecrement={() => onChangeRestDays(Math.max(restDays - 1, 0))}
           min={0}
-          max={7}
+          max={99}
         />
         <Divider />
         <ToggleRow

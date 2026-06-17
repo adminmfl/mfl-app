@@ -109,7 +109,7 @@ export function StepActivitiesRules({ data, onUpdate, onNext, onBack }: Props) {
 
       {/* Rest days */}
       <View className="gap-1">
-        <AppText className="text-sm font-medium text-muted">Rest Days per Week</AppText>
+        <AppText className="text-sm font-medium text-muted">Total Rest Days</AppText>
         <TextInput
           style={inputStyle}
           value={String(data.restDays)}
