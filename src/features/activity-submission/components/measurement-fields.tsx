@@ -4,21 +4,11 @@ import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import type { LeagueActivity } from '../types';
 import type { SubmissionFormErrors } from '../types';
+import { submissionInputStyle as inputStyle } from '../styles/form-styles';
 
 const MIN_DURATION = 1;
 const MAX_DURATION = 1440;
 const DURATION_STEP = 5;
-
-const inputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: mflColors.text,
-} as const;
 
 interface MeasurementFieldsProps {
   selectedActivity: LeagueActivity | null;

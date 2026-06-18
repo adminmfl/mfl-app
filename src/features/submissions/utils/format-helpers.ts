@@ -4,14 +4,19 @@
 
 /**
  * Formats a snake_case workout type key into a human-readable label.
- * Falls back to customActivityName when provided.
+ * Falls back to customActivityName when provided, then to fallback (default: 'General Workout').
+ *
+ * Note: submission-detail.tsx originally used 'General Workout';
+ * reupload-submission.tsx originally used 'General'. Pass the fallback
+ * param when the default doesn't match the desired text.
  */
 export function formatWorkoutType(
   workoutType: string | null,
   customActivityName?: string,
+  fallback = 'General Workout',
 ): string {
   if (customActivityName) return customActivityName;
-  if (!workoutType) return 'General Workout';
+  if (!workoutType) return fallback;
   return workoutType
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

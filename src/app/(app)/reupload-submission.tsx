@@ -25,22 +25,8 @@ import {
   formatWorkoutType,
   formatShortDate,
 } from '../../features/submissions/utils/format-helpers';
+import { submissionInputStyle as inputStyle } from '../../features/activity-submission/styles/form-styles';
 import { mflColors } from '../../constants/colors';
-
-// ---------------------------------------------------------------------------
-// Shared input style
-// ---------------------------------------------------------------------------
-
-const inputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: mflColors.text,
-} as const;
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -236,7 +222,7 @@ export default function ReuploadSubmissionScreen() {
         <Card variant="secondary" className="p-4">
           <AppText className="text-sm font-semibold text-foreground">
             {submission.type === 'workout'
-              ? formatWorkoutType(submission.workoutType, submission.customActivityName)
+              ? formatWorkoutType(submission.workoutType, submission.customActivityName, 'General')
               : 'Rest Day'}
           </AppText>
           <AppText className="text-xs text-muted mt-1">

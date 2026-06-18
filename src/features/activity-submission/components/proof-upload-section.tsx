@@ -35,7 +35,9 @@ export function ProofUploadSection({
     if (!extraction) return;
 
     const fill = getAutoFillFields(extraction);
-    if (fill.autoFilledFields.length > 0) {
+    if (fill.autoFilledFields.length === 0) return;
+
+    const applyAll = () => {
       for (const field of fill.autoFilledFields) {
         const value =
           field === 'duration'
@@ -49,8 +51,16 @@ export function ProofUploadSection({
           onOcrApply(field, value);
         }
       }
-      Alert.alert('Auto-filled', `Auto-filled: ${fill.autoFilledFields.join(', ')}`);
-    }
+    };
+
+    Alert.alert(
+      'Auto-fill Detected',
+      `Auto-detected: ${fill.autoFilledFields.join(', ')}. Apply these values?`,
+      [
+        { text: 'Skip', style: 'cancel' },
+        { text: 'Apply All', onPress: applyAll },
+      ],
+    );
   };
 
   const isProofRequired = (selectedActivity?.proof_requirement ?? 'mandatory') === 'mandatory';

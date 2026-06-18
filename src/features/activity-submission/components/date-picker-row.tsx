@@ -14,10 +14,12 @@ interface DatePickerRowProps {
 
 export function DatePickerRow({
   value,
+  minDate,
   maxDate,
   isLocked = false,
   onShift,
 }: DatePickerRowProps) {
+  const atMin = compareDates(value, minDate) <= 0;
   const atMax = compareDates(value, maxDate) >= 0;
 
   return (
@@ -34,11 +36,11 @@ export function DatePickerRow({
       </View>
       <View className="bg-card rounded-xl border border-separator p-3">
         <View className="flex-row items-center justify-between">
-          <Pressable onPress={() => onShift(-1)} hitSlop={8} disabled={isLocked}>
+          <Pressable onPress={() => onShift(-1)} hitSlop={8} disabled={isLocked || atMin}>
             <Feather
               name="chevron-left"
               size={22}
-              color={isLocked ? mflColors.textMuted : mflColors.text}
+              color={isLocked || atMin ? mflColors.textMuted : mflColors.text}
             />
           </Pressable>
           <AppText className="text-base font-medium text-foreground">

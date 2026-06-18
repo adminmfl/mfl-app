@@ -16,7 +16,7 @@ interface ValidationInput {
   isResubmit: boolean;
 }
 
-const MAX_LIMITS: Record<string, { max: number; label: string }> = {
+const MAX_LIMITS: Partial<Record<keyof SubmissionFormErrors, { max: number; label: string }>> = {
   duration: { max: 1440, label: 'Duration cannot exceed 1440 minutes (24 hours)' },
   distance: { max: 1000, label: 'Distance cannot exceed 1000 km' },
   steps: { max: 500000, label: 'Steps cannot exceed 500,000' },
@@ -73,7 +73,7 @@ export function validateWorkoutForm(input: ValidationInput): SubmissionFormError
       if (!Number.isFinite(num) || num < 0) {
         errors[key] = `${key} must be a valid positive number`;
       } else {
-        const limit = MAX_LIMITS[key as string];
+        const limit = MAX_LIMITS[key];
         if (limit && num > limit.max) {
           errors[key] = limit.label;
         }

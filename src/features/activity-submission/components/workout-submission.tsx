@@ -12,6 +12,7 @@ import { ProofUploadSection } from './proof-upload-section';
 import { DatePickerRow } from './date-picker-row';
 import { RRPreviewSection } from './rr-preview-section';
 import { validateWorkoutForm } from '../utils/validation';
+import { submissionInputStyle as inputStyle } from '../styles/form-styles';
 import {
   clampDate,
   compareDates,
@@ -64,17 +65,6 @@ function parseOutcomeOptions(
     return { label: typed.label ?? '', points: typed.points ?? 0 };
   });
 }
-
-const inputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 12,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  fontSize: 16,
-  color: mflColors.text,
-} as const;
 
 // ---------------------------------------------------------------------------
 // Props
@@ -535,24 +525,30 @@ export function WorkoutSubmission({
       )}
 
       {/* Notes */}
-      <View className="gap-2">
-        <AppText className="text-sm font-semibold text-muted">
-          Notes{selectedActivity?.notes_requirement === 'mandatory' ? ' *' : ''}
-        </AppText>
-        <TextInput
-          style={{ ...inputStyle, minHeight: 60, textAlignVertical: 'top' }}
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Optional notes about your activity"
-          placeholderTextColor={mflColors.textMuted}
-          multiline
-        />
-        {errors.notes && (
-          <AppText className="text-sm" style={{ color: mflColors.danger }}>
-            {errors.notes}
+      {(selectedActivity?.notes_requirement ?? 'optional') !== 'not_required' && (
+        <View className="gap-2">
+          <AppText className="text-sm font-semibold text-muted">
+            Notes{selectedActivity?.notes_requirement === 'mandatory' ? ' *' : ''}
           </AppText>
-        )}
-      </View>
+          <TextInput
+            style={{ ...inputStyle, minHeight: 60, textAlignVertical: 'top' }}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder={
+              selectedActivity?.notes_requirement === 'mandatory'
+                ? 'Required — add notes about your activity'
+                : 'Optional notes about your activity'
+            }
+            placeholderTextColor={mflColors.textMuted}
+            multiline
+          />
+          {errors.notes && (
+            <AppText className="text-sm" style={{ color: mflColors.danger }}>
+              {errors.notes}
+            </AppText>
+          )}
+        </View>
+      )}
 
       {/* Proof Upload */}
       <ProofUploadSection
