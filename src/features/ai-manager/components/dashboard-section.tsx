@@ -37,11 +37,12 @@ export function DashboardSection({
     return acc;
   }, {});
   const severityOrder: Record<string, number> = { high: 0, medium: 1, low: 2 };
-  const sortedGroupEntries = Object.entries(groupedAlerts).sort(([, a], [, b]) => {
-    const aSeverity = severityOrder[a[0]?.severity ?? ''] ?? 3;
-    const bSeverity = severityOrder[b[0]?.severity ?? ''] ?? 3;
-    return aSeverity - bSeverity;
-  });
+  function groupSeverity(alerts: Intervention[]): number {
+    return Math.min(...alerts.map((a) => severityOrder[a.severity] ?? 3));
+  }
+  const sortedGroupEntries = Object.entries(groupedAlerts).sort(
+    ([, a], [, b]) => groupSeverity(a) - groupSeverity(b)
+  );
 
   return (
     <View>
@@ -55,7 +56,7 @@ export function DashboardSection({
         )}
       </View>
 
-      {interventions.length === 0 ? (
+      {pendingAlerts.length === 0 ? (
         <Card className="p-4 mb-4">
           <AppText className="text-xs text-muted text-center py-4">
             No alerts. Run a scan to check for at-risk members.
