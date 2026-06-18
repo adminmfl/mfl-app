@@ -48,7 +48,7 @@ export function TeamRankingCard({
                 resizeMode="cover"
               />
             ) : (
-              <AppText className="text-[10px] font-bold" style={{ color: '#1a1a1a' }}>
+              <AppText className="text-[10px] font-bold" style={{ color: mflColors.ink }}>
                 {getInitials(team.team_name)}
               </AppText>
             )}
