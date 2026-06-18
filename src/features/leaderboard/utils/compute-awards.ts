@@ -28,7 +28,7 @@ export function computeFinaleAwards(
   const winnerAwards: AwardCard[] = topTeams.map((team, index) => {
     const representative = bestIndividualByTeam.get(team.team_id);
     return {
-      title: winnerLabels[index] ?? 'Winner Award' as string,
+      title: winnerLabels[index] ?? 'Winner Award',
       subtitle: `Rank #${team.rank}`,
       recipient: team.team_name,
       fallback: getInitials(representative?.username || team.team_name),

@@ -34,11 +34,12 @@ export async function uploadCeremonyPhoto(
   mimeType: string,
 ): Promise<{ path: string; url: string }> {
   const formData = new FormData();
+  // TODO: RN FormData accepts { uri, name, type } but TS types don't reflect this
   formData.append('file', {
     uri: fileUri,
     name: fileName,
     type: mimeType,
-  });
+  } as any);
 
   const res = await api.post<{ success: boolean; data: { path: string; url: string } }>(
     `/api/leagues/${leagueId}/ceremony-photos`,
