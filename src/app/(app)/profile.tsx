@@ -15,6 +15,7 @@ import { useUserProfile } from '../../features/profile/hooks/use-user-profile';
 import { useDashboardSummary } from '../../features/dashboard/hooks/use-dashboard-summary';
 import { useLeagueContext } from '../../contexts/league-context';
 import { mflColors } from '../../constants/colors';
+import { AppRoutes } from '../../core/config/routes';
 
 const StyledFeather = withUniwind(Feather);
 
@@ -208,25 +209,25 @@ export default function ProfileScreen() {
             <MenuItem
               icon="edit-3"
               label="Edit Profile"
-              onPress={() => router.push('/(app)/edit-profile')}
+              onPress={() => router.push(AppRoutes.editProfile)}
             />
             <Separator />
             <MenuItem
               icon="bell"
               label="Notifications"
-              onPress={() => router.push('/(app)/notifications')}
+              onPress={() => router.push(AppRoutes.notifications)}
             />
             <Separator />
             <MenuItem
               icon="settings"
               label="Settings"
-              onPress={() => router.push('/(app)/settings')}
+              onPress={() => router.push(AppRoutes.settings)}
             />
             <Separator />
             <MenuItem
               icon="help-circle"
               label="Help & Support"
-              onPress={() => router.push('/(app)/help')}
+              onPress={() => router.push(AppRoutes.help)}
             />
           </Card>
         </View>

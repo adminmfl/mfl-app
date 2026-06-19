@@ -13,6 +13,9 @@ import { Button, Spinner } from 'heroui-native';
 import { mflColors } from '../../constants/colors';
 import { AppText } from '../../components/app-text';
 import { sendOtp } from '../../features/auth/services/otp.service';
+import { AppRoutes } from '../../core/config/routes';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
+import { authInputStyle } from '../../features/auth/styles/auth-input-style';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -31,27 +34,12 @@ export default function ForgotPasswordScreen() {
     setIsLoading(true);
     try {
       await sendOtp(trimmedEmail);
-      router.push({ pathname: '/(auth)/reset-password', params: { email: trimmedEmail } });
-    } catch (err: any) {
-      const message =
-        err?.response?.status === 429
-          ? err?.response?.data?.error || 'Too many attempts. Please try again later.'
-          : err?.response?.data?.error || 'Failed to send verification code. Please try again.';
-      setError(message);
+      router.push({ pathname: AppRoutes.resetPassword, params: { email: trimmedEmail } });
+    } catch (err: unknown) {
+      setError(extractApiError(err, 'Failed to send verification code. Please try again.'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const inputStyle = {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#0F172A',
   };
 
   return (
@@ -98,7 +86,7 @@ export default function ForgotPasswordScreen() {
           <View className="gap-1">
             <AppText className="text-sm font-medium text-muted">Email</AppText>
             <TextInput
-              style={inputStyle}
+              style={authInputStyle}
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
@@ -118,7 +106,11 @@ export default function ForgotPasswordScreen() {
             isDisabled={isLoading}
             className="w-full"
           >
-            {isLoading ? <Spinner size="sm" /> : <Button.Label>Send Verification Code</Button.Label>}
+            {isLoading ? (
+              <Spinner size="sm" />
+            ) : (
+              <Button.Label>Send Verification Code</Button.Label>
+            )}
           </Button>
 
           <View className="flex-row justify-center mt-4">

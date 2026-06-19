@@ -14,8 +14,8 @@ import { useUserProfile } from '../../features/profile/hooks/use-user-profile';
 import { updateUserProfile } from '../../features/profile/services/profile.service';
 import { api } from '../../core/api';
 import { queryKeys } from '../../core/config';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
@@ -29,11 +29,10 @@ async function uploadProfilePicture(uri: string): Promise<string> {
   const type = match ? `image/${match[1]}` : 'image/jpeg';
 
   const formData = new FormData();
-  formData.append('file', {
-    uri,
-    name: filename,
-    type,
-  } as any);
+  // React Native's FormData accepts this object shape for file uploads.
+  // The cast to unknown→Blob is required because the RN FormData types
+  // don't match the browser Blob signature, but the runtime accepts it correctly.
+  formData.append('file', { uri, name: filename, type } as unknown as Blob);
 
   const res = await api.post<{ success: boolean; data: { url: string } }>(
     '/api/upload/profile-picture',
@@ -131,9 +130,8 @@ export default function EditProfileScreen() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
 
       router.back();
-    } catch (err: any) {
-      const message = err?.response?.data?.error ?? 'Failed to update profile. Please try again.';
-      Alert.alert('Error', message);
+    } catch (err: unknown) {
+      Alert.alert('Error', extractApiError(err, 'Failed to update profile. Please try again.'));
     } finally {
       setIsSaving(false);
     }
