@@ -37,7 +37,7 @@ export function CeremonyPhotosSection({ leagueId }: CeremonyPhotosSectionProps) 
     const asset = result.assets[0];
     const uri = asset.uri;
     const fileName = asset.fileName || `photo-${Date.now()}.jpg`;
-    const mimeType = asset.mimeType || 'image/jpeg';
+    const mimeType = asset.mimeType ?? 'image/jpeg';
 
     uploadMutation.mutate(
       { fileUri: uri, fileName, mimeType },

@@ -1,9 +1,7 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
-import { Card } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
-import { SectionLabel } from '../../../components/section-label';
 import type { IndividualRankingDTO, TeamRankingDTO } from '../types/leaderboard.dto';
 import { computeFinaleAwards } from '../utils/compute-awards';
 import type { AwardCard } from '../types/awards.model';
