@@ -17,6 +17,7 @@ import { useLeaguePhase } from '../hooks/use-league-phase';
 import { isLeagueEnded } from '../utils/league-status';
 import { PHASE_LABELS, type LeaguePhase } from '../types/league-phase.model';
 import { mflColors } from '../../../constants/colors';
+import { ROUTES } from '../../../core/config/routes';
 import {
   useLeagueSponsors,
   getTitleSponsor,
@@ -127,9 +128,6 @@ export function LeagueOverviewScreen() {
   }
 
   // ── Loaded ───────────────────────────────────────────────────────────────
-  const summary = summaryQuery.data;
-  const showRR = summary?.rrFormula === 'standard';
-  const showRest = (summary?.restDays ?? league.restDays) > 0;
 
   return (
     <ScreenScrollView onRefresh={handleRefresh}>
@@ -204,76 +202,31 @@ export function LeagueOverviewScreen() {
           </Card>
         )}
 
-        {/* ── Quick Actions ─────────────────────────────────────── */}
-        {!ended && !isChallengesOnly && (
-          <Button
-            variant="primary"
-            size="sm"
-            onPress={() => router.push('/(app)/(tabs)/my-activity' as any)}
-            className="w-full"
-          >
-            <Feather name="plus-circle" size={14} color="#fff" />
-            <Button.Label>Log Activity</Button.Label>
-          </Button>
-        )}
-
-        {/* ── My Summary ──────────────────────────────────────── */}
-        {!ended && summary && !summary.isChallengesOnly && (
-          <View>
-            <SectionLabel
-              label="MY SUMMARY"
-              actionLabel={summaryQuery.isFetching ? undefined : 'Refresh'}
-              onAction={() => void summaryQuery.refetch()}
-            />
-            <View className="gap-2 mt-1">
-              <View className="flex-row gap-2">
-                <StatCard
-                  value={summary.mySummary.points.toLocaleString()}
-                  label="Total Points"
-                  color={mflColors.brand}
-                />
-                {showRR && (
-                  <StatCard
-                    value={summary.mySummary.avgRR?.toFixed(2) ?? '—'}
-                    label="Avg RR"
-                    color={mflColors.brand}
-                  />
-                )}
-              </View>
-              {showRest && (
-                <View className="flex-row gap-2">
-                  <StatCard
-                    value={summary.mySummary.restUsed}
-                    label="Rest Days Used"
-                    color={mflColors.amber}
-                  />
-                  <StatCard
-                    value={`${summary.mySummary.restUnused ?? '—'} / ${summary.restDays}`}
-                    label="Remaining"
-                    color={mflColors.blue}
-                  />
-                  <StatCard
-                    value={summary.mySummary.missedDays}
-                    label="Missed Days"
-                    color={mflColors.textSub}
-                  />
-                </View>
-              )}
-              <View className="flex-row gap-2">
-                <StatCard
-                  value={summary.rejectedCount}
-                  label="Rejected"
-                  color={summary.rejectedCount > 0 ? mflColors.danger : mflColors.textSub}
-                />
-                {summary.mySummary.teamRank != null && (
-                  <StatCard
-                    value={`#${summary.mySummary.teamRank}`}
-                    label="Team Rank"
-                    color={mflColors.amber}
-                  />
-                )}
-              </View>
-            </View>
+        {/* ── Quick Actions (visible without scrolling) ─────────── */}
+        {!ended && (
+          <View className="flex-row gap-2">
+            {league.startDate && league.endDate && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={() => router.push(ROUTES.analytics)}
+                className="flex-1"
+              >
+                <Feather name="clipboard" size={14} color={mflColors.brand} />
+                <Button.Label>My Summary</Button.Label>
+              </Button>
+            )}
+            {!isChallengesOnly && (
+              <Button
+                variant="primary"
+                size="sm"
+                onPress={() => router.push(ROUTES.myActivity)}
+                className="flex-1"
+              >
+                <Feather name="plus-circle" size={14} color="#fff" />
+                <Button.Label>Log Activity</Button.Label>
+              </Button>
+            )}
           </View>
         )}
 
@@ -386,7 +339,7 @@ export function LeagueOverviewScreen() {
 
         {/* ── Challenges Link (challenges-only) ──────────────────── */}
         {isChallengesOnly && !ended && (
-          <Pressable onPress={() => router.push('/(app)/challenges' as any)}>
+          <Pressable onPress={() => router.push(ROUTES.challenges)}>
             <Card className="p-4">
               <View className="flex-row items-center gap-3">
                 <View
@@ -418,7 +371,7 @@ export function LeagueOverviewScreen() {
                 icon="gift"
                 label="Donate Rest Days"
                 subtitle="Gift rest days to a teammate"
-                onPress={() => router.push('/(app)/rest-day-donations' as any)}
+                onPress={() => router.push(ROUTES.restDayDonations)}
               />
             </Card>
           </View>
@@ -454,28 +407,28 @@ export function LeagueOverviewScreen() {
                 <ActionRow
                   icon="settings"
                   label="League Settings"
-                  onPress={() => router.push('/(app)/league-settings' as any)}
+                  onPress={() => router.push(ROUTES.leagueSettings)}
                 />
               )}
               <ActionRow
                 icon="file-text"
                 label="Manage Rules"
-                onPress={() => router.push('/(app)/league-rules' as any)}
+                onPress={() => router.push(ROUTES.leagueRules)}
               />
               <ActionRow
                 icon="briefcase"
                 label="Governor Dashboard"
-                onPress={() => router.push('/(app)/governor' as any)}
+                onPress={() => router.push(ROUTES.governor)}
               />
               <ActionRow
                 icon="user-plus"
                 label="Team Management"
-                onPress={() => router.push('/(app)/team-management' as any)}
+                onPress={() => router.push(ROUTES.teamManagement)}
               />
               <ActionRow
                 icon="speaker"
                 label="Manage Sponsors"
-                onPress={() => router.push('/(app)/sponsors' as any)}
+                onPress={() => router.push(ROUTES.sponsors)}
               />
             </Card>
           </View>
