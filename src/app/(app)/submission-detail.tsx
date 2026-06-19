@@ -67,7 +67,13 @@ export default function SubmissionDetailScreen() {
   const isSoftRejected = ['rejected', 'rejected_resubmit'].includes(submission.status);
   const isReupload = Boolean(submission.reuploadOf);
   const windowExpired = isSoftRejected && !canReuploadNow;
-  const points = submission.effectivePoints ?? submission.rrValue;
+  const rawPoints = submission.effectivePoints ?? submission.rrValue;
+  const points =
+    rawPoints != null
+      ? Number.isInteger(rawPoints)
+        ? rawPoints
+        : parseFloat(rawPoints.toFixed(2))
+      : null;
 
   const exemptionReason =
     isExemption && submission.notes
