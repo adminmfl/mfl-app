@@ -16,6 +16,7 @@ import type {
   TournamentMatch,
   TournamentMatchInput,
   TournamentScore,
+  TournamentMatchStatus, 
 } from '../types/challenge.model';
 
 export async function fetchChallenges(leagueId: string): Promise<ChallengesResponseDTO> {
@@ -35,6 +36,26 @@ export interface ChallengeMutationInput {
   isCustom?: boolean;
   isUniqueWorkout?: boolean;
   status?: ChallengeStatusDTO;
+}
+
+interface TournamentMatchRow {
+  match_id: string;
+  league_challenge_id: string;
+  round_number?: number | string | null;
+  round_name?: string | null;
+  group_id?: string | null;
+  team1_id?: string | null;
+  team2_id?: string | null;
+  team1?: { team_name?: string } | null;
+  team2?: { team_name?: string } | null;
+  team1_name?: string | null;
+  team2_name?: string | null;
+  score1?: number | null;
+  score2?: number | null;
+  winner_id?: string | null;
+  status?: string | null;
+  start_time?: string | null;
+  location?: string | null;
 }
 
 export async function createChallenge(
@@ -121,6 +142,7 @@ export async function uploadChallengeDocument(
 ): Promise<string> {
   const formData = new FormData();
   formData.append('league_id', leagueId);
+  // TODO: RN FormData accepts { uri, name, type } but TS types don't reflect this
   formData.append('file', {
     uri: file.uri,
     name: file.name,
@@ -251,7 +273,7 @@ export async function deleteChallengeSubTeam(
   return res.data;
 }
 
-function toTournamentMatch(row: any): TournamentMatch {
+function toTournamentMatch(row: TournamentMatchRow): TournamentMatch {
   return {
     matchId: row.match_id,
     leagueChallengeId: row.league_challenge_id,
@@ -265,7 +287,7 @@ function toTournamentMatch(row: any): TournamentMatch {
     score1: Number(row.score1 ?? 0),
     score2: Number(row.score2 ?? 0),
     winnerId: row.winner_id ?? null,
-    status: row.status ?? 'scheduled',
+    status: (row.status ?? 'scheduled') as TournamentMatchStatus,
     startTime: row.start_time ?? null,
     location: row.location ?? null,
   };
@@ -288,7 +310,7 @@ export async function fetchTournamentMatches(
   leagueId: string,
   challengeId: string,
 ): Promise<TournamentMatch[]> {
-  const res = await api.get<{ success: boolean; data?: any[] }>(
+  const res = await api.get<{ success: boolean; data?: TournamentMatchRow[] }>(
     `/api/leagues/${leagueId}/challenges/${challengeId}/tournament-matches`,
   );
   return (res.data.data ?? []).map(toTournamentMatch);
@@ -388,6 +410,7 @@ export async function uploadChallengeProof(
   challengeId: string,
 ): Promise<UploadChallengeProofResponseDTO> {
   const formData = new FormData();
+  // TODO: RN FormData accepts { uri, name, type } but TS types don't reflect this
   formData.append('file', { uri: file.uri, name: file.name, type: file.type } as any);
   formData.append('league_id', leagueId);
   formData.append('challenge_id', challengeId);
