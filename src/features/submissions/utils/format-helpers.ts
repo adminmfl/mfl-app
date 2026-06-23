@@ -4,16 +4,15 @@
 
 /**
  * Formats a snake_case workout type key into a human-readable label.
- * Falls back to customActivityName when provided, then to fallback (default: 'General Workout').
+ * Falls back to customActivityName when provided, then to fallback (default: 'General Activity').
  *
- * Note: submission-detail.tsx originally used 'General Workout';
- * reupload-submission.tsx originally used 'General'. Pass the fallback
- * param when the default doesn't match the desired text.
+ * Note: reupload-submission.tsx passes 'General' explicitly.
+ * Pass the fallback param when the default doesn't match the desired text.
  */
 export function formatWorkoutType(
   workoutType: string | null,
   customActivityName?: string,
-  fallback = 'General Workout',
+  fallback = 'General Activity',
 ): string {
   if (customActivityName) return customActivityName;
   if (!workoutType) return fallback;

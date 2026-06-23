@@ -107,7 +107,6 @@ export function ProofUploadSection({
         suggestedFields={ocrFill?.suggestedFields ?? []}
         onApplySuggestion={(field, value) => {
           onOcrApply(field, value);
-          Alert.alert('Applied', `Applied ${field}: ${value}`);
         }}
       />
 
