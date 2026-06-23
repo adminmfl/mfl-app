@@ -17,7 +17,7 @@ import { useLeaguePhase } from '../hooks/use-league-phase';
 import { isLeagueEnded } from '../utils/league-status';
 import { PHASE_LABELS, type LeaguePhase } from '../types/league-phase.model';
 import { mflColors } from '../../../constants/colors';
-import { ROUTES } from '../../../core/config/routes';
+import { AppRoutes } from '../../../core/config/routes';
 import {
   useLeagueSponsors,
   getTitleSponsor,
@@ -209,7 +209,7 @@ export function LeagueOverviewScreen() {
               <Button
                 variant="secondary"
                 size="sm"
-                onPress={() => router.push(ROUTES.analytics)}
+                onPress={() => router.push(AppRoutes.analytics)}
                 className="flex-1"
               >
                 <Feather name="clipboard" size={14} color={mflColors.brand} />
@@ -220,7 +220,7 @@ export function LeagueOverviewScreen() {
               <Button
                 variant="primary"
                 size="sm"
-                onPress={() => router.push(ROUTES.myActivity)}
+                onPress={() => router.push(AppRoutes.myActivity)}
                 className="flex-1"
               >
                 <Feather name="plus-circle" size={14} color="#fff" />
@@ -235,7 +235,7 @@ export function LeagueOverviewScreen() {
           <SectionLabel
             label="LEAGUE STANDINGS"
             actionLabel="View All"
-            onAction={() => router.push('/(app)/(tabs)/leaderboard' as any)}
+            onAction={() => router.push(AppRoutes.leaderboard)}
           />
           <Card variant="secondary" className="p-3 mt-1">
             <View className="flex-row items-center justify-between">
@@ -339,7 +339,7 @@ export function LeagueOverviewScreen() {
 
         {/* ── Challenges Link (challenges-only) ──────────────────── */}
         {isChallengesOnly && !ended && (
-          <Pressable onPress={() => router.push(ROUTES.challenges)}>
+          <Pressable onPress={() => router.push(AppRoutes.challenges)}>
             <Card className="p-4">
               <View className="flex-row items-center gap-3">
                 <View
@@ -371,7 +371,7 @@ export function LeagueOverviewScreen() {
                 icon="gift"
                 label="Donate Rest Days"
                 subtitle="Gift rest days to a teammate"
-                onPress={() => router.push(ROUTES.restDayDonations)}
+                onPress={() => router.push(AppRoutes.restDayDonations)}
               />
             </Card>
           </View>
@@ -407,28 +407,28 @@ export function LeagueOverviewScreen() {
                 <ActionRow
                   icon="settings"
                   label="League Settings"
-                  onPress={() => router.push(ROUTES.leagueSettings)}
+                  onPress={() => router.push(AppRoutes.leagueSettings)}
                 />
               )}
               <ActionRow
                 icon="file-text"
                 label="Manage Rules"
-                onPress={() => router.push(ROUTES.leagueRules)}
+                onPress={() => router.push(AppRoutes.leagueRules)}
               />
               <ActionRow
                 icon="briefcase"
                 label="Governor Dashboard"
-                onPress={() => router.push(ROUTES.governor)}
+                onPress={() => router.push(AppRoutes.governor)}
               />
               <ActionRow
                 icon="user-plus"
                 label="Team Management"
-                onPress={() => router.push(ROUTES.teamManagement)}
+                onPress={() => router.push(AppRoutes.teamManagement)}
               />
               <ActionRow
                 icon="speaker"
                 label="Manage Sponsors"
-                onPress={() => router.push(ROUTES.sponsors)}
+                onPress={() => router.push(AppRoutes.sponsors)}
               />
             </Card>
           </View>

@@ -7,8 +7,10 @@ import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { DarkHeaderCard } from '../../components/dark-header-card';
 import { mflColors } from '../../constants/colors';
+import { AppRoutes } from '../../core/config/routes';
 import { useJoinLeague } from '../../features/leagues/hooks/use-join-league';
 import { logLeagueJoined } from '../../lib/analytics';
+import { extractApiError } from '../../core/utils/extract-api-error';
 
 export default function JoinLeagueScreen() {
   const router = useRouter();
@@ -41,7 +43,7 @@ export default function JoinLeagueScreen() {
         }
         // Navigate to dashboard after a short delay so the user sees the success message
         setTimeout(() => {
-          router.replace('/(app)/(tabs)/dashboard');
+          router.replace(AppRoutes.dashboard);
         }, 1500);
       },
     });
@@ -98,8 +100,10 @@ export default function JoinLeagueScreen() {
         {joinMutation.isError && (
           <View className="bg-danger-50 p-3 rounded-lg">
             <AppText className="text-sm" style={{ color: mflColors.danger }}>
-              {(joinMutation.error as any)?.response?.data?.error ||
-                'Invalid invite code. Please check and try again.'}
+              {extractApiError(
+                joinMutation.error,
+                'Invalid invite code. Please check and try again.',
+              )}
             </AppText>
           </View>
         )}
