@@ -42,7 +42,7 @@ export async function fetchDrafts(leagueId: string): Promise<DraftDTO[]> {
 
 export async function createDraft(
   leagueId: string,
-  body: { type: string; targetScope: string; contextData: Record<string, any> },
+  body: { type: string; targetScope: string; contextData: Record<string, unknown> },
 ): Promise<DraftDTO> {
   const res = await api.post<DraftDTO>(`/api/leagues/${leagueId}/drafts`, body);
   return res.data;
