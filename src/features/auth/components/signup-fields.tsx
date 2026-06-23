@@ -8,7 +8,7 @@ import { mflColors } from '../../../constants/colors';
 import { authInputStyle } from '../styles/auth-input-style';
 import { formatDateYmd, parseDateYmd, formatDisplayDob } from '../utils/date-helpers';
 import { FieldLabel } from './field-label';
-import type { Gender } from '../types';
+import type { Gender, SignupFormState, SignupFormActions } from '../types';
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -23,62 +23,52 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 ];
 
 interface SignupFieldsProps {
-  email: string;
-  username: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: Gender | '';
-  password: string;
-  confirmPassword: string;
-  showPassword: boolean;
-  showConfirmPassword: boolean;
-  showDobPicker: boolean;
+  formState: SignupFormState;
+  formActions: SignupFormActions;
   isDisabled: boolean;
   isLoading: boolean;
   error: string;
-  onEmailChange: (v: string) => void;
-  onUsernameChange: (v: string) => void;
-  onPhoneChange: (v: string) => void;
-  onDateOfBirthChange: (v: string) => void;
-  onGenderChange: (v: Gender) => void;
-  onPasswordChange: (v: string) => void;
-  onConfirmPasswordChange: (v: string) => void;
-  onTogglePassword: () => void;
-  onToggleConfirmPassword: () => void;
-  onToggleDobPicker: () => void;
   onSubmit: () => void;
 }
 
 export function SignupFields({
-  email,
-  username,
-  phone,
-  dateOfBirth,
-  gender,
-  password,
-  confirmPassword,
-  showPassword,
-  showConfirmPassword,
-  showDobPicker,
+  formState,
+  formActions,
   isDisabled,
   isLoading,
   error,
-  onEmailChange,
-  onUsernameChange,
-  onPhoneChange,
-  onDateOfBirthChange,
-  onGenderChange,
-  onPasswordChange,
-  onConfirmPasswordChange,
-  onTogglePassword,
-  onToggleConfirmPassword,
-  onToggleDobPicker,
   onSubmit,
 }: SignupFieldsProps) {
+  const {
+    email,
+    username,
+    phone,
+    dateOfBirth,
+    gender,
+    password,
+    confirmPassword,
+    showPassword,
+    showConfirmPassword,
+    showDatePicker,
+  } = formState;
+
+  const {
+    onEmailChange,
+    onUsernameChange,
+    onPhoneChange,
+    onDateChange,
+    onGenderChange,
+    onPasswordChange,
+    onConfirmPasswordChange,
+    onToggleShowPassword,
+    onToggleShowConfirmPassword,
+    onToggleDatePicker,
+  } = formActions;
+
   const handleDobChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (Platform.OS === 'android') onToggleDobPicker();
-    if (event.type === 'dismissed') { onToggleDobPicker(); return; }
-    if (selectedDate) onDateOfBirthChange(formatDateYmd(selectedDate));
+    if (Platform.OS === 'android') onToggleDatePicker();
+    if (event.type === 'dismissed') { onToggleDatePicker(); return; }
+    if (selectedDate) onDateChange(formatDateYmd(selectedDate));
   };
 
   const handleShowGenderPicker = () => {
@@ -166,7 +156,7 @@ export function SignupFields({
       <View className="gap-1">
         <FieldLabel required>Date of Birth</FieldLabel>
         <Pressable
-          onPress={onToggleDobPicker}
+          onPress={onToggleDatePicker}
           disabled={isDisabled}
           style={[
             authInputStyle,
@@ -181,7 +171,7 @@ export function SignupFields({
           </AppText>
           <Feather name="calendar" size={18} color={mflColors.textMuted} />
         </Pressable>
-        {showDobPicker ? (
+        {showDatePicker ? (
           <View className="rounded-xl overflow-hidden border border-default-200">
             <DateTimePicker
               value={parseDateYmd(dateOfBirth)}
@@ -193,7 +183,7 @@ export function SignupFields({
             />
             {Platform.OS === 'ios' ? (
               <Pressable
-                onPress={onToggleDobPicker}
+                onPress={onToggleDatePicker}
                 className="py-3 items-center"
                 style={{ borderTopWidth: 1, borderTopColor: '#E2E8F0' }}
               >
@@ -240,7 +230,7 @@ export function SignupFields({
             editable={!isDisabled}
           />
           <Pressable
-            onPress={onTogglePassword}
+            onPress={onToggleShowPassword}
             disabled={isDisabled}
             style={{
               position: 'absolute',
@@ -277,7 +267,7 @@ export function SignupFields({
             editable={!isDisabled}
           />
           <Pressable
-            onPress={onToggleConfirmPassword}
+            onPress={onToggleShowConfirmPassword}
             disabled={isDisabled}
             style={{
               position: 'absolute',

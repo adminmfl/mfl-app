@@ -16,7 +16,6 @@ import { api } from '../../core/api';
 import { queryKeys } from '../../core/config';
 import { extractApiError } from '../../features/auth/utils/extract-api-error';
 
-
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase();

@@ -66,10 +66,13 @@ export default function LoginScreen() {
       await login({ email: email.trim().toLowerCase(), password });
       router.replace(AppRoutes.dashboard);
     } catch (err: unknown) {
-      setError(extractApiError(
-        err,
-        'Could not reach the local API. Check EXPO_PUBLIC_API_URL and Android HTTP access.',
-      ));
+      const typed = err as { code?: string; response?: { data?: { error?: string } } };
+      const message =
+        typed?.response?.data?.error ||
+        (typed?.code === 'ECONNABORTED' || !typed?.response
+          ? 'Could not reach the server. Check your connection and try again.'
+          : 'Login failed. Please try again.');
+      setError(message);
     } finally {
       setIsLoading(false);
     }

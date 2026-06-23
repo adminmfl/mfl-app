@@ -36,7 +36,12 @@ export default function ForgotPasswordScreen() {
       await sendOtp(trimmedEmail);
       router.push({ pathname: AppRoutes.resetPassword, params: { email: trimmedEmail } });
     } catch (err: unknown) {
-      setError(extractApiError(err, 'Failed to send verification code. Please try again.'));
+      const typed = err as { response?: { status?: number; data?: { error?: string } } };
+      const message =
+        typed?.response?.status === 429
+          ? typed?.response?.data?.error ?? 'Too many attempts. Please try again later.'
+          : extractApiError(err, 'Failed to send verification code. Please try again.');
+      setError(message);
     } finally {
       setIsLoading(false);
     }

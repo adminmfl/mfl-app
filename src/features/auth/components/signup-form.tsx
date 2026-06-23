@@ -4,7 +4,7 @@ import { sendSignupOtp, verifySignupOtp } from '../services/signup.service';
 import { extractApiError } from '../utils/extract-api-error';
 import { SignupFields } from './signup-fields';
 import { OtpVerification } from './otp-verification';
-import type { Gender } from '../types';
+import type { Gender, SignupFormState, SignupFormActions } from '../types';
 
 // ── Constants ──
 const MIN_PASSWORD_LENGTH = 6;
@@ -57,7 +57,7 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
   const [step, setStep] = useState<SignupStep>('details');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showDobPicker, setShowDobPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -167,31 +167,39 @@ export function SignupForm({ isGoogleLoading, onSignupSuccess, onError }: Signup
     );
   }
 
+  const formState: SignupFormState = {
+    email,
+    username,
+    phone,
+    dateOfBirth,
+    gender,
+    password,
+    confirmPassword,
+    showPassword,
+    showConfirmPassword,
+    showDatePicker,
+  };
+
+  const formActions: SignupFormActions = {
+    onEmailChange: setEmail,
+    onUsernameChange: setUsername,
+    onPhoneChange: setPhone,
+    onDateChange: setDateOfBirth,
+    onGenderChange: setGender,
+    onPasswordChange: setPassword,
+    onConfirmPasswordChange: setConfirmPassword,
+    onToggleShowPassword: () => setShowPassword((p) => !p),
+    onToggleShowConfirmPassword: () => setShowConfirmPassword((p) => !p),
+    onToggleDatePicker: () => setShowDatePicker((p) => !p),
+  };
+
   return (
     <SignupFields
-      email={email}
-      username={username}
-      phone={phone}
-      dateOfBirth={dateOfBirth}
-      gender={gender}
-      password={password}
-      confirmPassword={confirmPassword}
-      showPassword={showPassword}
-      showConfirmPassword={showConfirmPassword}
-      showDobPicker={showDobPicker}
+      formState={formState}
+      formActions={formActions}
       isDisabled={isFormDisabled}
       isLoading={isLoading}
       error={error}
-      onEmailChange={setEmail}
-      onUsernameChange={setUsername}
-      onPhoneChange={setPhone}
-      onDateOfBirthChange={setDateOfBirth}
-      onGenderChange={setGender}
-      onPasswordChange={setPassword}
-      onConfirmPasswordChange={setConfirmPassword}
-      onTogglePassword={() => setShowPassword((p) => !p)}
-      onToggleConfirmPassword={() => setShowConfirmPassword((p) => !p)}
-      onToggleDobPicker={() => setShowDobPicker((p) => !p)}
       onSubmit={handleSendOtp}
     />
   );

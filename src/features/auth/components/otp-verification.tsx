@@ -4,6 +4,7 @@ import { Button, Spinner } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import { authInputStyle } from '../styles/auth-input-style';
+import { FieldLabel } from './field-label';
 
 const OTP_LENGTH = 6;
 
@@ -59,10 +60,7 @@ export function OtpVerification({
 
       {/* OTP Field */}
       <View className="gap-1">
-        <View className="flex-row items-center gap-0.5">
-          <AppText className="text-sm font-medium text-muted">Verification Code</AppText>
-          <AppText className="text-sm font-medium" style={{ color: mflColors.danger }}>*</AppText>
-        </View>
+        <FieldLabel required>Verification Code</FieldLabel>
         <TextInput
           style={[
             authInputStyle,
