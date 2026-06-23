@@ -16,6 +16,9 @@ import { useGoogleAuth, getIdTokenFromResponse } from '../../core/auth/google-au
 import { Button, Spinner } from 'heroui-native';
 import { mflColors } from '../../constants/colors';
 import { AppText } from '../../components/app-text';
+import { AppRoutes } from '../../core/config/routes';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
+import { authInputStyle } from '../../features/auth/styles/auth-input-style';
 
 export default function LoginScreen() {
   const { login, loginWithGoogle } = useAuth();
@@ -41,14 +44,13 @@ export default function LoginScreen() {
     loginWithGoogle({ idToken })
       .then(({ isNewUser }) => {
         if (isNewUser) {
-          router.replace('/(app)/complete-profile');
+          router.replace(AppRoutes.completeProfile);
         } else {
-          router.replace('/(app)/(tabs)/dashboard');
+          router.replace(AppRoutes.dashboard);
         }
       })
-      .catch((err: any) => {
-        const message = err?.response?.data?.error || 'Google sign-in failed. Please try again.';
-        setError(message);
+      .catch((err: unknown) => {
+        setError(extractApiError(err, 'Google sign-in failed. Please try again.'));
       })
       .finally(() => setIsGoogleLoading(false));
   }, [response, loginWithGoogle]);
@@ -62,12 +64,13 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await login({ email: email.trim().toLowerCase(), password });
-      router.replace('/(app)/(tabs)/dashboard');
-    } catch (err: any) {
+      router.replace(AppRoutes.dashboard);
+    } catch (err: unknown) {
+      const typed = err as { code?: string; response?: { data?: { error?: string } } };
       const message =
-        err?.response?.data?.error ||
-        (err?.code === 'ECONNABORTED' || !err?.response
-          ? 'Could not reach the local API. Check EXPO_PUBLIC_API_URL and Android HTTP access.'
+        typed?.response?.data?.error ||
+        (typed?.code === 'ECONNABORTED' || !typed?.response
+          ? 'Could not reach the server. Check your connection and try again.'
           : 'Login failed. Please try again.');
       setError(message);
     } finally {
@@ -112,16 +115,7 @@ export default function LoginScreen() {
           <View className="gap-1">
             <AppText className="text-sm font-medium text-muted">Email</AppText>
             <TextInput
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderWidth: 1,
-                borderColor: '#E2E8F0',
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                fontSize: 15,
-                color: '#0F172A',
-              }}
+              style={authInputStyle}
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
@@ -137,7 +131,7 @@ export default function LoginScreen() {
           <View className="gap-1">
             <View className="flex-row items-center justify-between">
               <AppText className="text-sm font-medium text-muted">Password</AppText>
-              <Pressable onPress={() => router.push('/(auth)/forgot-password')}>
+              <Pressable onPress={() => router.push(AppRoutes.forgotPassword)}>
                 <AppText className="text-sm" style={{ color: '#00C48C' }}>
                   Forgot your password?
                 </AppText>
@@ -145,17 +139,7 @@ export default function LoginScreen() {
             </View>
             <View>
               <TextInput
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  borderWidth: 1,
-                  borderColor: '#E2E8F0',
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  paddingRight: 48,
-                  paddingVertical: 12,
-                  fontSize: 15,
-                  color: '#0F172A',
-                }}
+                style={[authInputStyle, { paddingRight: 48 }]}
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Enter your password"
@@ -218,7 +202,7 @@ export default function LoginScreen() {
 
           <View className="flex-row justify-center mt-4">
             <AppText className="text-sm text-muted">Don't have an account? </AppText>
-            <Pressable onPress={() => router.push('/(auth)/signup')}>
+            <Pressable onPress={() => router.push(AppRoutes.signup)}>
               <AppText className="text-sm font-semibold" style={{ color: '#00C48C' }}>
                 Sign up
               </AppText>

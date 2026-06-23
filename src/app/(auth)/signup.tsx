@@ -15,6 +15,8 @@ import { Button, Spinner } from 'heroui-native';
 import { mflColors } from '../../constants/colors';
 import { AppText } from '../../components/app-text';
 import { SignupForm } from '../../features/auth/components/signup-form';
+import { AppRoutes } from '../../core/config/routes';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
 
 export default function SignupScreen() {
   const { login, loginWithGoogle } = useAuth();
@@ -35,14 +37,13 @@ export default function SignupScreen() {
     loginWithGoogle({ idToken })
       .then(({ isNewUser }) => {
         if (isNewUser) {
-          router.replace('/(app)/complete-profile');
+          router.replace(AppRoutes.completeProfile);
         } else {
-          router.replace('/(app)/(tabs)/dashboard');
+          router.replace(AppRoutes.dashboard);
         }
       })
-      .catch((err: any) => {
-        const message = err?.response?.data?.error || 'Google sign-up failed. Please try again.';
-        setError(message);
+      .catch((err: unknown) => {
+        setError(extractApiError(err, 'Google sign-up failed. Please try again.'));
       })
       .finally(() => setIsGoogleLoading(false));
   }, [response, loginWithGoogle]);
@@ -51,10 +52,9 @@ export default function SignupScreen() {
   const handleSignupSuccess = async (email: string, password: string) => {
     try {
       await login({ email, password });
-      router.replace('/(app)/(tabs)/dashboard');
+      router.replace(AppRoutes.dashboard);
     } catch {
-      // Account was created but auto-login failed — send to login screen
-      router.replace('/(auth)/login');
+      router.replace(AppRoutes.login);
     }
   };
 
