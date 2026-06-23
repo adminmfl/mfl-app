@@ -5,6 +5,7 @@ export const mmkv = createMMKV({ id: 'mfl-app-storage' });
 // ─── Typed helpers for common keys ───
 
 const USER_CACHE_KEY = 'mfl_user_cache';
+export const SEEN_AUTO_REST_INFO_KEY = 'mfl_seen_auto_rest_info';
 
 export function getCachedUser<T>(): T | null {
   const raw = mmkv.getString(USER_CACHE_KEY);

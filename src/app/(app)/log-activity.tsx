@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Pressable,
@@ -16,7 +16,9 @@ import { useRole } from '../../contexts/role-context';
 import { useLeagueActivities } from '../../features/leagues/hooks/use-league-activities';
 import { WorkoutSubmission } from '../../features/activity-submission/components/workout-submission';
 import { RestDaySubmission } from '../../features/activity-submission/components/rest-day-submission';
+import { AutoRestInfoCard, AutoRestInfoIcon } from '../../features/activity-submission/components/auto-rest-info-card';
 import { mflColors } from '../../constants/colors';
+import { mmkv, SEEN_AUTO_REST_INFO_KEY } from '../../core/storage/mmkv';
 import type { ResubmitParams } from '../../features/activity-submission/types';
 
 export default function LogActivityScreen() {
@@ -78,6 +80,20 @@ export default function LogActivityScreen() {
     if (params.type === 'rest') return 'rest';
     return 'workout';
   });
+
+  // Auto-rest info card — shown once, dismissible, icon always visible
+  const [showAutoRestCard, setShowAutoRestCard] = useState(
+    () => !mmkv.getBoolean(SEEN_AUTO_REST_INFO_KEY),
+  );
+
+  const handleDismissAutoRestCard = useCallback(() => {
+    mmkv.set(SEEN_AUTO_REST_INFO_KEY, true);
+    setShowAutoRestCard(false);
+  }, []);
+
+  const handleReopenAutoRestCard = useCallback(() => {
+    setShowAutoRestCard(true);
+  }, []);
 
   const handleSuccess = () => router.back();
 
@@ -192,7 +208,7 @@ export default function LogActivityScreen() {
             </Pressable>
             <Pressable
               onPress={() => setTab('rest')}
-              className={`flex-1 py-2.5 rounded-lg items-center ${
+              className={`flex-1 py-2.5 rounded-lg items-center flex-row justify-center gap-1 ${
                 tab === 'rest' ? 'bg-card shadow-sm' : ''
               }`}
             >
@@ -203,8 +219,17 @@ export default function LogActivityScreen() {
               >
                 Rest Day
               </AppText>
+              <AutoRestInfoIcon onPress={handleReopenAutoRestCard} />
             </Pressable>
           </View>
+        )}
+
+        {/* Auto-rest day info card (one-time, dismissible) */}
+        {showRestDays && !resubmitParams && tab === 'rest' && (
+          <AutoRestInfoCard
+            showCard={showAutoRestCard}
+            onDismiss={handleDismissAutoRestCard}
+          />
         )}
 
         {/* Content */}
