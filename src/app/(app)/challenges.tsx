@@ -9,6 +9,7 @@ import { useLeagueContext } from '../../contexts/league-context';
 import { useChallenges } from '../../features/challenges/hooks/use-challenges';
 import { ChallengeListCard } from '../../features/challenges/components/challenge-list-card';
 import { ChallengesHeader } from '../../features/challenges/components/challenges-header';
+import { AppRoutes } from '../../core/config/routes';
 import type { Challenge } from '../../features/challenges/types/challenge.model';
 import {
   useLeagueSponsors,
@@ -58,7 +59,10 @@ export default function ChallengesScreen() {
 
   const handleCardPress = useCallback(
     (challenge: Challenge) => {
-      router.push(`/(app)/challenges/${challenge.challengeId}` as any);
+      router.push({
+        pathname: AppRoutes.challengeDetail,
+        params: { challengeId: challenge.challengeId },
+      });
     },
     [router],
   );
@@ -66,7 +70,7 @@ export default function ChallengesScreen() {
   const handleSubmitProof = useCallback(
     (challenge: Challenge) => {
       router.push({
-        pathname: '/(app)/challenge-submit' as any,
+        pathname: AppRoutes.challengeSubmit,
         params: { challengeId: challenge.challengeId },
       });
     },
