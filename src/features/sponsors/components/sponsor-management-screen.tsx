@@ -18,9 +18,9 @@ import type { LeagueSponsorSlot, SponsorCategory } from '../types/sponsor.model'
 
 const CATEGORY_COLORS: Record<SponsorCategory, { bg: string; text: string }> = {
   title: { bg: '#F3E8FF', text: '#7C3AED' },
-  team: { bg: '#DBEAFE', text: '#2563EB' },
+  team: { bg: mflColors.blueLight, text: mflColors.blue },
   challenge: { bg: '#FFEDD5', text: '#EA580C' },
-  grand_finale: { bg: '#FEF3C7', text: '#D97706' },
+  grand_finale: { bg: mflColors.amberLight, text: mflColors.amber },
 };
 
 function CategoryBadge({ category }: { category: SponsorCategory }) {
@@ -126,10 +126,9 @@ function SlotCard({
             <Spinner size="sm" />
           ) : (
             <Switch
-              value={slot.enabled}
-              onValueChange={() => onToggle(slot)}
-              disabled={slot.lockedByAdmin}
-              size="sm"
+              isSelected={slot.enabled}
+              onSelectedChange={() => onToggle(slot)}
+              isDisabled={slot.lockedByAdmin}
             />
           )}
         </View>
