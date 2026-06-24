@@ -7,6 +7,7 @@ import { AppText } from '../../../components/app-text';
 import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
 import { api } from '../../../core/api';
+import { reportError } from '../../../core/utils/report-error';
 
 interface Props {
   leagueId: string;
@@ -36,12 +37,9 @@ export function SettingsLogoSection({ leagueId, logoUrl, onLogoChange }: Props) 
       const filename = uri.split('/').pop() || 'logo.jpg';
       const match = /\.(\w+)$/.exec(filename);
       const type = match ? `image/${match[1]}` : 'image/jpeg';
+      const file = { uri, name: filename, type };
 
-      form.append('file', {
-        uri,
-        name: filename,
-        type,
-      } as any);
+      form.append('file', file);
 
       const res = await api.post(`/api/leagues/${leagueId}/logo`, form, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -50,8 +48,10 @@ export function SettingsLogoSection({ leagueId, logoUrl, onLogoChange }: Props) 
       const newUrl = res.data?.data?.url || null;
       onLogoChange(newUrl);
       Alert.alert('Success', 'League logo updated');
-    } catch (e: any) {
-      Alert.alert('Upload Failed', e?.response?.data?.error || e?.message || 'Failed to upload logo');
+    } catch (error: unknown) {
+      reportError(error);
+      const message = error instanceof Error ? error.message : 'Failed to upload logo';
+      Alert.alert('Upload Failed', message);
     } finally {
       setUploading(false);
     }
@@ -69,8 +69,10 @@ export function SettingsLogoSection({ leagueId, logoUrl, onLogoChange }: Props) 
             await api.delete(`/api/leagues/${leagueId}/logo`);
             onLogoChange(null);
             Alert.alert('Success', 'League logo removed');
-          } catch (e: any) {
-            Alert.alert('Failed', e?.response?.data?.error || e?.message || 'Failed to delete logo');
+          } catch (error: unknown) {
+            reportError(error);
+            const message = error instanceof Error ? error.message : 'Failed to delete logo';
+            Alert.alert('Failed', message);
           } finally {
             setDeleting(false);
           }

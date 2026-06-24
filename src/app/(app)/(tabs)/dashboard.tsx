@@ -381,24 +381,26 @@ export default function DashboardScreen() {
         </View>
 
         {/* ── Quick Actions ────────────────────────────────────── */}
-        {isChallengesOnly ? (
-          <Button
-            variant="primary"
-            size="lg"
-            onPress={() => router.push(AppRoutes.challenges)}
-            className="w-full"
-          >
-            <Button.Label>View Challenges</Button.Label>
-          </Button>
-        ) : (
-          <Button
-            variant="primary"
-            size="lg"
-            onPress={() => router.push(AppRoutes.myActivity)}
-            className="w-full"
-          >
-            <Button.Label>Log Activity</Button.Label>
-          </Button>
+        {((!isHost && !isGovernor) || !!activeLeague?.teamName) && (
+          isChallengesOnly ? (
+            <Button
+              variant="primary"
+              size="lg"
+              onPress={() => router.push(AppRoutes.challenges)}
+              className="w-full"
+            >
+              <Button.Label>View Challenges</Button.Label>
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              size="lg"
+              onPress={() => router.push(AppRoutes.myActivity)}
+              className="w-full"
+            >
+              <Button.Label>Log Activity</Button.Label>
+            </Button>
+          )
         )}
 
         {/* ── Host / Admin Quick Actions ────────────────────── */}

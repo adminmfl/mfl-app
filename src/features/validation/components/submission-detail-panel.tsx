@@ -5,6 +5,7 @@ import { Button, Card, Spinner } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import type { SubmissionForValidation } from '../types/validation.model';
+import { pointsInputStyle } from './validation-input-styles';
 import {
   formatActivityName,
   formatPoints,
@@ -14,16 +15,6 @@ import {
   getSubmissionMetrics,
 } from '../utils/validation-utils';
 
-const pointsInputStyle = {
-  backgroundColor: mflColors.card,
-  borderWidth: 1,
-  borderColor: mflColors.border,
-  borderRadius: 10,
-  paddingHorizontal: 12,
-  paddingVertical: 9,
-  fontSize: 14,
-  color: mflColors.text,
-};
 
 interface SubmissionDetailPanelProps {
   submission: SubmissionForValidation;
