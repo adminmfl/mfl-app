@@ -12,6 +12,14 @@ export const MEASUREMENT_LABELS: Record<MeasurementType, string> = {
   hole: 'Holes',
 };
 
+export const MEASUREMENT_DESCRIPTIONS: Record<MeasurementType, string> = {
+  none: 'Completion only',
+  duration: 'Minutes',
+  distance: 'Distance',
+  steps: 'Step count',
+  hole: 'Holes',
+};
+
 export const REQUIREMENT_LABELS: Record<RequirementLevel, string> = {
   mandatory: 'Required',
   optional: 'Optional',
