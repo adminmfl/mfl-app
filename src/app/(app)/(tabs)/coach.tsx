@@ -5,6 +5,15 @@ import { AppText } from '../../../components/app-text';
 import { ScreenScrollView } from '../../../components/screen-scroll-view';
 import { mflColors } from '../../../constants/colors';
 
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
+const CAPABILITIES: Array<{ icon: FeatherIconName; label: string }> = [
+  { icon: 'bar-chart-2', label: 'Performance insights based on your activity data' },
+  { icon: 'zap',         label: 'Daily motivation nudges tailored to your goals' },
+  { icon: 'target',      label: 'Challenge strategy and league standing tips' },
+  { icon: 'shield',      label: 'Private — visible only to you, not the team' },
+];
+
 /**
  * AI Coach — Coming Soon
  *
@@ -54,18 +63,13 @@ export default function CoachTab() {
 
         {/* Upcoming capabilities */}
         <View className="w-full gap-3">
-          {[
-            { icon: 'bar-chart-2', label: 'Performance insights based on your activity data' },
-            { icon: 'zap',         label: 'Daily motivation nudges tailored to your goals' },
-            { icon: 'target',      label: 'Challenge strategy and league standing tips' },
-            { icon: 'shield',      label: 'Private — visible only to you, not the team' },
-          ].map((item) => (
+          {CAPABILITIES.map((item) => (
             <View
               key={item.icon}
               className="flex-row items-center gap-3 rounded-xl px-4 py-3"
               style={{ backgroundColor: mflColors.card, borderWidth: 1, borderColor: mflColors.border }}
             >
-              <Feather name={item.icon as any} size={18} color={mflColors.brand} />
+              <Feather name={item.icon} size={18} color={mflColors.brand} />
               <AppText className="flex-1 text-sm text-foreground">{item.label}</AppText>
             </View>
           ))}
