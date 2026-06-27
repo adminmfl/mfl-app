@@ -1,4 +1,4 @@
-import { useUnreadCount } from '../../messages';
+import { useUnreadChatCount } from '../../messaging';
 import { UnreadMessagesCard } from './unread-messages-card';
 
 export function LeagueUnreadMessages({
@@ -8,7 +8,7 @@ export function LeagueUnreadMessages({
   leagueId: string;
   leagueName: string;
 }) {
-  const { data: unreadCount } = useUnreadCount(leagueId);
+  const { data: unreadCount } = useUnreadChatCount(leagueId);
 
   if (!unreadCount || unreadCount === 0) return null;
 
