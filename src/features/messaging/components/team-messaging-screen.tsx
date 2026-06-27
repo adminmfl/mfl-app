@@ -1,23 +1,18 @@
-import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  FlatList,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
-  RefreshControl,
   ScrollView,
   View,
-  type ListRenderItemInfo,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '../../../components/app-text';
-import { ScreenState } from '../../../components/screen-state';
 import { mflColors } from '../../../constants/colors';
 import { useAuth } from '../../../core/auth';
+import { AppRoutes } from '../../../core/config/routes';
 import { useRole } from '../../../contexts/role-context';
 import { useUserProfile } from '../../profile/hooks/use-user-profile';
 import type { UserLeague } from '../../leagues/types/league.model';
@@ -34,7 +29,8 @@ import type {
 import { messagingQueryKeys } from '../utils/messaging-query-keys';
 import { ChatChannelSelector } from './chat-channel-selector';
 import { ChatComposer, type ChatComposerHandle } from './chat-composer';
-import { ChatMessageBubble } from './chat-message-bubble';
+import { ChatHeader } from './chat-header';
+import { ChatMessageList } from './chat-message-list';
 import { MessagingChip } from './messaging-chip';
 
 const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
@@ -61,34 +57,34 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const isCaptainRole = isCaptain || isViceCaptain;
   const profileQuery = useUserProfile();
 
-  const teamsQuery = useChatTeams(leagueId, isLeader);
-  const teams = teamsQuery.data ?? [];
-
+  // ── State ────────────────────────────────────────────────────────────────
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [adminView, setAdminView] = useState(false);
   const [filter, setFilter] = useState<ChatFilter>('all');
   const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Ref to let the empty-state CTA focus the composer input
   const composerRef = useRef<ChatComposerHandle>(null);
 
   useEffect(() => {
     if (!selectedTeamId) setAdminView(false);
   }, [selectedTeamId]);
 
+  // ── Derived ──────────────────────────────────────────────────────────────
+  const teamsQuery = useChatTeams(leagueId, isLeader);
+  const teams = teamsQuery.data ?? [];
+
   const selectedTeam = useMemo(
-    () => teams.find((team) => team.teamId === selectedTeamId) ?? null,
+    () => teams.find((team: ChatTeam) => team.teamId === selectedTeamId) ?? null,
     [selectedTeamId, teams],
   );
 
   const channelTeamId = isLeader ? selectedTeamId : league.teamId;
-  const channelName = getChannelName({
-    isLeader,
-    selectedTeam,
-    teamName: league.teamName,
-  });
+  const channelName = isLeader
+    ? selectedTeam?.teamName ?? 'All Teams (Broadcast)'
+    : league.teamName ?? 'Team Messages';
 
+  // ── Data hooks ───────────────────────────────────────────────────────────
   const messagesQuery = useChatMessages({
     leagueId,
     teamId: channelTeamId,
@@ -99,17 +95,12 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const reactionMutation = useToggleChatReaction();
 
   const messages = messagesQuery.data ?? [];
-  const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
-  const pinnedMessage = useMemo(
-    () => messages.find((m) => m.messageType === 'announcement' && m.isImportant),
-    [messages],
-  );
-
+  // ── Mark read ────────────────────────────────────────────────────────────
   useEffect(() => {
     const unreadIds = messages
-      .filter((message) => !message.isRead && message.senderId !== user?.id)
-      .map((message) => message.messageId);
+      .filter((m) => !m.isRead && m.senderId !== user?.id)
+      .map((m) => m.messageId);
 
     if (unreadIds.length === 0) return;
 
@@ -120,10 +111,11 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         });
       })
       .catch(() => {
-        // Non-blocking. The badge refetches periodically and self-corrects.
+        // Non-blocking — badge self-corrects on next poll.
       });
   }, [leagueId, messages, queryClient, user?.id]);
 
+  // ── Refresh ──────────────────────────────────────────────────────────────
   const refresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([
@@ -134,32 +126,34 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
     setRefreshing(false);
   }, [isLeader, messagesQuery, teamsQuery, unreadQuery]);
 
+  // ── Deep link navigation ─────────────────────────────────────────────────
   const openDeepLink = useCallback(
     (path: string) => {
       const section = getDeepLinkSection(path);
       if (section === 'challenges') {
-        router.push('/(app)/challenges' as any);
+        router.push(AppRoutes.challenges);
       } else if (section === 'leaderboard') {
-        router.push('/(app)/(tabs)/leaderboard' as any);
+        router.push(AppRoutes.leaderboard);
       } else if (section === 'activities' || section === 'submit') {
-        router.push('/(app)/log-activity' as any);
+        router.push(AppRoutes.logActivity);
       } else if (section === 'manual-entry') {
-        router.push('/(app)/manual-entry' as any);
+        router.push(AppRoutes.manualEntry);
       } else if (section === 'my-team') {
-        router.push('/(app)/(tabs)/my-team' as any);
+        router.push(AppRoutes.myTeam);
       } else if (section === 'rules') {
-        router.push('/(app)/league-rules' as any);
+        router.push(AppRoutes.leagueRules);
       } else if (section === 'settings') {
-        router.push('/(app)/league-settings' as any);
+        router.push(AppRoutes.leagueSettings);
       } else if (section === 'analytics') {
-        router.push('/(app)/analytics' as any);
+        router.push(AppRoutes.analytics);
       } else if (section === 'validate' || section === 'submissions') {
-        router.push('/(app)/submission-validation' as any);
+        router.push(AppRoutes.submissionValidation);
       }
     },
     [router],
   );
 
+  // ── Optimistic message helpers ───────────────────────────────────────────
   const activeQueryKey = useMemo(
     () =>
       messagingQueryKeys.messages(leagueId, {
@@ -189,42 +183,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
     [activeQueryKey, queryClient],
   );
 
-  const renderMessage = useCallback(
-    ({ item, index }: ListRenderItemInfo<ChatMessage>) => {
-      // In inverted FlatList, data[0] = newest (bottom). The message visually
-      // above item[index] is item[index+1]. Group if same sender within 5 min.
-      const above = messages[index + 1];
-      const isGrouped =
-        !!above &&
-        above.senderId === item.senderId &&
-        Math.abs(
-          new Date(item.createdAt).getTime() - new Date(above.createdAt).getTime(),
-        ) < 5 * 60 * 1000;
-
-      return (
-        <ChatMessageBubble
-          message={item}
-          isOwn={item.senderId === user?.id}
-          currentUserId={user?.id}
-          isGrouped={isGrouped}
-          onReply={setReplyTo}
-          onReact={(messageId, emoji) => {
-            reactionMutation.mutate({
-              leagueId,
-              messageId,
-              emoji,
-              userId: user?.id,
-            });
-          }}
-          onOpenDeepLink={openDeepLink}
-        />
-      );
-    },
-    [leagueId, messages, openDeepLink, reactionMutation, user?.id],
-  );
-
-  const keyExtractor = useCallback((item: ChatMessage) => item.messageId, []);
-
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <KeyboardAvoidingView
       className="flex-1"
@@ -232,32 +191,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
       keyboardVerticalOffset={0}
       style={{ backgroundColor: mflColors.surface, paddingTop: insets.top }}
     >
-      <View
-        className="border-b bg-card px-5 py-3"
-        style={{ borderBottomColor: mflColors.border }}
-      >
-        <View className="flex-row items-center gap-2">
-          <Feather name="message-circle" size={20} color={mflColors.brand} />
-          <View className="flex-1">
-            <AppText className="text-lg font-semibold text-foreground">
-              Team Chat
-            </AppText>
-            <AppText className="text-xs text-muted" numberOfLines={1}>
-              {channelName}
-            </AppText>
-          </View>
-          {(unreadQuery.data ?? 0) > 0 ? (
-            <View
-              className="min-w-6 items-center justify-center rounded-full px-2 py-1"
-              style={{ backgroundColor: mflColors.danger }}
-            >
-              <AppText className="text-xs font-bold" style={{ color: mflColors.white }}>
-                {(unreadQuery.data ?? 0) > 99 ? '99+' : unreadQuery.data}
-              </AppText>
-            </View>
-          ) : null}
-        </View>
-      </View>
+      <ChatHeader channelName={channelName} unreadCount={unreadQuery.data ?? 0} />
 
       <View className="gap-2 px-4 pt-3 pb-2">
         {isLeader ? (
@@ -268,14 +202,12 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             selectedTeamId={selectedTeamId}
             adminView={adminView}
             onSelectTeam={setSelectedTeamId}
-            onToggleAdminView={() => setAdminView((current) => !current)}
-            onRetry={() => {
-              teamsQuery.refetch();
-            }}
+            onToggleAdminView={() => setAdminView((v) => !v)}
+            onRetry={() => teamsQuery.refetch()}
           />
         ) : null}
 
-        {/* Filter chips — horizontal scroll prevents overflow on narrow screens */}
+        {/* Filter chips */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -293,103 +225,24 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         </ScrollView>
       </View>
 
-      {pinnedMessage ? (
-        <Pressable
-          onPress={() => {
-            const idx = messages.findIndex((m) => m.messageId === pinnedMessage.messageId);
-            if (idx >= 0) {
-              flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-            }
-          }}
-          className="mx-4 mb-2 flex-row items-center gap-3 rounded-xl border px-4 py-3"
-          style={{
-            backgroundColor: mflColors.amberLight,
-            borderColor: 'rgba(245,158,11,0.2)',
-          }}
-        >
-          <AppText className="text-sm">📌</AppText>
-          <AppText
-            className="flex-1 text-[13px] text-foreground"
-            numberOfLines={1}
-          >
-            {pinnedMessage.content}
-          </AppText>
-          <AppText className="text-[11px] font-medium" style={{ color: mflColors.amber }}>
-            View
-          </AppText>
-        </Pressable>
-      ) : null}
-
       <View className="flex-1">
-        {messagesQuery.isLoading ? (
-          <ScreenState screen="team-chat" state="loading" />
-        ) : messagesQuery.isError ? (
-          <ScreenState
-            screen="team-chat"
-            state="error"
-            message="Failed to load messages."
-            actionLabel="Retry"
-            onAction={() => messagesQuery.refetch()}
-          />
-        ) : messages.length === 0 ? (
-          <ScrollView
-            className="flex-1"
-            contentContainerStyle={{
-              flexGrow: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingHorizontal: 24,
-              paddingVertical: 48,
-              gap: 8,
-            }}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-            }
-            keyboardShouldPersistTaps="handled"
-          >
-            <View
-              className="w-14 h-14 rounded-2xl items-center justify-center mb-2"
-              style={{ backgroundColor: mflColors.brandLight }}
-            >
-              <Feather name="message-circle" size={28} color={mflColors.brand} />
-            </View>
-            <AppText className="text-sm font-semibold text-foreground text-center">
-              {filter === 'all' ? 'No messages yet' : `No ${FILTER_OPTIONS.find((o) => o.value === filter)?.label.toLowerCase()} messages`}
-            </AppText>
-            <AppText className="text-xs text-muted text-center">
-              {filter === 'all' ? 'Be the first to start the conversation!' : 'Try switching to "All" to see all messages.'}
-            </AppText>
-            {filter === 'all' ? (
-              <Pressable
-                onPress={() => composerRef.current?.focusInput()}
-                className="mt-3 flex-row items-center gap-2 rounded-xl px-5 py-3"
-                style={{ backgroundColor: mflColors.brand }}
-              >
-                <Feather name={isCaptainRole ? 'zap' : 'message-circle'} size={15} color={mflColors.white} />
-                <AppText className="text-sm font-semibold" style={{ color: mflColors.white }}>
-                  {isCaptainRole ? 'Send Motivation' : 'Start Chatting'}
-                </AppText>
-              </Pressable>
-            ) : null}
-          </ScrollView>
-        ) : (
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={keyExtractor}
-            inverted
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-            }
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-            }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          />
-        )}
+        <ChatMessageList
+          messages={messages}
+          isLoading={messagesQuery.isLoading}
+          isError={messagesQuery.isError}
+          refreshing={refreshing}
+          currentUserId={user?.id}
+          isCaptainRole={isCaptainRole}
+          filter={filter}
+          onRefresh={refresh}
+          onRetry={() => messagesQuery.refetch()}
+          onReply={setReplyTo}
+          onReact={(messageId, emoji) =>
+            reactionMutation.mutate({ leagueId, messageId, emoji, userId: user?.id })
+          }
+          onOpenDeepLink={openDeepLink}
+          onFocusComposer={() => composerRef.current?.focusInput()}
+        />
       </View>
 
       {!isLeader && !league.teamId ? (
@@ -413,8 +266,6 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
             replyTo={replyTo}
             onCancelReply={() => setReplyTo(null)}
             onSent={() => {
-              // Invalidate in the background — keeps optimistic message visible
-              // until the server response replaces it, preventing the disappearance bug.
               queryClient.invalidateQueries({ queryKey: activeQueryKey });
               queryClient.invalidateQueries({ queryKey: messagingQueryKeys.unread(leagueId) });
             }}
@@ -429,25 +280,9 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   );
 }
 
-function getChannelName({
-  isLeader,
-  selectedTeam,
-  teamName,
-}: {
-  isLeader: boolean;
-  selectedTeam: ChatTeam | null;
-  teamName: string | null;
-}) {
-  if (isLeader) {
-    return selectedTeam ? selectedTeam.teamName : 'All Teams (Broadcast)';
-  }
-  return teamName || 'Team Messages';
-}
-
 function getDeepLinkSection(path: string): string | null {
   const normalized = path.replace(/\/+$/, '');
   const match = normalized.match(/\/leagues\/[^/]+\/(.+)/);
   if (match?.[1]) return match[1].split('/')[0] ?? null;
   return normalized.split('/').filter(Boolean).at(-1) ?? null;
 }
-
