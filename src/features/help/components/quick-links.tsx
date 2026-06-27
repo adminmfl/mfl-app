@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 import { AppText } from '../../../components/app-text';
+import { AppRoutes } from '../../../core/config/routes';
 import type { FeatherIconName } from '../types';
 
 interface QuickLink {
@@ -21,21 +22,21 @@ export function QuickLinks() {
       icon: 'award',
       iconBg: '#E0E7FF',
       iconColor: '#4F46E5',
-      onPress: () => router.push('/(app)/host-support' as any),
+      onPress: () => router.push(AppRoutes.hostSupport),
     },
     {
       label: 'Profile',
       icon: 'user',
       iconBg: '#DCFCE7',
       iconColor: '#16A34A',
-      onPress: () => router.push('/(app)/profile' as any),
+      onPress: () => router.push(AppRoutes.profile),
     },
     {
       label: 'Payments',
       icon: 'credit-card',
       iconBg: '#FEF3C7',
       iconColor: '#D97706',
-      onPress: () => router.push('/(app)/payment-checkout' as any),
+      onPress: () => router.push(AppRoutes.paymentCheckout),
     },
   ];
 

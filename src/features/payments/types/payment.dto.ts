@@ -33,7 +33,7 @@ export interface CreateOrderRequestDTO {
     max_participants?: number;
     num_teams?: number;
     rest_days: number;
-    rr_config: any;
+    rr_config: Record<string, unknown>;
     is_public: boolean;
     is_exclusive: boolean;
   };
