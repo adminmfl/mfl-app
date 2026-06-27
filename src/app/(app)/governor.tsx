@@ -62,11 +62,9 @@ export default function GovernorScreen() {
       onSuccess: (data) => {
         Alert.alert('Host Digest', data.message);
       },
-      onError: (error: any) => {
-        Alert.alert(
-          'Error',
-          error?.response?.data?.error || error?.message || 'Failed to generate host digest.',
-        );
+      onError: (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Failed to generate host digest.';
+        Alert.alert('Error', message);
       },
     });
   }, [leagueId, digestMutation]);
@@ -76,11 +74,9 @@ export default function GovernorScreen() {
       onSuccess: (data) => {
         Alert.alert('League Report', data.message);
       },
-      onError: (error: any) => {
-        Alert.alert(
-          'Error',
-          error?.response?.data?.error || error?.message || 'Failed to generate league report.',
-        );
+      onError: (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Failed to generate league report.';
+        Alert.alert('Error', message);
       },
     });
   }, [leagueId, reportMutation]);

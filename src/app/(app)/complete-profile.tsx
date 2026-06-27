@@ -13,6 +13,9 @@ import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { useAuth } from '../../core/auth';
 import { completeProfile } from '../../features/auth/services/otp.service';
+import { AppRoutes } from '../../core/config/routes';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
+import { authInputStyle as inputStyle } from '../../features/auth/styles/auth-input-style';
 
 const GENDER_OPTIONS = [
   { label: 'Male', value: 'male' },
@@ -20,6 +23,8 @@ const GENDER_OPTIONS = [
   { label: 'Other', value: 'other' },
   { label: 'Prefer not to say', value: 'prefer-not-to-say' },
 ];
+
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export default function CompleteProfileScreen() {
   const router = useRouter();
@@ -38,45 +43,26 @@ export default function CompleteProfileScreen() {
   // Pre-populate username from session user (matches web behavior)
   useEffect(() => {
     if (user?.email && !username) {
-      const nameFromEmail = user.email.split('@')[0] ?? '';
-      setUsername(nameFromEmail);
+      setUsername(user.email.split('@')[0] ?? '');
     }
   }, [user?.email, username]);
 
+  const validateForm = (): string | null => {
+    if (!username.trim()) return 'Username is required';
+    if (!password) return 'Password is required';
+    if (password.length < 6) return 'Password must be at least 6 characters';
+    if (password !== confirmPassword) return 'Passwords do not match';
+    if (!dateOfBirth.trim()) return 'Date of birth is required';
+    if (!DATE_REGEX.test(dateOfBirth.trim())) return 'Date of birth must be in YYYY-MM-DD format';
+    if (Number.isNaN(new Date(dateOfBirth.trim()).getTime())) return 'Please enter a valid date of birth';
+    if (!gender) return 'Gender is required';
+    return null;
+  };
+
   const handleCompleteProfile = async () => {
-    if (!username.trim()) {
-      setError('Username is required');
-      return;
-    }
-    if (!password) {
-      setError('Password is required');
-      return;
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    if (!dateOfBirth.trim()) {
-      setError('Date of birth is required');
-      return;
-    }
-    // Validate date format YYYY-MM-DD
-    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (!dateRegex.test(dateOfBirth.trim())) {
-      setError('Date of birth must be in YYYY-MM-DD format');
-      return;
-    }
-    const parsedDate = new Date(dateOfBirth.trim());
-    if (isNaN(parsedDate.getTime())) {
-      setError('Please enter a valid date of birth');
-      return;
-    }
-    if (!gender) {
-      setError('Gender is required');
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -90,27 +76,15 @@ export default function CompleteProfileScreen() {
         gender,
         phone: phone.trim() || undefined,
       });
-      // Navigate to main app after profile completion
-      router.replace('/(app)/(tabs)/dashboard');
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.error || 'Failed to complete profile. Please try again.';
-      setError(message);
+      router.replace(AppRoutes.dashboard);
+    } catch (err: unknown) {
+      setError(extractApiError(err, 'Failed to complete profile. Please try again.'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const inputStyle = {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#0F172A',
-  };
+  const clearError = () => { if (error) setError(''); };
 
   return (
     <ScreenScrollView avoidKeyboard>
@@ -137,7 +111,7 @@ export default function CompleteProfileScreen() {
           <TextInput
             style={inputStyle}
             value={username}
-            onChangeText={(v) => { setUsername(v); if (error) setError(''); }}
+            onChangeText={(v) => { setUsername(v); clearError(); }}
             placeholder="Choose a username"
             placeholderTextColor={mflColors.textMuted}
             autoCapitalize="none"
@@ -151,7 +125,7 @@ export default function CompleteProfileScreen() {
           <TextInput
             style={inputStyle}
             value={password}
-            onChangeText={(v) => { setPassword(v); if (error) setError(''); }}
+            onChangeText={(v) => { setPassword(v); clearError(); }}
             placeholder="Min. 6 characters"
             placeholderTextColor={mflColors.textMuted}
             secureTextEntry
@@ -164,7 +138,7 @@ export default function CompleteProfileScreen() {
           <TextInput
             style={inputStyle}
             value={confirmPassword}
-            onChangeText={(v) => { setConfirmPassword(v); if (error) setError(''); }}
+            onChangeText={(v) => { setConfirmPassword(v); clearError(); }}
             placeholder="Re-enter password"
             placeholderTextColor={mflColors.textMuted}
             secureTextEntry
@@ -177,7 +151,7 @@ export default function CompleteProfileScreen() {
           <TextInput
             style={inputStyle}
             value={dateOfBirth}
-            onChangeText={(v) => { setDateOfBirth(v); if (error) setError(''); }}
+            onChangeText={(v) => { setDateOfBirth(v); clearError(); }}
             placeholder="YYYY-MM-DD"
             placeholderTextColor={mflColors.textMuted}
             autoCapitalize="none"
@@ -191,13 +165,7 @@ export default function CompleteProfileScreen() {
         <View className="gap-1">
           <AppText className="text-sm font-medium text-muted">Gender</AppText>
           <Pressable onPress={() => setShowGenderPicker(true)}>
-            <View
-              style={[
-                inputStyle,
-                { justifyContent: 'center' },
-              ]}
-              pointerEvents="none"
-            >
+            <View style={[inputStyle, { justifyContent: 'center' }]} pointerEvents="none">
               <AppText
                 className="text-base"
                 style={{ color: gender ? '#0F172A' : mflColors.textMuted }}
@@ -220,14 +188,12 @@ export default function CompleteProfileScreen() {
             >
               <View
                 className="rounded-2xl overflow-hidden"
-                style={{
-                  backgroundColor: '#FFFFFF',
-                  width: '80%',
-                  maxWidth: 320,
-                }}
+                style={{ backgroundColor: '#FFFFFF', width: '80%', maxWidth: 320 }}
               >
                 <View className="p-4 border-b" style={{ borderBottomColor: '#E2E8F0' }}>
-                  <AppText className="text-lg font-semibold text-foreground">Select Gender</AppText>
+                  <AppText className="text-lg font-semibold text-foreground">
+                    Select Gender
+                  </AppText>
                 </View>
                 <FlatList
                   data={GENDER_OPTIONS}
@@ -235,16 +201,12 @@ export default function CompleteProfileScreen() {
                   renderItem={({ item }) => (
                     <Pressable
                       className="px-4 py-3"
-                      style={
-                        gender === item.value
-                          ? { backgroundColor: mflColors.brandLight }
-                          : undefined
-                      }
+                      style={gender === item.value ? { backgroundColor: mflColors.brandLight } : undefined}
                       onPress={() => {
                         setGender(item.value);
                         setGenderLabel(item.label);
                         setShowGenderPicker(false);
-                        if (error) setError('');
+                        clearError();
                       }}
                     >
                       <AppText
@@ -290,11 +252,7 @@ export default function CompleteProfileScreen() {
           isDisabled={isLoading}
           className="w-full"
         >
-          {isLoading ? (
-            <Spinner size="sm" />
-          ) : (
-            <Button.Label>Complete Profile</Button.Label>
-          )}
+          {isLoading ? <Spinner size="sm" /> : <Button.Label>Complete Profile</Button.Label>}
         </Button>
       </View>
     </ScreenScrollView>

@@ -14,6 +14,9 @@ import { Button, Spinner } from 'heroui-native';
 import { mflColors } from '../../constants/colors';
 import { AppText } from '../../components/app-text';
 import { resetPassword } from '../../features/auth/services/otp.service';
+import { AppRoutes } from '../../core/config/routes';
+import { extractApiError } from '../../features/auth/utils/extract-api-error';
+import { authInputStyle } from '../../features/auth/styles/auth-input-style';
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -52,24 +55,11 @@ export default function ResetPasswordScreen() {
     try {
       await resetPassword(email, otp.trim(), newPassword);
       setSuccess(true);
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.error || 'Failed to reset password. Please try again.';
-      setError(message);
+    } catch (err: unknown) {
+      setError(extractApiError(err, 'Failed to reset password. Please try again.'));
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const inputStyle = {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#0F172A',
   };
 
   return (
@@ -111,14 +101,13 @@ export default function ResetPasswordScreen() {
             <Button
               variant="primary"
               size="lg"
-              onPress={() => router.replace('/(auth)/login')}
+              onPress={() => router.replace(AppRoutes.login)}
               className="w-full"
             >
               <Button.Label>Go to Sign In</Button.Label>
             </Button>
           </View>
         ) : (
-          /* Form */
           <View className="gap-4">
             <AppText className="text-2xl font-bold text-foreground mb-2">Reset Password</AppText>
             <AppText className="text-sm text-muted mb-2">
@@ -138,7 +127,7 @@ export default function ResetPasswordScreen() {
             <View className="gap-1">
               <AppText className="text-sm font-medium text-muted">Verification Code</AppText>
               <TextInput
-                style={inputStyle}
+                style={authInputStyle}
                 value={otp}
                 onChangeText={(text) => setOtp(text.replace(/[^0-9]/g, ''))}
                 placeholder="Enter 6-digit code"
@@ -155,7 +144,7 @@ export default function ResetPasswordScreen() {
               <AppText className="text-sm font-medium text-muted">New Password</AppText>
               <View>
                 <TextInput
-                  style={{ ...inputStyle, paddingRight: 48 }}
+                  style={[authInputStyle, { paddingRight: 48 }]}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   placeholder="Min. 6 characters"
@@ -186,7 +175,7 @@ export default function ResetPasswordScreen() {
               <AppText className="text-sm font-medium text-muted">Confirm New Password</AppText>
               <View>
                 <TextInput
-                  style={{ ...inputStyle, paddingRight: 48 }}
+                  style={[authInputStyle, { paddingRight: 48 }]}
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   placeholder="Re-enter new password"
@@ -220,12 +209,16 @@ export default function ResetPasswordScreen() {
               isDisabled={isLoading}
               className="w-full"
             >
-              {isLoading ? <Spinner size="sm" /> : <Button.Label>Reset Password</Button.Label>}
+              {isLoading ? (
+                <Spinner size="sm" />
+              ) : (
+                <Button.Label>Reset Password</Button.Label>
+              )}
             </Button>
 
             <View className="flex-row justify-center mt-4">
               <AppText className="text-sm text-muted">Didn't receive code? </AppText>
-              <Pressable onPress={() => router.replace('/(auth)/forgot-password')}>
+              <Pressable onPress={() => router.replace(AppRoutes.forgotPassword)}>
                 <AppText className="text-sm font-semibold" style={{ color: '#00C48C' }}>
                   Resend
                 </AppText>

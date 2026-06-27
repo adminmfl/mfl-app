@@ -61,7 +61,9 @@ export function useProofOcr(): UseProofOcrReturn {
         setStatus('done');
         return result;
       } catch (err: unknown) {
-        console.warn('OCR extraction failed:', err);
+        if (__DEV__) {
+          console.warn('OCR extraction failed:', err);
+        }
         const axiosErr = err as {
           message?: string;
           response?: { status?: number; data?: { error?: string } };

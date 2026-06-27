@@ -40,92 +40,7 @@ import {
 import { DashboardSection } from '../../features/ai-manager/components/dashboard-section';
 import { CommunicationSection } from '../../features/ai-manager/components/communication-section';
 import { ChallengesSection } from '../../features/ai-manager/components/challenges-section';
-
-// ─── Tab Switcher ────────────────────────────────────────────────────────────
-
-type Tab = 'dashboard' | 'communication' | 'challenges';
-
-function TabBar({
-  activeTab,
-  onTabChange,
-  pendingCount,
-  draftCount,
-  challengeCount,
-}: {
-  activeTab: Tab;
-  onTabChange: (t: Tab) => void;
-  pendingCount: number;
-  draftCount: number;
-  challengeCount: number;
-}) {
-  return (
-    <View className="flex-row rounded-lg overflow-hidden mb-4" style={{ backgroundColor: mflColors.inkLight }}>
-      <TabButton
-        label="Dashboard"
-        badge={pendingCount}
-        active={activeTab === 'dashboard'}
-        onPress={() => onTabChange('dashboard')}
-      />
-      <TabButton
-        label="Communication"
-        badge={draftCount}
-        active={activeTab === 'communication'}
-        onPress={() => onTabChange('communication')}
-      />
-      <TabButton
-        label="Challenges"
-        badge={challengeCount}
-        active={activeTab === 'challenges'}
-        onPress={() => onTabChange('challenges')}
-      />
-    </View>
-  );
-}
-
-function TabButton({
-  label,
-  badge,
-  active,
-  onPress,
-}: {
-  label: string;
-  badge: number;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      className="flex-1 flex-row items-center justify-center py-2.5"
-      style={active ? { backgroundColor: mflColors.brand, borderRadius: 8 } : undefined}
-      onPress={onPress}
-    >
-      <AppText
-        className="text-xs font-semibold"
-        style={{ color: active ? '#fff' : mflColors.textSub }}
-      >
-        {label}
-      </AppText>
-      {badge > 0 && (
-        <View
-          className="rounded-full ml-1.5 items-center justify-center"
-          style={{
-            backgroundColor: active ? '#fff' : mflColors.danger,
-            minWidth: 18,
-            height: 18,
-            paddingHorizontal: 4,
-          }}
-        >
-          <AppText
-            className="text-[10px] font-bold"
-            style={{ color: active ? mflColors.brand : '#fff' }}
-          >
-            {badge}
-          </AppText>
-        </View>
-      )}
-    </Pressable>
-  );
-}
+import { TabBar, type AiManagerTab } from '../../features/ai-manager/components/tab-bar';
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -135,7 +50,7 @@ export default function AiManagerScreen() {
   const { isHost, isGovernor } = useRole();
   const leagueId = activeLeague?.leagueId ?? '';
 
-  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [activeTab, setActiveTab] = useState<AiManagerTab>('dashboard');
 
   // ── RBAC guard ──
   if (!isHost && !isGovernor) {
@@ -177,8 +92,8 @@ function AiManagerContent({
   setActiveTab,
 }: {
   leagueId: string;
-  activeTab: Tab;
-  setActiveTab: (t: Tab) => void;
+  activeTab: AiManagerTab;
+  setActiveTab: (t: AiManagerTab) => void;
 }) {
   const insets = useSafeAreaInsets();
 
@@ -248,8 +163,9 @@ function AiManagerContent({
           `${data.digestCount} digest items, ${data.interventionCount} alerts`,
         );
       },
-      onError: (err: any) => {
-        Alert.alert('Scan Failed', err?.response?.data?.error || err?.message || 'Failed to run scan');
+      onError: (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Failed to run scan';
+        Alert.alert('Scan Failed', message);
       },
     });
   };
@@ -330,11 +246,10 @@ function AiManagerContent({
             : 'Challenge deployed.',
         );
       },
-      onError: (err: any) =>
-        Alert.alert(
-          'Deploy Failed',
-          err?.response?.data?.error || err?.message || 'Failed to deploy challenge',
-        ),
+      onError: (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Failed to deploy challenge';
+        Alert.alert('Deploy Failed', message);
+      }
     });
   };
 

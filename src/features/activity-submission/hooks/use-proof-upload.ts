@@ -7,7 +7,18 @@ import type { ProofImage } from '../types';
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_SIZE_MB = 10;
 
-export function useProofUpload(leagueId: string) {
+export interface UseProofUploadReturn {
+  proof: ProofImage | null;
+  proof2: ProofImage | null;
+  uploading: boolean;
+  hasProof: boolean;
+  pickImage: (slot?: 1 | 2) => Promise<ProofImage | null>;
+  removeImage: (slot?: 1 | 2) => void;
+  uploadAll: () => Promise<{ proofUrl: string | null; proofUrl2: string | null }>;
+  reset: () => void;
+}
+
+export function useProofUpload(leagueId: string): UseProofUploadReturn {
   const [proof, setProof] = useState<ProofImage | null>(null);
   const [proof2, setProof2] = useState<ProofImage | null>(null);
   const [uploading, setUploading] = useState(false);

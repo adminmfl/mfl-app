@@ -26,7 +26,7 @@ export function TeamViewStats({
       <View className="flex-row gap-2">
         {showRR && (
           <StatCard
-            value={stats.teamAvgRR.toFixed(1)}
+            value={stats.teamAvgRR.toFixed(2)}
             label="Run Rate"
             color={mflColors.blue}
           />

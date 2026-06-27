@@ -4,6 +4,7 @@ import { Pressable, View } from 'react-native';
 import { Card } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
+import { AppRoutes } from '../../../core/config/routes';
 import {
   LEAGUE_CONCEPT_DESC,
   LEAGUE_CONCEPT_POINTS,
@@ -19,11 +20,11 @@ export function HostSupportContent() {
       <Card
         variant="secondary"
         className="p-4 mb-5"
-        style={{ borderLeftWidth: 4, borderLeftColor: '#3B82F6' }}
+        style={{ borderLeftWidth: 4, borderLeftColor: mflColors.blue }}
       >
         <View className="flex-row items-center gap-3 mb-3">
-          <View className="w-8 h-8 rounded-full items-center justify-center" style={{ backgroundColor: '#DBEAFE' }}>
-            <Feather name="zap" size={16} color="#2563EB" />
+          <View className="w-8 h-8 rounded-full items-center justify-center" style={{ backgroundColor: mflColors.blueLight }}>
+            <Feather name="zap" size={16} color={mflColors.blue} />
           </View>
           <View>
             <AppText className="text-base font-bold text-foreground">A) League Concept</AppText>
@@ -37,7 +38,7 @@ export function HostSupportContent() {
 
         {LEAGUE_CONCEPT_POINTS.map((point, idx) => (
           <View key={idx} className="flex-row items-start gap-3 mb-2">
-            <Feather name="check" size={16} color="#2563EB" style={{ marginTop: 2 }} />
+            <Feather name="check" size={16} color={mflColors.blue} style={{ marginTop: 2 }} />
             <AppText className="text-sm text-foreground flex-1">{point}</AppText>
           </View>
         ))}
@@ -94,7 +95,7 @@ export function HostSupportContent() {
           <Pressable
             className="rounded-lg py-3 items-center flex-row justify-center gap-2"
             style={{ backgroundColor: mflColors.brand }}
-            onPress={() => router.push('/(app)/quick-start-league' as any)}
+            onPress={() => router.push(AppRoutes.quickStartLeague)}
           >
             <Feather name="zap" size={16} color="#fff" />
             <AppText className="text-sm font-semibold" style={{ color: '#fff' }}>
@@ -104,7 +105,7 @@ export function HostSupportContent() {
           <Pressable
             className="rounded-lg py-3 items-center flex-row justify-center gap-2"
             style={{ backgroundColor: mflColors.card, borderWidth: 1, borderColor: mflColors.border }}
-            onPress={() => router.push('/(app)/create-league' as any)}
+            onPress={() => router.push(AppRoutes.createLeague)}
           >
             <AppText className="text-sm font-semibold text-foreground">
               Create a League

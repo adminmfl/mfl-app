@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, Share, View } from 'react-native';
 import { Button } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
+import { reportError } from '../../../core/utils/report-error';
 import {
   TEMPLATES,
   addDaysToDate,
@@ -42,8 +43,8 @@ export function StepReviewLaunch({ data, onBack, onSubmit, loading, result }: Pr
   const handleShare = async (text: string) => {
     try {
       await Share.share({ message: text });
-    } catch {
-      // cancelled
+    } catch (error: unknown) {
+      reportError(error);
     }
   };
 

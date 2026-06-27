@@ -21,32 +21,12 @@ import { useMySubmissions } from '../../features/submissions/hooks/use-my-submis
 import { useReuploadSubmission } from '../../features/submissions/hooks/use-reupload-submission';
 import { uploadProof } from '../../features/submissions/services/submission.service';
 import { isReuploadWindowOpen } from '../../features/submissions/utils/reupload-window';
+import {
+  formatWorkoutType,
+  formatShortDate,
+} from '../../features/submissions/utils/format-helpers';
+import { submissionInputStyle as inputStyle } from '../../features/activity-submission/styles/form-styles';
 import { mflColors } from '../../constants/colors';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatWorkoutType(
-  workoutType: string | null,
-  customActivityName?: string,
-): string {
-  if (customActivityName) return customActivityName;
-  if (!workoutType) return 'General';
-  return workoutType
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-function formatDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -242,11 +222,11 @@ export default function ReuploadSubmissionScreen() {
         <Card variant="secondary" className="p-4">
           <AppText className="text-sm font-semibold text-foreground">
             {submission.type === 'workout'
-              ? formatWorkoutType(submission.workoutType, submission.customActivityName)
+              ? formatWorkoutType(submission.workoutType, submission.customActivityName, 'General')
               : 'Rest Day'}
           </AppText>
           <AppText className="text-xs text-muted mt-1">
-            {formatDate(submission.date)}
+            {formatShortDate(submission.date)}
           </AppText>
           <AppText className="text-xs text-muted mt-0.5">
             {submission.duration != null ? `Duration: ${submission.duration} min` : ''}
@@ -306,18 +286,7 @@ export default function ReuploadSubmissionScreen() {
         <View className="gap-2">
           <AppText className="text-sm font-semibold text-muted">Notes (optional)</AppText>
           <TextInput
-            style={{
-              backgroundColor: mflColors.card,
-              borderWidth: 1,
-              borderColor: mflColors.border,
-              borderRadius: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              fontSize: 16,
-              color: mflColors.text,
-              minHeight: 80,
-              textAlignVertical: 'top',
-            }}
+            style={{ ...inputStyle, minHeight: 80, textAlignVertical: 'top' }}
             value={notes}
             onChangeText={setNotes}
             placeholder="Add a note about your resubmission..."
@@ -332,16 +301,7 @@ export default function ReuploadSubmissionScreen() {
             Duration (minutes) - leave blank to keep original
           </AppText>
           <TextInput
-            style={{
-              backgroundColor: mflColors.card,
-              borderWidth: 1,
-              borderColor: mflColors.border,
-              borderRadius: 12,
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              fontSize: 16,
-              color: mflColors.text,
-            }}
+            style={inputStyle}
             value={durationText}
             onChangeText={setDurationText}
             placeholder={submission.duration != null ? String(submission.duration) : ''}
@@ -358,16 +318,7 @@ export default function ReuploadSubmissionScreen() {
               Distance (km) - leave blank to keep original
             </AppText>
             <TextInput
-              style={{
-                backgroundColor: mflColors.card,
-                borderWidth: 1,
-                borderColor: mflColors.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                fontSize: 16,
-                color: mflColors.text,
-              }}
+              style={inputStyle}
               value={distanceText}
               onChangeText={setDistanceText}
               placeholder={String(submission.distance)}
@@ -385,16 +336,7 @@ export default function ReuploadSubmissionScreen() {
               Steps - leave blank to keep original
             </AppText>
             <TextInput
-              style={{
-                backgroundColor: mflColors.card,
-                borderWidth: 1,
-                borderColor: mflColors.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                fontSize: 16,
-                color: mflColors.text,
-              }}
+              style={inputStyle}
               value={stepsText}
               onChangeText={setStepsText}
               placeholder={String(submission.steps)}
@@ -412,16 +354,7 @@ export default function ReuploadSubmissionScreen() {
               Holes - leave blank to keep original
             </AppText>
             <TextInput
-              style={{
-                backgroundColor: mflColors.card,
-                borderWidth: 1,
-                borderColor: mflColors.border,
-                borderRadius: 12,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                fontSize: 16,
-                color: mflColors.text,
-              }}
+              style={inputStyle}
               value={holesText}
               onChangeText={setHolesText}
               placeholder={String(submission.holes)}

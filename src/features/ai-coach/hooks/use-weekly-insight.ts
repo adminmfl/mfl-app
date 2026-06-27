@@ -9,8 +9,9 @@ export function useWeeklyInsight(leagueId: string) {
     queryKey: queryKeys.leagues.aiCoachWeeklyInsight(leagueId),
     queryFn: async () => {
       const dto = await fetchWeeklyInsights(leagueId);
-      if (dto.insights.length === 0) return null;
-      return toWeeklyInsight(dto.insights[0]);
+      const first = dto.insights[0];
+      if (!first) return null;
+      return toWeeklyInsight(first);
     },
     enabled: !!leagueId,
     staleTime: 5 * 60 * 1000,
