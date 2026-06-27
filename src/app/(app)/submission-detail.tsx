@@ -3,112 +3,24 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { View, Pressable, Image, ScrollView, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Card, Separator } from 'heroui-native';
+import { Card, Separator } from 'heroui-native';
 
 import { AppText } from '../../components/app-text';
 import { ScreenState } from '../../components/screen-state';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useMySubmissions } from '../../features/submissions/hooks/use-my-submissions';
 import { isReuploadWindowOpen } from '../../features/submissions/utils/reupload-window';
-import type { SubmissionEntry } from '../../features/submissions/types/submission.model';
 import { mflColors } from '../../constants/colors';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatWorkoutType(
-  workoutType: string | null,
-  customActivityName?: string,
-): string {
-  if (customActivityName) return customActivityName;
-  if (!workoutType) return 'General Activity';
-  return workoutType
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ');
-}
-
-function formatFullDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  }) + ' at ' + d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
-function getStatusLabel(status: SubmissionEntry['status']): string {
-  switch (status) {
-    case 'pending': return 'Pending Review';
-    case 'approved': return 'Approved';
-    case 'rejected': return 'Rejected';
-    case 'rejected_resubmit': return 'Rejected (Retry)';
-    case 'rejected_permanent': return 'Rejected (Final)';
-    default: return status;
-  }
-}
-
-function getStatusColor(status: SubmissionEntry['status']): string {
-  switch (status) {
-    case 'pending': return mflColors.amber;
-    case 'approved': return '#16a34a';
-    case 'rejected':
-    case 'rejected_resubmit':
-    case 'rejected_permanent':
-      return mflColors.danger;
-    default: return mflColors.textMuted;
-  }
-}
-
-function isExemptionRequest(entry: SubmissionEntry): boolean {
-  return entry.type === 'rest' && (entry.notes?.includes('[EXEMPTION_REQUEST]') ?? false);
-}
-
-// ---------------------------------------------------------------------------
-// Metric Row
-// ---------------------------------------------------------------------------
-
-function MetricRow({ icon, label, value, unit }: {
-  icon: string;
-  label: string;
-  value: string | number | null | undefined;
-  unit?: string;
-}) {
-  if (value === null || value === undefined) return null;
-  return (
-    <View
-      className="flex-row items-center gap-3 p-3 rounded-lg"
-      style={{ backgroundColor: mflColors.surface }}
-    >
-      <View
-        className="w-10 h-10 rounded-lg items-center justify-center"
-        style={{ backgroundColor: mflColors.brandLight }}
-      >
-        <Feather name={icon as any} size={20} color={mflColors.brand} />
-      </View>
-      <View className="flex-1">
-        <AppText className="text-xs text-muted">{label}</AppText>
-        <AppText className="text-base font-semibold text-foreground">
-          {value}{unit ? ` ${unit}` : ''}
-        </AppText>
-      </View>
-    </View>
-  );
-}
+import { SubmissionMetricsGrid } from '../../features/submissions/components/submission-metrics-grid';
+import { SubmissionRejectionAlert } from '../../features/submissions/components/submission-rejection-alert';
+import {
+  formatWorkoutType,
+  formatFullDate,
+  formatTimestamp,
+  getStatusLabel,
+  getStatusColor,
+  isExemptionRequest,
+} from '../../features/submissions/utils/submission-detail-helpers';
 
 // ---------------------------------------------------------------------------
 // Screen
@@ -152,10 +64,15 @@ export default function SubmissionDetailScreen() {
   const isExemption = isExemptionRequest(submission);
   const isRejected = ['rejected', 'rejected_resubmit', 'rejected_permanent'].includes(submission.status);
   const isSoftRejected = ['rejected', 'rejected_resubmit'].includes(submission.status);
-  const isPermanentRejected = submission.status === 'rejected_permanent';
   const isReupload = Boolean(submission.reuploadOf);
   const windowExpired = isSoftRejected && !canReuploadNow;
-  const points = submission.effectivePoints ?? submission.rrValue;
+  const rawPoints = submission.effectivePoints ?? submission.rrValue;
+  const points =
+    rawPoints != null
+      ? Number.isInteger(rawPoints)
+        ? rawPoints
+        : parseFloat(rawPoints.toFixed(2))
+      : null;
 
   const exemptionReason =
     isExemption && submission.notes
@@ -214,65 +131,15 @@ export default function SubmissionDetailScreen() {
       </View>
 
       {/* Rejection Alert */}
-      {isRejected && (
-        <View className="rounded-lg p-3" style={{ backgroundColor: mflColors.dangerLight }}>
-          <AppText className="text-xs font-semibold" style={{ color: mflColors.danger }}>
-            {isPermanentRejected ? 'Permanently Rejected' : 'Submission Rejected'}
-          </AppText>
-          {isPermanentRejected ? (
-            <View>
-              <AppText className="text-xs mt-1" style={{ color: mflColors.danger }}>
-                This submission has been permanently rejected. You cannot resubmit.
-              </AppText>
-              {submission.rejectionReason && (
-                <AppText className="text-xs mt-2 font-medium" style={{ color: mflColors.danger }}>
-                  Reason: {submission.rejectionReason}
-                </AppText>
-              )}
-            </View>
-          ) : (
-            <View>
-              {canReuploadNow && (
-                <View className="mt-1">
-                  <AppText className="text-xs" style={{ color: mflColors.danger }}>
-                    You can resubmit this workout with updated proof or corrections.
-                  </AppText>
-                  {submission.rejectionReason && (
-                    <AppText className="text-xs mt-1 italic font-medium" style={{ color: mflColors.danger }}>
-                      Reason: "{submission.rejectionReason}"
-                    </AppText>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="mt-2"
-                    onPress={() =>
-                      router.push({
-                        pathname: '/(app)/reupload-submission' as any,
-                        params: { submissionId: submission.id },
-                      })
-                    }
-                  >
-                    <Button.Label>Resubmit</Button.Label>
-                  </Button>
-                </View>
-              )}
-              {windowExpired && (
-                <View className="mt-1">
-                  <AppText className="text-xs" style={{ color: mflColors.danger }}>
-                    Reupload window closed (allowed until next-day 11:59pm local time after rejection).
-                  </AppText>
-                  {submission.rejectionReason && (
-                    <AppText className="text-xs mt-1 italic font-medium" style={{ color: mflColors.danger }}>
-                      Reason: "{submission.rejectionReason}"
-                    </AppText>
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-      )}
+      {isRejected ? (
+        <SubmissionRejectionAlert
+          status={submission.status}
+          rejectionReason={submission.rejectionReason}
+          submissionId={submission.id}
+          canReuploadNow={canReuploadNow}
+          windowExpired={windowExpired}
+        />
+      ) : null}
 
       {/* Exemption Alert */}
       {isExemption && (
@@ -307,34 +174,16 @@ export default function SubmissionDetailScreen() {
       )}
 
       {/* Metrics Grid */}
-      {isWorkout && (
-        <View className="gap-3">
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <MetricRow icon="clock" label="Duration" value={submission.duration} unit="min" />
-            </View>
-            <View className="flex-1">
-              <MetricRow icon="map-pin" label="Distance" value={submission.distance?.toFixed(2)} unit="km" />
-            </View>
-          </View>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <MetricRow icon="trending-up" label="Steps" value={submission.steps?.toLocaleString()} />
-            </View>
-            <View className="flex-1">
-              <MetricRow icon="target" label="Holes" value={submission.holes} />
-            </View>
-          </View>
-          <View className="flex-row gap-3">
-            <View className="flex-1">
-              <MetricRow icon="heart" label="Avg HR" value={submission.hrAvg} unit="bpm" />
-            </View>
-            <View className="flex-1">
-              <MetricRow icon="zap" label="Calories" value={submission.caloriesBurned} unit="kcal" />
-            </View>
-          </View>
-        </View>
-      )}
+      {isWorkout ? (
+        <SubmissionMetricsGrid
+          duration={submission.duration}
+          distance={submission.distance}
+          steps={submission.steps}
+          holes={submission.holes}
+          hrAvg={submission.hrAvg}
+          caloriesBurned={submission.caloriesBurned}
+        />
+      ) : null}
 
       {/* Custom Fields */}
       {(submission.customFieldValue || submission.customFieldValue2) && (

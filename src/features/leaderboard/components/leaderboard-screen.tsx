@@ -63,7 +63,9 @@ export function LeaderboardScreen() {
       leaderboardQuery.refetch();
       if (!hasLoggedView.current && leagueId) {
         hasLoggedView.current = true;
-        logLeaderboardViewed({ league_id: leagueId, tab: activeTab }).catch(() => {});
+        logLeaderboardViewed({ league_id: leagueId, tab: activeTab }).catch((error: unknown) => {
+          if (__DEV__) console.warn('logLeaderboardViewed failed', error);
+        });
       }
     }, [leaderboardQuery, leagueId, activeTab]),
   );

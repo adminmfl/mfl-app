@@ -3,11 +3,26 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
+import { ROUTES } from '../../../core/config/routes';
+import type { ApiError } from '../../../core/types/api-error';
 import { useDeleteLeague } from './use-delete-league';
 import { useLaunchLeague } from './use-launch-league';
 import { useLeagueDetail } from './use-league-detail';
 import { useUpdateLeague } from './use-update-league';
 import type { UpdateLeagueInput } from '../types/league-management.model';
+
+function getApiErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const apiError = error as ApiError;
+    return apiError.response?.data?.error ?? fallback;
+  }
+
+  if (error instanceof Error) {
+    return error.message || fallback;
+  }
+
+  return fallback;
+}
 
 export interface SettingsFormState {
   leagueName: string;
@@ -213,12 +228,10 @@ export function useHostLeagueSettingsForm() {
                 void detailQuery.refetch();
                 Alert.alert('League Launched', 'Your league is now live.');
               },
-              onError: (error: any) => {
+              onError: (error: unknown) => {
                 Alert.alert(
                   'Launch Failed',
-                  error?.response?.data?.error ||
-                    error?.message ||
-                    'Failed to launch league.',
+                  getApiErrorMessage(error, 'Failed to launch league.'),
                 );
               },
             });
@@ -239,14 +252,11 @@ export function useHostLeagueSettingsForm() {
           style: 'destructive',
           onPress: () => {
             deleteMutation.mutate(leagueId, {
-              onSuccess: () =>
-                router.replace('/(app)/(tabs)/dashboard' as any),
-              onError: (error: any) => {
+              onSuccess: () => router.replace(ROUTES.dashboard),
+              onError: (error: unknown) => {
                 Alert.alert(
                   'Delete Failed',
-                  error?.response?.data?.error ||
-                    error?.message ||
-                    'Failed to delete league.',
+                  getApiErrorMessage(error, 'Failed to delete league.'),
                 );
               },
             });

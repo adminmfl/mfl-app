@@ -16,7 +16,7 @@ interface ValidationInput {
   isResubmit: boolean;
 }
 
-const MAX_LIMITS: Record<string, { max: number; label: string }> = {
+const MAX_LIMITS: Partial<Record<keyof SubmissionFormErrors, { max: number; label: string }>> = {
   duration: { max: 1440, label: 'Duration cannot exceed 1440 minutes (24 hours)' },
   distance: { max: 1000, label: 'Distance cannot exceed 1000 km' },
   steps: { max: 500000, label: 'Steps cannot exceed 500,000' },
@@ -55,12 +55,13 @@ export function validateWorkoutForm(input: ValidationInput): SubmissionFormError
       }
     } else if (!hasPrimary) {
       const key = measurementType === 'hole' ? 'holes' : measurementType;
-      (errors as any)[key] = `${measurementType} is required`;
+      const errorKey = key as keyof SubmissionFormErrors;
+      errors[errorKey] = `${measurementType} is required`;
     }
   }
 
   // Max value checks
-  const numericFields = [
+  const numericFields: Array<{ key: keyof SubmissionFormErrors; value: string }> = [
     { key: 'duration', value: input.duration },
     { key: 'distance', value: input.distance },
     { key: 'steps', value: input.steps },
@@ -70,11 +71,11 @@ export function validateWorkoutForm(input: ValidationInput): SubmissionFormError
     if (value.trim()) {
       const num = parseFloat(value);
       if (!Number.isFinite(num) || num < 0) {
-        (errors as any)[key] = `${key} must be a valid positive number`;
+        errors[key] = `${key} must be a valid positive number`;
       } else {
         const limit = MAX_LIMITS[key];
         if (limit && num > limit.max) {
-          (errors as any)[key] = limit.label;
+          errors[key] = limit.label;
         }
       }
     }
@@ -94,8 +95,8 @@ export function validateWorkoutForm(input: ValidationInput): SubmissionFormError
 
   // Outcome requirement
   if (selectedActivity.outcome_config) {
-    const cfg = selectedActivity.outcome_config as any;
-    const arr = Array.isArray(cfg) ? cfg : Array.isArray(cfg?.options) ? cfg.options : [];
+    const cfg = selectedActivity.outcome_config as Record<string, unknown>;
+    const arr = Array.isArray(cfg) ? cfg : Array.isArray((cfg as { options?: unknown[] }).options) ? (cfg as { options: unknown[] }).options : [];
     if (arr.length > 0 && !input.outcome) {
       errors.outcome = 'Outcome is required for this activity';
     }

@@ -109,7 +109,9 @@ export function getTimezoneParams() {
   let ianaTimezone: string | undefined;
   try {
     ianaTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  } catch {}
+  } catch {
+    if (__DEV__) console.warn('Failed to resolve IANA timezone');
+  }
 
   return {
     tzOffsetMinutes: new Date().getTimezoneOffset(),

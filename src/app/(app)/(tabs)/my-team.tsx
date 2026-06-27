@@ -269,7 +269,7 @@ function RosterTab({
         <View className="flex-row gap-2">
           <StatCard value={stats.teamRank} label="Team Ranking" color={mflColors.amber} />
           <StatCard value={String(stats.teamPoints)} label="Team Points" color={mflColors.brand} />
-          <StatCard value={stats.teamAvgRR.toFixed(1)} label="Run Rate" color={mflColors.blue} />
+          <StatCard value={stats.teamAvgRR.toFixed(2)} label="Run Rate" color={mflColors.blue} />
           <StatCard
             value={typeof stats.challengePoints === 'number' ? stats.challengePoints.toLocaleString() : '\u2014'}
             label="Challenge Points"
