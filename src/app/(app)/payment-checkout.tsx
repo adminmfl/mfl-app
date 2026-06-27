@@ -17,7 +17,6 @@ import type {
   PaymentStatus,
   RazorpayOptions,
   RazorpaySuccessResponse,
-  RazorpaySdkError,
 } from '../../features/payments';
 
 // ─── Payment Status Chip ────────────────────────────────────────────────────
@@ -181,11 +180,16 @@ export default function PaymentCheckoutScreen() {
       await refetchHistory();
     } catch (err: unknown) {
       setState('error');
-      const sdkErr = err as RazorpaySdkError;
+      const sdkErr =
+        typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : {};
+      const errObj =
+        typeof sdkErr.error === 'object' && sdkErr.error !== null
+          ? (sdkErr.error as Record<string, unknown>)
+          : {};
       const message =
-        sdkErr?.error?.description ??
-        sdkErr?.description ??
-        sdkErr?.message ??
+        (errObj.description as string | undefined) ??
+        (sdkErr.description as string | undefined) ??
+        (sdkErr.message as string | undefined) ??
         'Payment failed. Please try again.';
       setErrorMessage(message);
     }
