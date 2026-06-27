@@ -9,8 +9,15 @@ import { DarkHeaderCard } from '../../components/dark-header-card';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { SectionLabel } from '../../components/section-label';
 import { mflColors } from '../../constants/colors';
+import { AppRoutes } from '../../core/config/routes';
 import { useCreateOrder, useVerifyPayment, usePayments } from '../../features/payments';
-import type { PaymentOrder, Payment, PaymentStatus } from '../../features/payments';
+import type {
+  PaymentOrder,
+  Payment,
+  PaymentStatus,
+  RazorpayOptions,
+  RazorpaySuccessResponse,
+} from '../../features/payments';
 
 // ─── Payment Status Chip ────────────────────────────────────────────────────
 
@@ -77,6 +84,21 @@ function PaymentHistoryCard({ payment }: { payment: Payment }) {
 
 type CheckoutState = 'idle' | 'creating-order' | 'paying' | 'verifying' | 'success' | 'error';
 
+interface LeagueDataParams {
+  tier_id?: string;
+  league_name?: string;
+  start_date?: string;
+  end_date?: string;
+  max_participants?: number;
+  num_teams?: number;
+  league_id?: string;
+  amount?: number;
+  rest_days?: number;
+  rr_config?: Record<string, unknown>;
+  is_public?: boolean;
+  is_exclusive?: boolean;
+}
+
 export default function PaymentCheckoutScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -92,20 +114,7 @@ export default function PaymentCheckoutScreen() {
   const { data: paymentHistory, isLoading: historyLoading, refetch: refetchHistory } = usePayments();
 
   // Parse league data from route params
-  let leagueData: {
-    tier_id?: string;
-    league_name?: string;
-    start_date?: string;
-    end_date?: string;
-    max_participants?: number;
-    num_teams?: number;
-    league_id?: string;
-    amount?: number;
-    rest_days?: number;
-    rr_config?: any;
-    is_public?: boolean;
-    is_exclusive?: boolean;
-  } = {};
+  let leagueData: LeagueDataParams = {};
 
   try {
     if (params.leagueData) {
@@ -138,8 +147,15 @@ export default function PaymentCheckoutScreen() {
       setOrderData(order);
       setState('paying');
 
+      // Validate Razorpay key before opening checkout
+      if (!order.keyId) {
+        setState('error');
+        setErrorMessage('Payment configuration error. Please contact support.');
+        return;
+      }
+
       // Open Razorpay checkout
-      const options = {
+      const options: RazorpayOptions = {
         description: 'MFL League Payment',
         image: 'https://myfitnessleague.com/logo.png',
         currency: order.currency,
@@ -150,7 +166,7 @@ export default function PaymentCheckoutScreen() {
         theme: { color: mflColors.brand },
       };
 
-      const paymentData = await RazorpayCheckout.open(options);
+      const paymentData = await RazorpayCheckout.open(options) as RazorpaySuccessResponse;
 
       // Verify payment — field names must match web API: orderId, paymentId, signature
       setState('verifying');
@@ -162,11 +178,18 @@ export default function PaymentCheckoutScreen() {
 
       setState('success');
       await refetchHistory();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setState('error');
+      const sdkErr =
+        typeof err === 'object' && err !== null ? (err as Record<string, unknown>) : {};
+      const errObj =
+        typeof sdkErr.error === 'object' && sdkErr.error !== null
+          ? (sdkErr.error as Record<string, unknown>)
+          : {};
       const message =
-        err?.error?.description ??
-        err?.message ??
+        (errObj.description as string | undefined) ??
+        (sdkErr.description as string | undefined) ??
+        (sdkErr.message as string | undefined) ??
         'Payment failed. Please try again.';
       setErrorMessage(message);
     }
@@ -184,7 +207,7 @@ export default function PaymentCheckoutScreen() {
   }, []);
 
   const handleGoToDashboard = useCallback(() => {
-    router.replace('/(app)/(tabs)/dashboard');
+    router.replace(AppRoutes.dashboard);
   }, [router]);
 
   const displayAmount = orderData
