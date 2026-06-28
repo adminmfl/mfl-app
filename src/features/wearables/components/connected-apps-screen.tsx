@@ -20,7 +20,7 @@ import {
   useConfirmWorkout,
   useRejectWorkout,
 } from '../hooks/use-pending-confirmations';
-import { extractApiError } from '../../../features/auth/utils/extract-api-error';
+import { extractApiError } from '../../auth/utils/extract-api-error';
 import { HealthConnectCard } from './health-connect-card';
 import { HealthKitCard } from './healthkit-card';
 import { PendingConfirmationCard } from './pending-confirmation-card';
