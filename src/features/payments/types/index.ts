@@ -6,4 +6,12 @@ export type {
   VerifyPaymentRequestDTO,
   VerifyPaymentResponseDTO,
 } from './payment.dto';
-export type { Payment, PaymentOrder } from './payment.model';
+export type {
+  Payment,
+  PaymentOrder,
+  PaymentStatus,
+  RazorpayOptions,
+  RazorpaySuccessResponse,
+  RazorpayErrorResponse,
+  RazorpaySdkError,
+} from './payment.model';

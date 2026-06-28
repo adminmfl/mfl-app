@@ -25,3 +25,41 @@ export interface PaymentOrder {
   currency: string;
   keyId: string;
 }
+
+// ─── Razorpay SDK types ─────────────────────────────────────────────────────
+
+export interface RazorpayOptions {
+  description: string;
+  image: string;
+  currency: string;
+  key: string;
+  amount: number;
+  name: string;
+  order_id: string;
+  theme: { color: string };
+}
+
+export interface RazorpaySuccessResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+export interface RazorpayErrorResponse {
+  code: number;
+  description: string;
+  source: string;
+  step: string;
+  reason: string;
+  metadata: {
+    order_id: string;
+    payment_id: string;
+  };
+}
+
+/** Shape thrown by the Razorpay SDK on failure. */
+export interface RazorpaySdkError {
+  error?: RazorpayErrorResponse;
+  message?: string;
+  description?: string;
+}

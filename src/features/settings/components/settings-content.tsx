@@ -8,6 +8,7 @@ import { AppText } from '../../../components/app-text';
 import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
 import { useAuth } from '../../../core/auth';
+import { AppRoutes } from '../../../core/config/routes';
 import { SettingsMenuItem } from './settings-menu-item';
 
 export function SettingsContent() {
@@ -51,19 +52,19 @@ export function SettingsContent() {
           <SettingsMenuItem
             icon="shield"
             label="Privacy Policy"
-            onPress={() => router.push('/(app)/privacy-policy' as any)}
+            onPress={() => router.push(AppRoutes.privacyPolicy)}
           />
           <Separator />
           <SettingsMenuItem
             icon="help-circle"
             label="Help & Support"
-            onPress={() => router.push('/(app)/help' as any)}
+            onPress={() => router.push(AppRoutes.help)}
           />
           <Separator />
           <SettingsMenuItem
             icon="book-open"
             label="MFL Rules"
-            onPress={() => router.push('/(app)/mfl-rules' as any)}
+            onPress={() => router.push(AppRoutes.mflRules)}
           />
           <Separator />
           <SettingsMenuItem
