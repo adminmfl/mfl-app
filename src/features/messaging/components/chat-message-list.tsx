@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useCallback, useRef } from 'react';
+import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import {
   FlatList,
   Pressable,
@@ -13,14 +13,11 @@ import { ScreenState } from '../../../components/screen-state';
 import { mflColors } from '../../../constants/colors';
 import type { ChatFilter, ChatMessage } from '../types/messaging.model';
 import { ChatMessageBubble } from './chat-message-bubble';
+import { FILTER_OPTIONS } from '../constants/chat-filters';
 
-const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'announcements', label: 'Announcements' },
-  { value: 'host_messages', label: 'Host' },
-  { value: 'captains_only', label: 'Captains' },
-  { value: 'important', label: 'Important' },
-];
+export interface ChatMessageListHandle {
+  scrollToMessage: (messageId: string) => void;
+}
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
@@ -38,22 +35,35 @@ interface ChatMessageListProps {
   onFocusComposer: () => void;
 }
 
-export function ChatMessageList({
-  messages,
-  isLoading,
-  isError,
-  refreshing,
-  currentUserId,
-  isCaptainRole,
-  filter,
-  onRefresh,
-  onRetry,
-  onReply,
-  onReact,
-  onOpenDeepLink,
-  onFocusComposer,
-}: ChatMessageListProps) {
+export const ChatMessageList = forwardRef<ChatMessageListHandle, ChatMessageListProps>(
+  function ChatMessageList(
+    {
+      messages,
+      isLoading,
+      isError,
+      refreshing,
+      currentUserId,
+      isCaptainRole,
+      filter,
+      onRefresh,
+      onRetry,
+      onReply,
+      onReact,
+      onOpenDeepLink,
+      onFocusComposer,
+    },
+    ref,
+  ) {
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
+
+  useImperativeHandle(ref, () => ({
+    scrollToMessage: (messageId: string) => {
+      const idx = messages.findIndex((m) => m.messageId === messageId);
+      if (idx >= 0) {
+        flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+      }
+    },
+  }));
 
   const renderMessage = useCallback(
     ({ item, index }: ListRenderItemInfo<ChatMessage>) => {
@@ -162,4 +172,4 @@ export function ChatMessageList({
       keyboardShouldPersistTaps="handled"
     />
   );
-}
+});

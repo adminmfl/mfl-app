@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   View,
 } from 'react-native';
@@ -27,19 +28,12 @@ import type {
   ChatTeam,
 } from '../types/messaging.model';
 import { messagingQueryKeys } from '../utils/messaging-query-keys';
+import { FILTER_OPTIONS } from '../constants/chat-filters';
 import { ChatChannelSelector } from './chat-channel-selector';
 import { ChatComposer, type ChatComposerHandle } from './chat-composer';
 import { ChatHeader } from './chat-header';
-import { ChatMessageList } from './chat-message-list';
+import { ChatMessageList, type ChatMessageListHandle } from './chat-message-list';
 import { MessagingChip } from './messaging-chip';
-
-const FILTER_OPTIONS: { value: ChatFilter; label: string }[] = [
-  { value: 'all', label: 'All' },
-  { value: 'announcements', label: 'Announcements' },
-  { value: 'host_messages', label: 'Host' },
-  { value: 'captains_only', label: 'Captains' },
-  { value: 'important', label: 'Important' },
-];
 
 interface TeamMessagingScreenProps {
   league: UserLeague;
@@ -65,6 +59,7 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const [refreshing, setRefreshing] = useState(false);
 
   const composerRef = useRef<ChatComposerHandle>(null);
+  const messageListRef = useRef<ChatMessageListHandle>(null);
 
   useEffect(() => {
     if (!selectedTeamId) setAdminView(false);
@@ -81,8 +76,8 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
 
   const channelTeamId = isLeader ? selectedTeamId : league.teamId;
   const channelName = isLeader
-    ? selectedTeam?.teamName ?? 'All Teams (Broadcast)'
-    : league.teamName ?? 'Team Messages';
+    ? selectedTeam?.teamName || 'All Teams (Broadcast)'
+    : league.teamName || 'Team Messages';
 
   // ── Data hooks ───────────────────────────────────────────────────────────
   const messagesQuery = useChatMessages({
@@ -95,6 +90,11 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
   const reactionMutation = useToggleChatReaction();
 
   const messages = messagesQuery.data ?? [];
+
+  const pinnedMessage = useMemo(
+    () => messages.find((m) => m.messageType === 'announcement' && m.isImportant),
+    [messages],
+  );
 
   // ── Mark read ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -225,8 +225,31 @@ export function TeamMessagingScreen({ league }: TeamMessagingScreenProps) {
         </ScrollView>
       </View>
 
+      {pinnedMessage ? (
+        <Pressable
+          onPress={() => messageListRef.current?.scrollToMessage(pinnedMessage.messageId)}
+          className="mx-4 mb-2 flex-row items-center gap-3 rounded-xl border px-4 py-3"
+          style={{
+            backgroundColor: mflColors.amberLight,
+            borderColor: 'rgba(245,158,11,0.2)',
+          }}
+        >
+          <AppText className="text-sm">📌</AppText>
+          <AppText
+            className="flex-1 text-[13px] text-foreground"
+            numberOfLines={1}
+          >
+            {pinnedMessage.content}
+          </AppText>
+          <AppText className="text-[11px] font-medium" style={{ color: mflColors.amber }}>
+            View
+          </AppText>
+        </Pressable>
+      ) : null}
+
       <View className="flex-1">
         <ChatMessageList
+          ref={messageListRef}
           messages={messages}
           isLoading={messagesQuery.isLoading}
           isError={messagesQuery.isError}

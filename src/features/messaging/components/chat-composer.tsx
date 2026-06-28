@@ -328,7 +328,6 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
         motivating={motivating}
         showPhotoAction={showPhotoAction}
         hasTeam={!!teamId}
-        currentRole={currentRole}
         onToggleVisibility={() =>
           setVisibility((current) => (current === 'captains_only' ? 'all' : 'captains_only'))
         }

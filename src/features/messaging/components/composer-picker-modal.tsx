@@ -206,7 +206,6 @@ interface ComposerActionChipsProps {
   motivating: boolean;
   showPhotoAction: boolean;
   hasTeam: boolean;
-  currentRole: string | null;
   onToggleVisibility: () => void;
   onToggleAnnouncement: () => void;
   onToggleImportant: () => void;
@@ -226,7 +225,6 @@ export function ComposerActionChips({
   motivating,
   showPhotoAction,
   hasTeam,
-  currentRole,
   onToggleVisibility,
   onToggleAnnouncement,
   onToggleImportant,
@@ -240,9 +238,7 @@ export function ComposerActionChips({
     <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
       <View className="flex-row gap-2 pr-4">
         <MessagingChip
-          label={visibility === 'captains_only'
-            ? (currentRole === 'player' ? 'To Captain' : 'Captains')
-            : 'All'}
+          label={visibility === 'captains_only' ? 'Captains' : 'All'}
           icon={visibility === 'captains_only' ? 'shield' : 'globe'}
           selected={visibility === 'captains_only'}
           onPress={onToggleVisibility}
