@@ -10,6 +10,7 @@ import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { ScreenState } from '../../components/screen-state';
 import { SectionLabel } from '../../components/section-label';
 import { mflColors } from '../../constants/colors';
+import { AppRoutes } from '../../core/config/routes';
 import { useLeagueContext } from '../../contexts/league-context';
 import { useUserLeagues } from '../../features/leagues/hooks/use-user-leagues';
 import { isLeagueEnded } from '../../features/leagues/utils/league-status';
@@ -259,7 +260,7 @@ export default function CommunitiesScreen() {
   const handleViewLeague = useCallback(
     (league: UserLeague) => {
       setActiveLeague(league);
-      router.push('/(app)/(tabs)/dashboard' as any);
+      router.push(AppRoutes.dashboard);
     },
     [router, setActiveLeague],
   );
@@ -381,7 +382,7 @@ export default function CommunitiesScreen() {
           <Button
             variant="primary"
             size="md"
-            onPress={() => router.push('/(app)/join-league' as any)}
+            onPress={() => router.push(AppRoutes.joinLeague)}
             className="flex-1"
           >
             <Button.Label>Join</Button.Label>
@@ -389,7 +390,7 @@ export default function CommunitiesScreen() {
           <Button
             variant="secondary"
             size="md"
-            onPress={() => router.push('/(app)/create-league' as any)}
+            onPress={() => router.push(AppRoutes.createLeague)}
             className="flex-1"
           >
             <Button.Label>Create</Button.Label>

@@ -9,38 +9,20 @@ import { ScreenState } from '../../../../components/screen-state';
 import { DarkHeaderCard } from '../../../../components/dark-header-card';
 import { SectionLabel } from '../../../../components/section-label';
 import { mflColors } from '../../../../constants/colors';
+import { AppRoutes } from '../../../../core/config/routes';
 import { useLeagueContext } from '../../../../contexts/league-context';
 import { useValidateTeamInvite } from '../../../../features/invites/hooks/use-validate-team-invite';
 import { useJoinByTeamInvite } from '../../../../features/invites/hooks/use-join-by-team-invite';
+import {
+  formatInviteDate,
+  inviteStatusChipStyle,
+} from '../../../../features/invites/utils/invite-display';
 import type { UserLeague } from '../../../../features/leagues/types/league.model';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers — formatInviteDate and inviteStatusChipStyle moved to
+//           src/features/invites/utils/invite-display.ts
 // ---------------------------------------------------------------------------
-
-function formatDate(iso: string | null): string {
-  if (!iso) return 'N/A';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
-function statusChipStyle(status: string): { color: string; bgColor: string } {
-  switch (status.toLowerCase()) {
-    case 'active':
-      return { color: mflColors.brand, bgColor: mflColors.brandLight };
-    case 'upcoming':
-      return { color: mflColors.accent, bgColor: mflColors.accentLight };
-    case 'ended':
-    case 'completed':
-      return { color: mflColors.textMuted, bgColor: mflColors.surface };
-    default:
-      return { color: mflColors.amber, bgColor: mflColors.amberLight };
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Main Screen
@@ -60,7 +42,7 @@ export default function TeamInviteCodeScreen() {
   const joinMutation = useJoinByTeamInvite();
 
   const navigateToDashboard = useCallback(() => {
-    router.replace('/(app)/(tabs)/dashboard' as any);
+    router.replace(AppRoutes.dashboard);
   }, [router]);
 
   const handleJoin = useCallback(() => {
@@ -150,7 +132,7 @@ export default function TeamInviteCodeScreen() {
   }
 
   const { team, league } = invite;
-  const sc = statusChipStyle(league.status);
+  const sc = inviteStatusChipStyle(league.status);
 
   // ---------- Team is full ----------
   if (team.isFull) {
@@ -252,14 +234,14 @@ export default function TeamInviteCodeScreen() {
                 <View className="flex-row justify-between items-center py-1">
                   <AppText className="text-sm text-muted">Start Date</AppText>
                   <AppText className="text-sm font-semibold text-foreground">
-                    {formatDate(league.startDate)}
+                    {formatInviteDate(league.startDate)}
                   </AppText>
                 </View>
 
                 <View className="flex-row justify-between items-center py-1">
                   <AppText className="text-sm text-muted">End Date</AppText>
                   <AppText className="text-sm font-semibold text-foreground">
-                    {formatDate(league.endDate)}
+                    {formatInviteDate(league.endDate)}
                   </AppText>
                 </View>
               </View>

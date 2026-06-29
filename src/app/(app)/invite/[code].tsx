@@ -10,31 +10,19 @@ import { ScreenState } from '../../../components/screen-state';
 import { DarkHeaderCard } from '../../../components/dark-header-card';
 import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
+import { AppRoutes } from '../../../core/config/routes';
+import { extractApiError } from '../../../core/utils/extract-api-error';
 import { useValidateInvite } from '../../../features/invites/hooks/use-validate-invite';
 import { useJoinByInvite } from '../../../features/invites/hooks/use-join-by-invite';
+import {
+  formatInviteDate,
+  inviteStatusChipStyle,
+} from '../../../features/invites/utils/invite-display';
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Helpers — formatInviteDate and inviteStatusChipStyle moved to
+//           src/features/invites/utils/invite-display.ts
 // ---------------------------------------------------------------------------
-
-function formatDate(iso: string | null): string {
-  if (!iso) return 'N/A';
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function statusChipStyle(status: string): { color: string; bgColor: string } {
-  switch (status.toLowerCase()) {
-    case 'active':
-      return { color: mflColors.brand, bgColor: mflColors.brandLight };
-    case 'upcoming':
-      return { color: mflColors.accent, bgColor: mflColors.accentLight };
-    case 'ended':
-    case 'completed':
-      return { color: mflColors.textMuted, bgColor: mflColors.surface };
-    default:
-      return { color: mflColors.amber, bgColor: mflColors.amberLight };
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Main Screen
@@ -70,7 +58,7 @@ export default function InviteCodeScreen() {
         });
         // Navigate to dashboard after short delay (matches web 2s redirect)
         setTimeout(() => {
-          router.replace('/(app)/(tabs)/dashboard' as any);
+          router.replace(AppRoutes.dashboard);
         }, 2000);
       },
     });
@@ -115,7 +103,7 @@ export default function InviteCodeScreen() {
   }
 
   const league = invite.league;
-  const sc = statusChipStyle(league.status);
+  const sc = inviteStatusChipStyle(league.status);
 
   // ---------- Success state (matches web joined screen) ----------
   if (successInfo) {
@@ -247,14 +235,14 @@ export default function InviteCodeScreen() {
                 <View className="flex-row justify-between items-center py-1">
                   <AppText className="text-sm text-muted">Starts</AppText>
                   <AppText className="text-sm font-semibold text-foreground">
-                    {formatDate(league.startDate)}
+                    {formatInviteDate(league.startDate)}
                   </AppText>
                 </View>
 
                 <View className="flex-row justify-between items-center py-1">
                   <AppText className="text-sm text-muted">Ends</AppText>
                   <AppText className="text-sm font-semibold text-foreground">
-                    {formatDate(league.endDate)}
+                    {formatInviteDate(league.endDate)}
                   </AppText>
                 </View>
               </View>
@@ -267,9 +255,10 @@ export default function InviteCodeScreen() {
           <Animated.View entering={FadeInDown.duration(200)}>
             <View className="bg-danger-50 p-3 rounded-lg">
               <AppText className="text-sm" style={{ color: mflColors.danger }}>
-                {(joinMutation.error as any)?.response?.data?.error ||
-                  joinMutation.error?.message ||
-                  'Failed to join the league. Please try again.'}
+                {extractApiError(
+                  joinMutation.error,
+                  'Failed to join the league. Please try again.',
+                )}
               </AppText>
             </View>
           </Animated.View>
