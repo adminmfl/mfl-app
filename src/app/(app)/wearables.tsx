@@ -5,6 +5,23 @@ import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { mflColors } from '../../constants/colors';
 
+type FeatherIconName = React.ComponentProps<typeof Feather>['name'];
+
+const UPCOMING_FEATURES: Array<{ icon: FeatherIconName; label: string }> = [
+  {
+    icon: 'smartphone',
+    label:
+      Platform.OS === 'android'
+        ? 'Health Connect (Android) — auto-detect workouts'
+        : Platform.OS === 'ios'
+          ? 'Apple HealthKit — auto-detect workouts'
+          : 'Health Connect & Apple HealthKit support',
+  },
+  { icon: 'refresh-cw',   label: 'Automatic sync after each workout' },
+  { icon: 'check-circle', label: 'One-tap confirmation before points are awarded' },
+  { icon: 'shield',       label: 'Duplicate prevention — no accidental double-counts' },
+];
+
 /**
  * Wearable Sync — Coming Soon
  *
@@ -14,8 +31,6 @@ import { mflColors } from '../../constants/colors';
  */
 export default function WearablesRoute() {
   const insets = useSafeAreaInsets();
-  const isAndroid = Platform.OS === 'android';
-  const isIos = Platform.OS === 'ios';
 
   return (
     <ScreenScrollView>
@@ -56,25 +71,13 @@ export default function WearablesRoute() {
 
         {/* Upcoming capabilities */}
         <View className="w-full gap-3">
-          {[
-            {
-              icon: 'smartphone',
-              label: isAndroid
-                ? 'Health Connect (Android) — auto-detect workouts'
-                : isIos
-                  ? 'Apple HealthKit — auto-detect workouts'
-                  : 'Health Connect & Apple HealthKit support',
-            },
-            { icon: 'refresh-cw',  label: 'Automatic sync after each workout' },
-            { icon: 'check-circle', label: 'One-tap confirmation before points are awarded' },
-            { icon: 'shield',      label: 'Duplicate prevention — no accidental double-counts' },
-          ].map((item) => (
+          {UPCOMING_FEATURES.map((item) => (
             <View
               key={item.icon}
               className="flex-row items-center gap-3 rounded-xl px-4 py-3"
               style={{ backgroundColor: mflColors.card, borderWidth: 1, borderColor: mflColors.border }}
             >
-              <Feather name={item.icon as any} size={18} color={mflColors.blue} />
+              <Feather name={item.icon} size={18} color={mflColors.blue} />
               <AppText className="flex-1 text-sm text-foreground">{item.label}</AppText>
             </View>
           ))}

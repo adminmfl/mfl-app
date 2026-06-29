@@ -20,7 +20,7 @@ import {
   useConfirmWorkout,
   useRejectWorkout,
 } from '../hooks/use-pending-confirmations';
-import { getApiErrorMessage } from '../../leagues/utils/activity-config';
+import { extractApiError } from '../../auth/utils/extract-api-error';
 import { HealthConnectCard } from './health-connect-card';
 import { HealthKitCard } from './healthkit-card';
 import { PendingConfirmationCard } from './pending-confirmation-card';
@@ -238,7 +238,7 @@ export function ConnectedAppsScreen() {
       } catch (error) {
         Alert.alert(
           'Could not confirm',
-          getApiErrorMessage(error, 'Failed to confirm activity.'),
+          extractApiError(error, 'Failed to confirm activity.'),
         );
       } finally {
         setConfirmingId(null);
@@ -255,7 +255,7 @@ export function ConnectedAppsScreen() {
       } catch (error) {
         Alert.alert(
           'Could not reject',
-          getApiErrorMessage(error, 'Failed to reject activity.'),
+          extractApiError(error, 'Failed to reject activity.'),
         );
       } finally {
         setRejectingId(null);
