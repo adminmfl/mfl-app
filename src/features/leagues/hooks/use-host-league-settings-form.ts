@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
-import { ROUTES } from '../../../core/config/routes';
+import { AppRoutes } from '../../../core/config/routes';
 import type { ApiError } from '../../../core/types/api-error';
 import { useDeleteLeague } from './use-delete-league';
 import { useLaunchLeague } from './use-launch-league';
@@ -51,6 +51,8 @@ export interface SettingsFormState {
   brandColor: string;
   brandPoweredBy: boolean;
   logoUrl: string | null;
+  minSubmissionsPerDay: number;
+  maxSubmissionsPerDay: number;
 }
 
 const DEFAULT_FORM: SettingsFormState = {
@@ -80,6 +82,8 @@ const DEFAULT_FORM: SettingsFormState = {
   brandColor: '',
   brandPoweredBy: true,
   logoUrl: null,
+  minSubmissionsPerDay: 1,
+  maxSubmissionsPerDay: 1,
 };
 
 export function useHostLeagueSettingsForm() {
@@ -130,6 +134,8 @@ export function useHostLeagueSettingsForm() {
       brandColor: String(branding.primary_color ?? ''),
       brandPoweredBy: branding.powered_by_visible !== false,
       logoUrl: detail.logoUrl ?? null,
+      minSubmissionsPerDay: detail.minSubmissionsPerDay ?? 1,
+      maxSubmissionsPerDay: detail.maxSubmissionsPerDay ?? 1,
     });
   }, [detailQuery.data]);
 
@@ -150,6 +156,14 @@ export function useHostLeagueSettingsForm() {
 
   const handleSave = () => {
     setSuccessMsg('');
+
+    if (form.maxSubmissionsPerDay < form.minSubmissionsPerDay) {
+      Alert.alert(
+        'Validation Error',
+        'Max submissions per day must be greater than or equal to min.',
+      );
+      return;
+    }
 
     if (form.tieredRankEnabled) {
       const top = Number(form.tieredTop) || 0;
@@ -192,6 +206,8 @@ export function useHostLeagueSettingsForm() {
               poweredByVisible: form.brandPoweredBy,
             }
           : null,
+      minSubmissionsPerDay: form.minSubmissionsPerDay,
+      maxSubmissionsPerDay: form.maxSubmissionsPerDay,
     };
 
     if (canEditStartDate) input.startDate = form.startDate;
@@ -252,7 +268,7 @@ export function useHostLeagueSettingsForm() {
           style: 'destructive',
           onPress: () => {
             deleteMutation.mutate(leagueId, {
-              onSuccess: () => router.replace(ROUTES.dashboard),
+              onSuccess: () => router.replace(AppRoutes.dashboard),
               onError: (error: unknown) => {
                 Alert.alert(
                   'Delete Failed',

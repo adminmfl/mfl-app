@@ -55,4 +55,6 @@ export interface LeagueDetail {
     middlePercent: number;
     bottomPercent: number;
   } | null;
+  minSubmissionsPerDay: number;
+  maxSubmissionsPerDay: number;
 }

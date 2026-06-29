@@ -18,6 +18,7 @@ import { SettingsLogoSection } from './settings-logo-section';
 import { SettingsScoringSection } from './settings-scoring-section';
 import { SettingsStatusSection } from './settings-status-section';
 import { SettingsTeamSection } from './settings-team-section';
+import { SettingsSubmissionLimitsSection } from './settings-submission-limits-section';
 import { SettingsVisibilitySection } from './settings-visibility-section';
 
 export function HostLeagueSettingsScreen() {
@@ -187,6 +188,14 @@ export function HostLeagueSettingsScreen() {
         <SettingsActivityConfigSection leagueId={leagueId} />
         <SettingsCustomActivitiesSection leagueId={leagueId} />
 
+        <AppText style={{ color: 'red', fontSize: 20 }}>⬇ SUBMISSION LIMITS ⬇</AppText>
+        <SettingsSubmissionLimitsSection
+          minSubmissionsPerDay={form.minSubmissionsPerDay}
+          maxSubmissionsPerDay={form.maxSubmissionsPerDay}
+          onChangeMin={(v) => updateForm('minSubmissionsPerDay', v)}
+          onChangeMax={(v) => updateForm('maxSubmissionsPerDay', v)}
+        />
+
         <SettingsGeneralSection
           leagueName={form.leagueName}
           description={form.description}
@@ -294,6 +303,7 @@ export function HostLeagueSettingsScreen() {
           size="lg"
           onPress={handleSave}
           isDisabled={updateMutation.isPending || !form.leagueName.trim()}
+          // also block save when submission limits are invalid
           className="w-full"
         >
           {updateMutation.isPending ? (
