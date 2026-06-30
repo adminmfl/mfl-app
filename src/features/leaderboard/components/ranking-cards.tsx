@@ -32,9 +32,9 @@ export function TeamRankingCard({
       className="py-2 px-3"
       style={team.rank <= 3 ? { borderWidth: 1, borderColor: mflColors.brandLight } : undefined}
     >
-      <View className="flex-row items-center justify-between gap-3">
+      <View className="flex-row items-center justify-between gap-2">
         {/* Left: Rank, Logo, Team Name */}
-        <View className="flex-row items-center gap-2.5 flex-1">
+        <View className="flex-row items-center gap-2 flex-1" style={{ minWidth: 0 }}>
           <RankBadge rank={team.rank} tier={team.rank_tier} band={team.rank_band} />
 
           <View
@@ -65,18 +65,18 @@ export function TeamRankingCard({
         </View>
 
         {/* Right: Points, Logs, RR */}
-        <View className="items-end">
+        <View className="items-end" style={{ flexShrink: 0 }}>
           <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
             {formatNumber(team.total_points)} pts
           </AppText>
-          <View className="flex-row items-center gap-1.5 mt-0.5">
-            <AppText className="text-[10px] text-muted">
+          <View className="flex-row items-center gap-1 mt-0.5">
+            <AppText className="text-[10px] text-muted" numberOfLines={1}>
               {team.submission_count} logs
             </AppText>
             {showAvgRR && (
               <>
                 <AppText className="text-[10px] text-muted">·</AppText>
-                <AppText className="text-[10px] font-semibold" style={{ color: mflColors.amber }}>
+                <AppText className="text-[9px] font-semibold" style={{ color: mflColors.amber }} numberOfLines={1}>
                   RR {team.avg_rr.toFixed(2)}
                 </AppText>
               </>
@@ -111,10 +111,10 @@ export function IndividualRankingCard({
   showAvgRR: boolean;
 }) {
   return (
-    <Card className="py-2 px-3">
-      <View className="flex-row items-center justify-between gap-3">
+    <Card className="py-2 px-2.5">
+      <View className="flex-row items-center justify-between gap-2">
         {/* Left: Rank, Avatar, Player Name */}
-        <View className="flex-row items-center gap-2.5 flex-1">
+        <View className="flex-row items-center gap-2 flex-1" style={{ minWidth: 0 }}>
           <RankBadge rank={player.rank} tier={player.rank_tier} band={player.rank_band} />
 
           <Avatar size="sm" alt={player.username} style={{ width: 32, height: 32 }}>
@@ -141,18 +141,18 @@ export function IndividualRankingCard({
         </View>
 
         {/* Right: Points, Logs, RR */}
-        <View className="items-end">
+        <View className="items-end" style={{ flexShrink: 0 }}>
           <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
             {formatNumber(player.points)} pts
           </AppText>
-          <View className="flex-row items-center gap-1.5 mt-0.5">
-            <AppText className="text-[10px] text-muted">
+          <View className="flex-row items-center gap-1 mt-0.5">
+            <AppText className="text-[10px] text-muted" numberOfLines={1}>
               {player.submission_count} logs
             </AppText>
             {showAvgRR && (
               <>
                 <AppText className="text-[10px] text-muted">·</AppText>
-                <AppText className="text-[10px] font-semibold" style={{ color: mflColors.amber }}>
+                <AppText className="text-[9px] font-semibold" style={{ color: mflColors.amber }} numberOfLines={1}>
                   RR {player.avg_rr.toFixed(2)}
                 </AppText>
               </>
