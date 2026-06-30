@@ -208,8 +208,8 @@ export function SettingsSectionScreen() {
               onChangeMin={(v) => updateForm('minSubmissionsPerDay', v)}
               onChangeMax={(v) => updateForm('maxSubmissionsPerDay', v)}
             />
-          <SettingsActivityConfigSection leagueId={leagueId} />
-        </> 
+            <SettingsActivityConfigSection leagueId={leagueId} />
+          </> 
         );
       case 'custom-activities':
         return <SettingsCustomActivitiesSection leagueId={leagueId} />;

@@ -188,7 +188,6 @@ export function HostLeagueSettingsScreen() {
         <SettingsActivityConfigSection leagueId={leagueId} />
         <SettingsCustomActivitiesSection leagueId={leagueId} />
 
-        <AppText style={{ color: 'red', fontSize: 20 }}>⬇ SUBMISSION LIMITS ⬇</AppText>
         <SettingsSubmissionLimitsSection
           minSubmissionsPerDay={form.minSubmissionsPerDay}
           maxSubmissionsPerDay={form.maxSubmissionsPerDay}
@@ -302,8 +301,7 @@ export function HostLeagueSettingsScreen() {
           variant="primary"
           size="lg"
           onPress={handleSave}
-          isDisabled={updateMutation.isPending || !form.leagueName.trim()}
-          // also block save when submission limits are invalid
+          isDisabled={updateMutation.isPending || !form.leagueName.trim() || form.maxSubmissionsPerDay < form.minSubmissionsPerDay}
           className="w-full"
         >
           {updateMutation.isPending ? (

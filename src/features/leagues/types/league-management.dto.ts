@@ -86,6 +86,8 @@ export interface UpdateLeagueRequestDTO {
     primary_color?: string;
     powered_by_visible?: boolean;
   } | null;
+  min_submissions_per_day?: number;
+  max_submissions_per_day?: number;
 }
 
 // PATCH /api/leagues/[id] — response
