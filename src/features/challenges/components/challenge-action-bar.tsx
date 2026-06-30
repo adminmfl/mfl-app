@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { Button } from 'heroui-native';
+import { useRouter } from 'expo-router';
 
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
@@ -11,8 +12,28 @@ interface ChallengeActionBarProps {
 }
 
 export function ChallengeActionBar({ challenge, onSubmitProof }: ChallengeActionBarProps) {
+  const router = useRouter();
+
   if (challenge.challengeType === 'tournament') {
     return null;
+  }
+
+  if (challenge.challengeType === 'weight_loss') {
+    return (
+      <Button
+        variant="primary"
+        size="lg"
+        onPress={() => {
+          router.push({
+            pathname: '/(app)/challenges/weight-log' as any,
+            params: { challengeId: challenge.challengeId },
+          });
+        }}
+        className="w-full"
+      >
+        <Button.Label>Log Weight</Button.Label>
+      </Button>
+    );
   }
 
   const myStatus = challenge.mySubmission?.status as string | undefined;

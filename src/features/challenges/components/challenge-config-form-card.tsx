@@ -8,6 +8,7 @@ import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
 import type { ChallengeConfigForm, PickedChallengeDocument } from '../types/challenge-config';
 import { CHALLENGE_TYPES } from '../utils/challenge-config-utils';
+import { WeightLossTierConfig } from './weight-loss-tier-config';
 
 const inputStyle = {
   backgroundColor: mflColors.card,
@@ -196,6 +197,45 @@ export function ChallengeConfigFormCard({
               </AppText>
             </View>
           </Pressable>
+        ) : null}
+
+        {form.challengeType === 'weight_loss' ? (
+          <WeightLossTierConfig
+            durationDays={form.config?.durationDays}
+            onDurationChange={(days) =>
+              onChange({ config: { ...form.config, durationDays: days } })
+            }
+            tiers={form.config?.tiers || []}
+            onAddTier={() => {
+              const prevTiers = form.config?.tiers || [];
+              const highestThreshold =
+                prevTiers.length > 0 ? Math.max(...prevTiers.map((t: any) => t.thresholdPercent)) : 0;
+              onChange({
+                config: {
+                  ...form.config,
+                  tiers: [...prevTiers, { thresholdPercent: highestThreshold + 1, points: 0 }],
+                },
+              });
+            }}
+            onRemoveTier={(index) => {
+              const prevTiers = form.config?.tiers || [];
+              onChange({
+                config: {
+                  ...form.config,
+                  tiers: prevTiers.filter((_: any, i: number) => i !== index),
+                },
+              });
+            }}
+            onUpdateTier={(index, field, value) => {
+              const prevTiers = form.config?.tiers || [];
+              const updated = [...prevTiers];
+              updated[index] = { ...updated[index], [field]: value };
+              onChange({
+                config: { ...form.config, tiers: updated },
+              });
+            }}
+            isValid={true}
+          />
         ) : null}
 
         <View className="flex-row gap-3">

@@ -1,4 +1,4 @@
-export type ChallengeType = 'individual' | 'team' | 'sub_team' | 'tournament';
+export type ChallengeType = 'individual' | 'team' | 'sub_team' | 'tournament' | 'weight_loss';
 export type ChallengeStatus =
   | 'draft'
   | 'scheduled'
@@ -21,6 +21,7 @@ export interface Challenge {
   startDate: string | null;
   endDate: string | null;
   status: ChallengeStatus;
+  config?: any | null; // TODO(weight-loss-api): confirm against live endpoint
   mySubmission: any | null;
   stats: { pending: number; approved: number; rejected: number } | null;
 }
@@ -117,4 +118,56 @@ export interface TournamentMatchInput {
 export interface TournamentScore {
   teamId: string;
   score: number;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossTier {
+  thresholdPercent: number;
+  points: number;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossConfig {
+  durationDays?: number;
+  tiers?: WeightLossTier[];
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogEntry {
+  id: string;
+  leagueMemberId: string;
+  weight: number;
+  logType: 'start' | 'progress' | 'end';
+  createdAt: string;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossPrediction {
+  predictedPoints: number;
+  currentPercentLost: number;
+  matchedTier: WeightLossTier | null;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossResult {
+  finalPoints: number;
+  finalPercentLost: number;
+  matchedTier: WeightLossTier | null;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogPlayerResponse {
+  logs: WeightLogEntry[];
+  prediction: WeightLossPrediction | null;
+  result: WeightLossResult | null;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogHostParticipant {
+  leagueMemberId: string;
+  username: string;
+  startWeight: number | null;
+  endWeight: number | null;
+  percentLost: number | null;
+  points: number | null;
 }

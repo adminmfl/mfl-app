@@ -9,6 +9,7 @@ export interface ChallengeConfigForm {
   startDate: string;
   endDate: string;
   isUniqueWorkout: boolean;
+  config?: any | null; // TODO(weight-loss-api): confirm against live endpoint
 }
 
 export const EMPTY_CHALLENGE_FORM: ChallengeConfigForm = {
@@ -20,6 +21,7 @@ export const EMPTY_CHALLENGE_FORM: ChallengeConfigForm = {
   startDate: '',
   endDate: '',
   isUniqueWorkout: false,
+  config: null,
 };
 
 export interface PickedChallengeDocument {

@@ -224,3 +224,18 @@ export async function finalizeTournamentScores(
   );
   return res.data;
 }
+
+export async function submitWeightLog(
+  leagueId: string,
+  challengeId: string,
+  data: { logType: 'start' | 'progress' | 'end'; weight: number },
+): Promise<MutateChallengeResponseDTO> {
+  const res = await api.post<MutateChallengeResponseDTO>(
+    `/api/leagues/${leagueId}/challenges/${challengeId}/weight-log`,
+    {
+      log_type: data.logType,
+      weight: data.weight,
+    } // TODO(weight-loss-api): confirm against live endpoint for request body structure
+  );
+  return res.data;
+}
