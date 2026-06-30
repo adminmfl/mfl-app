@@ -8,6 +8,7 @@ import { ScreenScrollView } from '../../../../components/screen-scroll-view';
 import { ScreenState } from '../../../../components/screen-state';
 import { mflColors } from '../../../../constants/colors';
 import { useHostLeagueSettingsForm } from '../../hooks/use-host-league-settings-form';
+import { SettingsSubmissionLimitsSection } from '../settings-submission-limits-section';
 import { SettingsActivityConfigSection } from '../settings-activity-config-section';
 import { SettingsAIKeySection } from '../settings-ai-key-section';
 import { SettingsBrandingSection } from '../settings-branding-section';
@@ -26,6 +27,7 @@ const SAVE_GROUPS = new Set([
   'teams',
   'visibility',
   'scoring',
+  'activities',
   'branding',
 ]);
 
@@ -198,7 +200,17 @@ export function SettingsSectionScreen() {
           />
         );
       case 'activities':
-        return <SettingsActivityConfigSection leagueId={leagueId} />;
+        return (
+          <>
+            <SettingsSubmissionLimitsSection
+              minSubmissionsPerDay={form.minSubmissionsPerDay}
+              maxSubmissionsPerDay={form.maxSubmissionsPerDay}
+              onChangeMin={(v) => updateForm('minSubmissionsPerDay', v)}
+              onChangeMax={(v) => updateForm('maxSubmissionsPerDay', v)}
+            />
+            <SettingsActivityConfigSection leagueId={leagueId} />
+          </> 
+        );
       case 'custom-activities':
         return <SettingsCustomActivitiesSection leagueId={leagueId} />;
       case 'branding':

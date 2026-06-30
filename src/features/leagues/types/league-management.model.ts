@@ -64,6 +64,8 @@ export interface UpdateLeagueInput {
     primaryColor?: string;
     poweredByVisible?: boolean;
   } | null;
+  minSubmissionsPerDay?: number;
+  maxSubmissionsPerDay?: number;
 }
 
 export interface LeagueRules {

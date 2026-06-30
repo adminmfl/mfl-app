@@ -62,6 +62,8 @@ export interface LeagueDetailDTO {
       middle_percent?: number;
       bottom_percent?: number;
     } | null;
+    min_submissions_per_day?: number;
+    max_submissions_per_day?: number;
   };
   success: boolean;
 }

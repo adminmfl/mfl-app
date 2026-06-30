@@ -94,6 +94,12 @@ export function toUpdateLeagueRequest(input: UpdateLeagueInput): UpdateLeagueReq
         }
       : null;
   }
+  if (input.minSubmissionsPerDay !== undefined) {
+    dto.min_submissions_per_day = input.minSubmissionsPerDay;
+  }
+  if (input.maxSubmissionsPerDay !== undefined) {
+    dto.max_submissions_per_day = input.maxSubmissionsPerDay;
+  }
   if (input.branding !== undefined) {
     dto.branding = input.branding
       ? {

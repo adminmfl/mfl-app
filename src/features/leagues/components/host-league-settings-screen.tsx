@@ -18,6 +18,7 @@ import { SettingsLogoSection } from './settings-logo-section';
 import { SettingsScoringSection } from './settings-scoring-section';
 import { SettingsStatusSection } from './settings-status-section';
 import { SettingsTeamSection } from './settings-team-section';
+import { SettingsSubmissionLimitsSection } from './settings-submission-limits-section';
 import { SettingsVisibilitySection } from './settings-visibility-section';
 
 export function HostLeagueSettingsScreen() {
@@ -187,6 +188,13 @@ export function HostLeagueSettingsScreen() {
         <SettingsActivityConfigSection leagueId={leagueId} />
         <SettingsCustomActivitiesSection leagueId={leagueId} />
 
+        <SettingsSubmissionLimitsSection
+          minSubmissionsPerDay={form.minSubmissionsPerDay}
+          maxSubmissionsPerDay={form.maxSubmissionsPerDay}
+          onChangeMin={(v) => updateForm('minSubmissionsPerDay', v)}
+          onChangeMax={(v) => updateForm('maxSubmissionsPerDay', v)}
+        />
+
         <SettingsGeneralSection
           leagueName={form.leagueName}
           description={form.description}
@@ -293,7 +301,7 @@ export function HostLeagueSettingsScreen() {
           variant="primary"
           size="lg"
           onPress={handleSave}
-          isDisabled={updateMutation.isPending || !form.leagueName.trim()}
+          isDisabled={updateMutation.isPending || !form.leagueName.trim() || form.maxSubmissionsPerDay < form.minSubmissionsPerDay}
           className="w-full"
         >
           {updateMutation.isPending ? (

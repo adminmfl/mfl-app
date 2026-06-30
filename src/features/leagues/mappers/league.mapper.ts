@@ -64,5 +64,7 @@ export function toLeagueDetail(dto: LeagueDetailDTO): LeagueDetail {
           bottomPercent: d.tiered_rank_config.bottom_percent ?? 30,
         }
       : null,
+      minSubmissionsPerDay: dto.data.min_submissions_per_day ?? 1,
+      maxSubmissionsPerDay: dto.data.max_submissions_per_day ?? 1,
   };
 }
