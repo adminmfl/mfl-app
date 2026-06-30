@@ -9,7 +9,8 @@ import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import { useLeagueContext } from '../../../contexts/league-context';
 import { useRole } from '../../../contexts/role-context';
-import { useMobileLeaderboard } from '../hooks/use-mobile-leaderboard';
+import { PointsTypeDropdown } from './points-type-dropdown';
+import { PointsTypeFilter, useMobileLeaderboard } from '../hooks/use-mobile-leaderboard';
 import {
   LeaderboardFilterBar,
   type LeaderboardTab,
@@ -38,6 +39,7 @@ export function LeaderboardScreen() {
 
   const [activeTab, setActiveTab] = useState<LeaderboardTab>('teams');
   const [selectedWeek, setSelectedWeek] = useState<WeekSelection>('all');
+  const [pointsType, setPointsType] = useState<PointsTypeFilter>('all');
   const [dateFilter, setDateFilter] = useState<{
     startDate?: string;
     endDate?: string;
@@ -45,7 +47,7 @@ export function LeaderboardScreen() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
-  const leaderboardQuery = useMobileLeaderboard(leagueId, dateFilter);
+  const leaderboardQuery = useMobileLeaderboard(leagueId, dateFilter, pointsType);
   const { data: sponsorSlots } = useLeagueSponsors(leagueId);
   const grandFinaleSponsor = useMemo(
     () => getGrandFinaleSponsor(sponsorSlots ?? []),
@@ -257,9 +259,15 @@ export function LeaderboardScreen() {
               />
             </Animated.View>
 
+            {activeTab === 'teams' ? (
+              <Animated.View entering={FadeInDown.duration(250).delay(90)}>
+                <PointsTypeDropdown value={pointsType} onChange={setPointsType} />
+              </Animated.View>
+            ) : null}
+
             <Animated.View entering={FadeInDown.duration(250).delay(120)}>
               {activeTab === 'teams' ? (
-                <OverallLeaderboard data={data} showAvgRR={showAvgRR} />
+                <OverallLeaderboard data={data} showAvgRR={showAvgRR} pointsType={pointsType} />
               ) : (
                 <ChallengeLeaderboardSection leagueId={leagueId} />
               )}

@@ -8,6 +8,8 @@ import type { LeaderboardDataDTO } from '../types/leaderboard.dto';
 import { getTimezoneParams } from '../utils/leaderboard-format';
 import { buildLeaderboardViewData } from '../utils/leaderboard-transform';
 
+export type PointsTypeFilter = 'all' | 'activity' | 'challenge';
+
 export interface LeaderboardDateFilter {
   startDate?: string;
   endDate?: string;
@@ -16,12 +18,14 @@ export interface LeaderboardDateFilter {
 export function useMobileLeaderboard(
   leagueId: string,
   dateFilter: LeaderboardDateFilter,
+  pointsType: PointsTypeFilter = 'all',
 ) {
   const timezoneParams = getTimezoneParams();
   const params = {
     ...timezoneParams,
     ...(dateFilter.startDate ? { startDate: dateFilter.startDate } : {}),
     ...(dateFilter.endDate ? { endDate: dateFilter.endDate } : {}),
+    ...(pointsType !== 'all' ? { points_type: pointsType } : {}),
   };
 
   return useQuery<LeaderboardDataDTO>({

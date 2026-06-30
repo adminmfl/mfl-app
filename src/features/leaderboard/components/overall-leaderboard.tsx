@@ -4,6 +4,7 @@ import { ScreenState } from '../../../components/screen-state';
 import { SectionLabel } from '../../../components/section-label';
 import { mflColors } from '../../../constants/colors';
 import type { LeaderboardDataDTO } from '../types/leaderboard.dto';
+import type { PointsTypeFilter } from '../hooks/use-mobile-leaderboard';
 import { TeamRankingCard, IndividualRankingCard } from './ranking-cards';
 import { LeaderboardStatsBar } from './leaderboard-stats-bar';
 import { TiebreakerInfo } from './tiebreaker-info';
@@ -11,9 +12,11 @@ import { TiebreakerInfo } from './tiebreaker-info';
 export function OverallLeaderboard({
   data,
   showAvgRR,
+  pointsType,
 }: {
   data: LeaderboardDataDTO;
   showAvgRR: boolean;
+  pointsType: PointsTypeFilter;
 }) {
   const top20Count = Math.max(1, Math.ceil(data.individuals.length * 0.2));
   const topIndividuals = data.individuals.slice(0, top20Count);
@@ -51,6 +54,7 @@ export function OverallLeaderboard({
                 key={team.team_id}
                 team={team}
                 showAvgRR={showAvgRR}
+                pointsType={pointsType}
               />
             ))}
           </View>
@@ -92,6 +96,7 @@ export function OverallLeaderboard({
                 key={player.user_id}
                 player={player}
                 showAvgRR={showAvgRR}
+                pointsType={pointsType}
               />
             ))}
           </View>
