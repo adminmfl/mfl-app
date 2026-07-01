@@ -18,14 +18,12 @@ export interface LeaderboardDateFilter {
 export function useMobileLeaderboard(
   leagueId: string,
   dateFilter: LeaderboardDateFilter,
-  pointsType: PointsTypeFilter = 'all',
 ) {
   const timezoneParams = getTimezoneParams();
   const params = {
     ...timezoneParams,
     ...(dateFilter.startDate ? { startDate: dateFilter.startDate } : {}),
     ...(dateFilter.endDate ? { endDate: dateFilter.endDate } : {}),
-    ...(pointsType !== 'all' ? { points_type: pointsType } : {}),
   };
 
   return useQuery<LeaderboardDataDTO>({

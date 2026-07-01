@@ -14,7 +14,6 @@ export async function fetchLeaderboard(
     endDate?: string;
     tzOffsetMinutes?: number;
     ianaTimezone?: string;
-    points_type?: 'all' | 'activity' | 'challenge';
   },
 ): Promise<LeaderboardResponseDTO> {
   const res = await api.get<LeaderboardResponseDTO>(

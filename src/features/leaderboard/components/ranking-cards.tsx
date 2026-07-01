@@ -93,19 +93,6 @@ export function TeamRankingCard({
         </View>
       </View>
 
-      <View className="mt-2 flex-row flex-wrap gap-3">
-        {pointsType !== 'challenge' ? (
-          <AppText className="text-xs text-muted">
-            Activity Points: {formatNumber(team.points)}
-          </AppText>
-        ) : null}
-        {pointsType !== 'activity' ? (
-          <AppText className="text-xs text-muted">
-            Challenge Points: {formatNumber(challengeTotal)}
-          </AppText>
-        ) : null}
-      </View>
-
       {team.normalized_points !== undefined ? (
         <AppText className="mt-1.5 text-[10px] text-muted" style={{ borderTopWidth: 0.5, borderTopColor: mflColors.border, paddingTop: 4 }}>
           Normalized activity points: {formatNumber(team.normalized_points)}
@@ -178,19 +165,6 @@ export function IndividualRankingCard({
             )}
           </View>
         </View>
-      </View>
-
-      <View className="mt-2 flex-row flex-wrap gap-3">
-        {pointsType !== 'challenge' ? (
-          <AppText className="text-xs text-muted">
-            Activity Points: {formatNumber(player.points)}
-          </AppText>
-        ) : null}
-        {pointsType !== 'activity' && challengePoints > 0 ? (
-          <AppText className="text-xs text-muted">
-            Challenge Points: {formatNumber(challengePoints)}
-          </AppText>
-        ) : null}
       </View>
     </Card>
   );

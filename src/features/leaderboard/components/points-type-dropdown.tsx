@@ -47,7 +47,7 @@ export function PointsTypeDropdown({
         >
           <View
             className="w-64 rounded-xl p-2"
-            style={{ backgroundColor: 'white' }}
+            style={{ backgroundColor: mflColors.surface }}
           >
             {OPTIONS.map((option) => (
               <Pressable

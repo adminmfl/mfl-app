@@ -47,7 +47,7 @@ export function LeaderboardScreen() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
-  const leaderboardQuery = useMobileLeaderboard(leagueId, dateFilter, pointsType);
+  const leaderboardQuery = useMobileLeaderboard(leagueId, dateFilter);
   const { data: sponsorSlots } = useLeagueSponsors(leagueId);
   const grandFinaleSponsor = useMemo(
     () => getGrandFinaleSponsor(sponsorSlots ?? []),
@@ -130,6 +130,11 @@ export function LeaderboardScreen() {
     setSelectedWeek('custom');
     setDateFilter({ startDate: customStart, endDate: customEnd });
   };
+
+  const handleTabChange = useCallback((tab: LeaderboardTab) => {
+    setActiveTab(tab);
+    if (tab !== 'teams') setPointsType('all');
+  }, []);
 
   const handleReset = () => {
     setSelectedWeek('all');
@@ -244,7 +249,7 @@ export function LeaderboardScreen() {
             <Animated.View entering={FadeInDown.duration(250).delay(60)}>
               <LeaderboardFilterBar
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={handleTabChange}
                 selectedWeek={selectedWeek}
                 weekPresets={weekPresets}
                 onWeekSelect={handleWeekSelect}
