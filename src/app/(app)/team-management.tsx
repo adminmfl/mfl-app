@@ -21,6 +21,7 @@ import { CaptainPanel } from '../../features/team-management/components/captain-
 import { GovernorsPanel } from '../../features/team-management/components/governors-panel';
 import { InvitePanel } from '../../features/team-management/components/invite-panel';
 import { MembersPanel } from '../../features/team-management/components/members-panel';
+import { PreRegisterPanel } from '../../features/team-management/components/pre-register-panel';
 import { TeamNameForm } from '../../features/team-management/components/team-name-form';
 import { UnallocatedPanel } from '../../features/team-management/components/unallocated-panel';
 import { ViceCaptainPanel } from '../../features/team-management/components/vice-captain-panel';
@@ -46,6 +47,7 @@ type Panel =
   | 'viceCaptain'
   | 'governors'
   | 'invite'
+  | 'preRegister'
   | null;
 
 
@@ -289,6 +291,10 @@ export default function TeamManagementScreen() {
           onLeagueInvite={() => {
             setSelectedTeam(null);
             setPanel('invite');
+          }}
+          onPreRegister={() => {
+            setSelectedTeam(null);
+            setPanel('preRegister');
           }}
         />
 
@@ -638,6 +644,31 @@ export default function TeamManagementScreen() {
           }
           maxCapacity={selectedTeam ? data.league.league_capacity : data.league.league_capacity}
           onClose={closePanel}
+        />
+      );
+    }
+
+    if (panel === 'preRegister' && isHost) {
+      return (
+        <PreRegisterPanel
+          isBusy={actions.preRegisterMember.isPending}
+          onClose={closePanel}
+          onSubmit={(email) => {
+            const normalizedEmail = email.trim();
+            if (!normalizedEmail) {
+              Alert.alert('Email Required', 'Enter an email address.');
+              return;
+            }
+
+            actions.preRegisterMember.mutate(
+              { email: normalizedEmail },
+              {
+                onSuccess: () => {
+                  closePanel();
+                },
+              },
+            );
+          }}
         />
       );
     }

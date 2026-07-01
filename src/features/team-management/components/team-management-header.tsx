@@ -14,6 +14,7 @@ interface TeamManagementHeaderProps {
   onUnallocated: () => void;
   onGovernors: () => void;
   onLeagueInvite: () => void;
+  onPreRegister: () => void;
 }
 
 export function TeamManagementHeader({
@@ -24,6 +25,7 @@ export function TeamManagementHeader({
   onUnallocated,
   onGovernors,
   onLeagueInvite,
+  onPreRegister,
 }: TeamManagementHeaderProps) {
   return (
     <View className="gap-3">
@@ -50,6 +52,9 @@ export function TeamManagementHeader({
           ) : null}
           {isHost ? (
             <ActionButton label="League Invite" icon="share-2" onPress={onLeagueInvite} />
+          ) : null}
+          {isHost ? (
+            <ActionButton label="Pre-Register" icon="mail" onPress={onPreRegister} />
           ) : null}
           <ActionButton
             label="Create Team"

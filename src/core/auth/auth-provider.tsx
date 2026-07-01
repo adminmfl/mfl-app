@@ -3,8 +3,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import * as authService from './auth-service';
 import { setInMemoryAccessToken, getInMemoryAccessToken } from '../api/client';
 import { getSecureRefreshToken } from '../storage/secure-store';
-import { getCachedUser, clearCachedUser } from '../storage/mmkv';
-import type { AuthUser, LoginRequest, GoogleLoginRequest, AuthState } from './auth-types';
+import { getCachedUser, clearCachedUser, setCachedUser } from '../storage/mmkv';
+import type {
+  AuthSession,
+  AuthState,
+  AuthUser,
+  GoogleLoginRequest,
+  LoginRequest,
+} from './auth-types';
 import { deregisterToken, registerToken } from '../../hooks/usePushNotifications';
 import { logUserLogin, logUserSignUp, setUser as analyticsSetUser } from '../../lib/analytics';
 import { setUser as crashlyticsSetUser, clearUser as crashlyticsClearUser } from '../../lib/crashlytics';
@@ -13,6 +19,7 @@ interface AuthContextType extends AuthState {
   login: (data: LoginRequest) => Promise<void>;
   loginWithGoogle: (data: GoogleLoginRequest) => Promise<{ isNewUser: boolean }>;
   logout: () => Promise<void>;
+  completePasswordSetup: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,9 +62,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Try to restore from cache first for instant UI
-        const cached = getCachedUser<AuthUser>();
+        const cached = getCachedUser<AuthSession & AuthUser>();
         if (cached) {
-          setUser(cached);
+          if ('user' in cached) {
+            setUser(cached.user);
+          } else {
+            setUser(cached);
+          }
         }
 
         // Then do a silent refresh to get a fresh access token
@@ -124,6 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     crashlyticsClearUser();
   }, [queryClient]);
 
+  const completePasswordSetup = useCallback(() => {
+    const currentUser = userRef.current;
+    if (currentUser) {
+      setCachedUser({ user: currentUser });
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -134,6 +152,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         loginWithGoogle,
         logout,
+        completePasswordSetup,
       }}
     >
       {children}

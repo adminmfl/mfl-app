@@ -8,14 +8,15 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Spinner } from 'heroui-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { mflColors } from '../../constants/colors';
 import { AppText } from '../../components/app-text';
 import { ScreenScrollView } from '../../components/screen-scroll-view';
 import { useAuth } from '../../core/auth';
 import { completeProfile } from '../../features/auth/services/otp.service';
-import { AppRoutes } from '../../core/config/routes';
 import { extractApiError } from '../../features/auth/utils/extract-api-error';
 import { authInputStyle as inputStyle } from '../../features/auth/styles/auth-input-style';
+import { queryKeys } from '../../core/config';
 
 const GENDER_OPTIONS = [
   { label: 'Male', value: 'male' },
@@ -29,9 +30,8 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 export default function CompleteProfileScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState('');
   const [genderLabel, setGenderLabel] = useState('');
@@ -49,9 +49,6 @@ export default function CompleteProfileScreen() {
 
   const validateForm = (): string | null => {
     if (!username.trim()) return 'Username is required';
-    if (!password) return 'Password is required';
-    if (password.length < 6) return 'Password must be at least 6 characters';
-    if (password !== confirmPassword) return 'Passwords do not match';
     if (!dateOfBirth.trim()) return 'Date of birth is required';
     if (!DATE_REGEX.test(dateOfBirth.trim())) return 'Date of birth must be in YYYY-MM-DD format';
     if (Number.isNaN(new Date(dateOfBirth.trim()).getTime())) return 'Please enter a valid date of birth';
@@ -71,12 +68,12 @@ export default function CompleteProfileScreen() {
     try {
       await completeProfile({
         username: username.trim().toLowerCase(),
-        password,
         dateOfBirth: dateOfBirth.trim(),
         gender,
         phone: phone.trim() || undefined,
       });
-      router.replace(AppRoutes.dashboard);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
+      router.replace('/');
     } catch (err: unknown) {
       setError(extractApiError(err, 'Failed to complete profile. Please try again.'));
     } finally {
@@ -93,7 +90,7 @@ export default function CompleteProfileScreen() {
         <View className="gap-2">
           <AppText className="text-2xl font-bold text-foreground">Complete Your Profile</AppText>
           <AppText className="text-sm text-muted">
-            Set a password and profile details to finish setting up your account.
+            Finish setting up your profile details.
           </AppText>
         </View>
 
@@ -116,32 +113,6 @@ export default function CompleteProfileScreen() {
             placeholderTextColor={mflColors.textMuted}
             autoCapitalize="none"
             autoCorrect={false}
-          />
-        </View>
-
-        {/* Password */}
-        <View className="gap-1">
-          <AppText className="text-sm font-medium text-muted">Password</AppText>
-          <TextInput
-            style={inputStyle}
-            value={password}
-            onChangeText={(v) => { setPassword(v); clearError(); }}
-            placeholder="Min. 6 characters"
-            placeholderTextColor={mflColors.textMuted}
-            secureTextEntry
-          />
-        </View>
-
-        {/* Confirm Password */}
-        <View className="gap-1">
-          <AppText className="text-sm font-medium text-muted">Confirm Password</AppText>
-          <TextInput
-            style={inputStyle}
-            value={confirmPassword}
-            onChangeText={(v) => { setConfirmPassword(v); clearError(); }}
-            placeholder="Re-enter password"
-            placeholderTextColor={mflColors.textMuted}
-            secureTextEntry
           />
         </View>
 

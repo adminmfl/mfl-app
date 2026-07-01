@@ -73,7 +73,7 @@ export async function logout(): Promise<void> {
 async function persistTokens(data: { accessToken: string; refreshToken: string; user: AuthUser }): Promise<void> {
   setInMemoryAccessToken(data.accessToken);
   await setSecureRefreshToken(data.refreshToken);
-  setCachedUser(data.user);
+  setCachedUser(data);
 }
 
 // ─── 401 Interceptor Setup ───

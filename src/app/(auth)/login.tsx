@@ -42,12 +42,8 @@ export default function LoginScreen() {
     setIsGoogleLoading(true);
     setError('');
     loginWithGoogle({ idToken })
-      .then(({ isNewUser }) => {
-        if (isNewUser) {
-          router.replace(AppRoutes.completeProfile);
-        } else {
-          router.replace(AppRoutes.dashboard);
-        }
+      .then(() => {
+        router.replace('/');
       })
       .catch((err: unknown) => {
         setError(extractApiError(err, 'Google sign-in failed. Please try again.'));
@@ -64,7 +60,7 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await login({ email: email.trim().toLowerCase(), password });
-      router.replace(AppRoutes.dashboard);
+      router.replace('/');
     } catch (err: unknown) {
       const typed = err as { code?: string; response?: { data?: { error?: string } } };
       const message =
