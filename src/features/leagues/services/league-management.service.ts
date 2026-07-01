@@ -84,3 +84,24 @@ export async function launchLeague(leagueId: string): Promise<void> {
 export async function deleteLeague(leagueId: string): Promise<void> {
   await api.delete(`/api/leagues/${leagueId}`);
 }
+
+export interface PreRegisterMemberResponseDTO {
+  success?: boolean;
+  message?: string;
+  status?: string;
+  already_registered?: boolean;
+  duplicate_pre_registration?: boolean;
+  duplicate?: boolean;
+  skipped?: boolean;
+}
+
+export async function preRegisterMember(
+  leagueId: string,
+  email: string,
+): Promise<PreRegisterMemberResponseDTO> {
+  const res = await api.post<PreRegisterMemberResponseDTO>(
+    `/api/leagues/${leagueId}/pre-register`,
+    { email },
+  );
+  return res.data;
+}

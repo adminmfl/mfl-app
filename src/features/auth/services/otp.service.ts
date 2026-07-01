@@ -10,7 +10,6 @@ export async function resetPassword(email: string, otp: string, password: string
 
 export async function completeProfile(data: {
   username: string;
-  password: string;
   dateOfBirth: string;
   gender: string;
   phone?: string;

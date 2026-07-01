@@ -19,11 +19,14 @@ import {
   updateManagedTeamName,
   uploadManagedTeamLogo,
 } from '../services/team-management.service';
+import { preRegisterMember as preRegisterLeagueMember } from '../../leagues/services/league-management.service';
 import type {
   PickedTeamLogo,
   TeamManagementData,
   ManagedTeamMember,
 } from '../types/team-management';
+import { useToast } from 'heroui-native';
+import { reportError } from '../../../core/utils/report-error';
 
 const teamManagementKey = (leagueId: string) =>
   ['leagues', leagueId, 'team-management'] as const;
@@ -58,10 +61,25 @@ export function useManagedTeamMembers(
 
 export function useTeamManagementActions(leagueId: string) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const invalidate = async () => {
     await queryClient.invalidateQueries({ queryKey: teamManagementKey(leagueId) });
   };
+
+  const showPreRegisterToast = (label: string, description?: string) => {
+    toast.show({
+      label,
+      description,
+      variant: 'default',
+    });
+  };
+
+  const isAlreadyRegistered = (response: { already_registered?: boolean; status?: string; message?: string }) =>
+    response.already_registered || response.status === 'already_registered' || response.message === 'already_registered';
+
+  const isDuplicatePreRegistration = (response: { duplicate_pre_registration?: boolean; duplicate?: boolean; skipped?: boolean; status?: string; message?: string }) =>
+    response.duplicate_pre_registration || response.duplicate || response.skipped || response.status === 'duplicate_pre_registration' || response.status === 'duplicate' || response.message === 'duplicate_pre_registration';
 
   return {
     createTeam: useMutation<void, Error, string>({
@@ -176,6 +194,32 @@ export function useTeamManagementActions(leagueId: string) {
     removeLogo: useMutation<void, Error, string>({
       mutationFn: async (teamId) => {
         await removeManagedTeamLogo(leagueId, teamId);
+      },
+      onSuccess: invalidate,
+    }),
+    preRegisterMember: useMutation<void, Error, { email: string }>({
+      mutationFn: async ({ email }) => {
+        const response = await preRegisterLeagueMember(leagueId, email);
+
+        if (__DEV__) {
+          console.log('[team-management] pre-register response', response);
+        }
+
+        if (isAlreadyRegistered(response)) {
+          showPreRegisterToast('Already registered', 'This email is already registered in the league.');
+          return;
+        }
+
+        if (isDuplicatePreRegistration(response)) {
+          showPreRegisterToast('Already pre-registered', 'A pre-registration already exists for this email.');
+          return;
+        }
+
+        showPreRegisterToast('Pre-registration sent', 'The pre-registration email was sent successfully.');
+      },
+      onError: (error) => {
+        reportError(error);
+        showPreRegisterToast('Pre-registration failed', error.message);
       },
       onSuccess: invalidate,
     }),

@@ -1,6 +1,7 @@
 export * from './components/action-button';
 export * from './components/managed-team-card';
 export * from './components/member-list-row';
+export * from './components/pre-register-panel';
 export * from './components/team-management-header';
 export * from './components/team-management-panel';
 export * from './hooks/use-team-management';

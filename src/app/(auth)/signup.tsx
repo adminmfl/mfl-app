@@ -35,12 +35,8 @@ export default function SignupScreen() {
     setIsGoogleLoading(true);
     setError('');
     loginWithGoogle({ idToken })
-      .then(({ isNewUser }) => {
-        if (isNewUser) {
-          router.replace(AppRoutes.completeProfile);
-        } else {
-          router.replace(AppRoutes.dashboard);
-        }
+      .then(() => {
+        router.replace('/');
       })
       .catch((err: unknown) => {
         setError(extractApiError(err, 'Google sign-up failed. Please try again.'));
@@ -52,7 +48,7 @@ export default function SignupScreen() {
   const handleSignupSuccess = async (email: string, password: string) => {
     try {
       await login({ email, password });
-      router.replace(AppRoutes.dashboard);
+      router.replace('/');
     } catch {
       router.replace(AppRoutes.login);
     }

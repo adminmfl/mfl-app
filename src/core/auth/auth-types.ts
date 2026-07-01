@@ -33,3 +33,7 @@ export interface AuthState {
   isLoading: boolean;
   isRefreshing: boolean;
 }
+
+export interface AuthSession {
+  user: AuthUser;
+}

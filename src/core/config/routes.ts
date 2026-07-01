@@ -2,6 +2,7 @@ export const AppRoutes = {
   // Auth
   login: '/(auth)/login',
   signup: '/(auth)/signup',
+  passwordSetup: '/(auth)/password-setup',
   resetPassword: '/(auth)/reset-password',
   forgotPassword: '/(auth)/forgot-password',
 
