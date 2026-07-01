@@ -8,6 +8,8 @@ import type { LeaderboardDataDTO } from '../types/leaderboard.dto';
 import { getTimezoneParams } from '../utils/leaderboard-format';
 import { buildLeaderboardViewData } from '../utils/leaderboard-transform';
 
+export type PointsTypeFilter = 'all' | 'activity' | 'challenge';
+
 export interface LeaderboardDateFilter {
   startDate?: string;
   endDate?: string;

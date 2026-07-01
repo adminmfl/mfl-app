@@ -3,6 +3,7 @@ import { Avatar, Card } from 'heroui-native';
 import { AppText } from '../../../components/app-text';
 import { mflColors } from '../../../constants/colors';
 import type { IndividualRankingDTO, TeamRankingDTO } from '../types/leaderboard.dto';
+import type { PointsTypeFilter } from '../hooks/use-mobile-leaderboard';
 import {
   capitalizeName,
   formatNumber,
@@ -23,10 +24,17 @@ function stringToColor(str: string): string {
 export function TeamRankingCard({
   team,
   showAvgRR,
+  pointsType,
 }: {
   team: TeamRankingDTO;
   showAvgRR: boolean;
+  pointsType: PointsTypeFilter;
 }) {
+  const challengeTotal = team.challenge_bonus + (team.individual_challenge_points ?? 0);
+  const displayPoints =
+    pointsType === 'activity' ? team.points
+      : pointsType === 'challenge' ? challengeTotal
+      : team.total_points;
   return (
     <Card
       className="py-2 px-3"
@@ -67,7 +75,7 @@ export function TeamRankingCard({
         {/* Right: Points, Logs, RR */}
         <View className="items-end">
           <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
-            {formatNumber(team.total_points)} pts
+            {formatNumber(displayPoints)} pts
           </AppText>
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <AppText className="text-[10px] text-muted">
@@ -85,15 +93,6 @@ export function TeamRankingCard({
         </View>
       </View>
 
-      <View className="mt-2 flex-row flex-wrap gap-3">
-        <AppText className="text-xs text-muted">
-          Activity Points: {formatNumber(team.points)}
-        </AppText>
-        <AppText className="text-xs text-muted">
-          Challenge Points: {formatNumber(team.challenge_bonus + (team.individual_challenge_points ?? 0))}
-        </AppText>
-      </View>
-
       {team.normalized_points !== undefined ? (
         <AppText className="mt-1.5 text-[10px] text-muted" style={{ borderTopWidth: 0.5, borderTopColor: mflColors.border, paddingTop: 4 }}>
           Normalized activity points: {formatNumber(team.normalized_points)}
@@ -106,10 +105,17 @@ export function TeamRankingCard({
 export function IndividualRankingCard({
   player,
   showAvgRR,
+  pointsType,
 }: {
   player: IndividualRankingDTO;
   showAvgRR: boolean;
+  pointsType: PointsTypeFilter;
 }) {
+  const challengePoints = player.challenge_points ?? 0;
+  const displayPoints =
+    pointsType === 'activity' ? player.points
+      : pointsType === 'challenge' ? challengePoints
+      : player.points + challengePoints;
   return (
     <Card className="py-2 px-3">
       <View className="flex-row items-center justify-between gap-3">
@@ -143,7 +149,7 @@ export function IndividualRankingCard({
         {/* Right: Points, Logs, RR */}
         <View className="items-end">
           <AppText className="text-base font-bold" style={{ color: mflColors.brand }}>
-            {formatNumber(player.points)} pts
+            {formatNumber(displayPoints)} pts
           </AppText>
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <AppText className="text-[10px] text-muted">
@@ -159,17 +165,6 @@ export function IndividualRankingCard({
             )}
           </View>
         </View>
-      </View>
-
-      <View className="mt-2 flex-row flex-wrap gap-3">
-        <AppText className="text-xs text-muted">
-          Activity Points: {formatNumber(player.points)}
-        </AppText>
-        {(player.challenge_points ?? 0) > 0 && (
-          <AppText className="text-xs text-muted">
-            Challenge Points: {formatNumber(player.challenge_points ?? 0)}
-          </AppText>
-        )}
       </View>
     </Card>
   );
