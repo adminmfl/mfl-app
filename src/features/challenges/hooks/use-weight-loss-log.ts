@@ -20,17 +20,19 @@ export function useWeightLossLogPlayer(leagueId: string, challengeId: string) {
       const res = await fetchWeightLossLogPlayer(leagueId, challengeId);
       return toWeightLogPlayerResponse(res);
     },
+    enabled: !!leagueId && !!challengeId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
-export function useWeightLossLogHost(leagueId: string, challengeId: string) {
+export function useWeightLossLogHost(leagueId: string, challengeId: string, enabled: boolean) {
   return useQuery<WeightLogHostParticipant[], Error>({
     queryKey: ['weight-loss-log-host', leagueId, challengeId],
     queryFn: async () => {
       const res = await fetchWeightLossLogHost(leagueId, challengeId);
       return (res.data || []).map(toWeightLogHostParticipant);
     },
+    enabled,
     staleTime: 1000 * 60 * 5,
   });
 }

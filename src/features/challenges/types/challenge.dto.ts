@@ -24,7 +24,7 @@ export interface ChallengeDTO {
   end_date: string | null;
   status: ChallengeStatusDTO;
   template_id: string | null;
-  config?: any | null; // TODO(weight-loss-api): confirm against live endpoint
+  config?: WeightLossConfigDTO | null; // TODO(weight-loss-api): confirm against live endpoint
   my_submission: any | null;
   stats: { pending: number; approved: number; rejected: number } | null;
 }

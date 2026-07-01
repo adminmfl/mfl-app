@@ -6,6 +6,7 @@ import type {
   WeightLogPlayerResponseDTO,
   WeightLogHostParticipantDTO,
   WeightLossTierDTO,
+  WeightLossConfigDTO,
 } from '../types/challenge.dto';
 import type {
   Challenge,
@@ -15,6 +16,7 @@ import type {
   WeightLogPlayerResponse,
   WeightLogHostParticipant,
   WeightLossTier,
+  WeightLossConfig,
 } from '../types/challenge.model';
 
 export function toChallenge(dto: ChallengeDTO): Challenge {
@@ -32,7 +34,7 @@ export function toChallenge(dto: ChallengeDTO): Challenge {
     startDate: dto.start_date,
     endDate: dto.end_date,
     status: dto.status,
-    config: dto.config,
+    config: toWeightLossConfig(dto.config),
     mySubmission: dto.my_submission,
     stats: dto.stats,
   };
@@ -71,6 +73,17 @@ export function toChallengePreset(dto: ChallengePresetDTO): ChallengePreset {
     description: dto.description,
     docUrl: dto.doc_url,
     challengeType: dto.challenge_type,
+  };
+}
+
+export function toWeightLossConfig(dto: WeightLossConfigDTO | null | undefined): WeightLossConfig | null {
+  if (!dto) return null;
+  return {
+    durationDays: dto.duration_days,
+    tiers: dto.tiers?.map((tier) => ({
+      thresholdPercent: tier.threshold_percent,
+      points: tier.points,
+    })),
   };
 }
 

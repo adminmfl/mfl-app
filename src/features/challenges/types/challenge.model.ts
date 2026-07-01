@@ -21,7 +21,7 @@ export interface Challenge {
   startDate: string | null;
   endDate: string | null;
   status: ChallengeStatus;
-  config?: any | null; // TODO(weight-loss-api): confirm against live endpoint
+  config?: WeightLossConfig | null; // TODO(weight-loss-api): confirm against live endpoint
   mySubmission: any | null;
   stats: { pending: number; approved: number; rejected: number } | null;
 }

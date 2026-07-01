@@ -21,7 +21,10 @@ import { useWeightLossLogHost } from '../hooks/use-weight-loss-log';
 const STANDARD_TABS = ['Submissions', 'Leaderboard'] as const;
 const TOURNAMENT_TABS = ['Fixtures', 'Standings'] as const;
 
-// Types removed
+type StandardTab = (typeof STANDARD_TABS)[number];
+type TournamentTab = (typeof TOURNAMENT_TABS)[number];
+type WeightLossTab = 'Results' | 'Leaderboard';
+type Tab = StandardTab | TournamentTab | WeightLossTab;
 
 export function ChallengeDetailScreen() {
   const router = useRouter();
@@ -41,17 +44,17 @@ export function ChallengeDetailScreen() {
   const isWeightLoss = challenge?.challengeType === 'weight_loss';
   const isHost = activeLeague?.isHost ?? false;
 
-  const hostResultsQuery = useWeightLossLogHost(leagueId, challengeId ?? '');
+  const hostResultsQuery = useWeightLossLogHost(leagueId, challengeId ?? '', isWeightLoss && isHost);
 
   // Define tabs dynamically based on challenge type and role
-  let tabs: readonly string[] = STANDARD_TABS;
+  let tabs: readonly Tab[] = STANDARD_TABS;
   if (isTournament) {
     tabs = TOURNAMENT_TABS;
   } else if (isWeightLoss) {
     tabs = isHost ? ['Results', 'Leaderboard'] : ['Leaderboard'];
   }
 
-  const [activeTab, setActiveTab] = useState<string>(
+  const [activeTab, setActiveTab] = useState<Tab>(
     isTournament ? 'Fixtures' : isWeightLoss ? (isHost ? 'Results' : 'Leaderboard') : 'Submissions',
   );
 
@@ -91,7 +94,7 @@ export function ChallengeDetailScreen() {
 
         {/* Tabs */}
         <Animated.View entering={FadeInDown.duration(300).delay(120)}>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}>
             <Tabs.List>
               {tabs.map((tab) => (
                 <Tabs.Trigger key={tab} value={tab}>

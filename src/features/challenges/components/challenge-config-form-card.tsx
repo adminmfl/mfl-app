@@ -9,6 +9,7 @@ import { mflColors } from '../../../constants/colors';
 import type { ChallengeConfigForm, PickedChallengeDocument } from '../types/challenge-config';
 import { CHALLENGE_TYPES } from '../utils/challenge-config-utils';
 import { WeightLossTierConfig } from './weight-loss-tier-config';
+import { WeightLossTier } from '../types/challenge.model';
 
 const inputStyle = {
   backgroundColor: mflColors.card,
@@ -209,7 +210,7 @@ export function ChallengeConfigFormCard({
             onAddTier={() => {
               const prevTiers = form.config?.tiers || [];
               const highestThreshold =
-                prevTiers.length > 0 ? Math.max(...prevTiers.map((t: any) => t.thresholdPercent)) : 0;
+                prevTiers.length > 0 ? Math.max(...prevTiers.map((t) => t.thresholdPercent)) : 0;
               onChange({
                 config: {
                   ...form.config,
@@ -222,14 +223,15 @@ export function ChallengeConfigFormCard({
               onChange({
                 config: {
                   ...form.config,
-                  tiers: prevTiers.filter((_: any, i: number) => i !== index),
+                  tiers: prevTiers.filter((_, i) => i !== index),
                 },
               });
             }}
             onUpdateTier={(index, field, value) => {
               const prevTiers = form.config?.tiers || [];
-              const updated = [...prevTiers];
-              updated[index] = { ...updated[index], [field]: value };
+              const updated = prevTiers.map((tier, i) =>
+                i === index ? ({ ...tier, [field]: value } as WeightLossTier) : tier,
+              );
               onChange({
                 config: { ...form.config, tiers: updated },
               });

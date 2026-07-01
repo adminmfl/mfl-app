@@ -24,23 +24,25 @@ export function WeightLogScreen({ leagueId, challengeId }: WeightLogScreenProps)
   const hasEndLog = logData?.logs?.some((l) => l.logType === 'end');
 
   const handleLogWeight = async (logType: 'start' | 'progress' | 'end') => {
-    if (!weightInput.trim() || isNaN(Number(weightInput))) {
-      Alert.alert('Invalid Weight', 'Please enter a valid number.');
+    const weight = Number(weightInput);
+    if (!weightInput.trim() || isNaN(weight) || weight <= 0 || weight > 1000) {
+      Alert.alert('Invalid Weight', 'Please enter a weight between 1 and 1000 lbs.');
       return;
     }
 
     try {
       await submitLog.mutateAsync({
         logType,
-        weight: Number(weightInput),
+        weight,
       });
       setWeightInput('');
       Alert.alert('Success', 'Weight logged successfully!');
-    } catch (err: any) {
+    } catch (err) {
       if (__DEV__) {
         reportError(err);
       }
-      Alert.alert('Error', err.message || 'Failed to log weight.');
+      const message = err instanceof Error ? err.message : 'Failed to log weight.';
+      Alert.alert('Error', message);
     }
   };
 
