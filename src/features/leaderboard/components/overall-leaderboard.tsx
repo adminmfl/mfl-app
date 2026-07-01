@@ -36,11 +36,6 @@ export function OverallLeaderboard({
       ) : null}
 
       <View className="gap-3">
-        <View className="flex-row flex-wrap gap-3">
-          <AppText className="text-xs font-medium text-muted">Activity Points</AppText>
-          <AppText className="text-xs text-muted">·</AppText>
-          <AppText className="text-xs font-medium text-muted">Challenge Points</AppText>
-        </View>
         {data.teams.length === 0 ? (
           <ScreenState
             screen="league-leaderboard"
