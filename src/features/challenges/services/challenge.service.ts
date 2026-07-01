@@ -20,6 +20,8 @@ export {
   fetchTournamentMatches,
   fetchTournamentScores,
   toTournamentMatch,
+  fetchWeightLossLogPlayer,
+  fetchWeightLossLogHost,
 } from './challenge-fetch.service';
 
 export type { TournamentMatchRow } from './challenge-fetch.service';
@@ -39,6 +41,7 @@ export {
   updateTournamentMatch,
   deleteTournamentMatch,
   finalizeTournamentScores,
+  submitWeightLog,
 } from './challenge-mutation.service';
 
 export type { ChallengeMutationInput } from './challenge-mutation.service';

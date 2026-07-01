@@ -15,13 +15,16 @@ import { ChallengeLeaderboardList } from './challenge-leaderboard-list';
 import { ChallengeFixturesList } from './challenge-fixtures-list';
 import { ChallengeStandingsTable } from './challenge-standings-table';
 import { ChallengeActionBar } from './challenge-action-bar';
+import { WeightLossHostResults } from './weight-loss-host-results';
+import { useWeightLossLogHost } from '../hooks/use-weight-loss-log';
 
 const STANDARD_TABS = ['Submissions', 'Leaderboard'] as const;
 const TOURNAMENT_TABS = ['Fixtures', 'Standings'] as const;
 
 type StandardTab = (typeof STANDARD_TABS)[number];
 type TournamentTab = (typeof TOURNAMENT_TABS)[number];
-type Tab = StandardTab | TournamentTab;
+type WeightLossTab = 'Results' | 'Leaderboard';
+type Tab = StandardTab | TournamentTab | WeightLossTab;
 
 export function ChallengeDetailScreen() {
   const router = useRouter();
@@ -38,11 +41,22 @@ export function ChallengeDetailScreen() {
     refetchAll,
   } = useChallengeDetail(leagueId, challengeId ?? '');
 
-  const [activeTab, setActiveTab] = useState<Tab>(
-    isTournament ? 'Fixtures' : 'Submissions',
-  );
+  const isWeightLoss = challenge?.challengeType === 'weight_loss';
+  const isHost = activeLeague?.isHost ?? false;
 
-  const tabs = isTournament ? TOURNAMENT_TABS : STANDARD_TABS;
+  const hostResultsQuery = useWeightLossLogHost(leagueId, challengeId ?? '', isWeightLoss && isHost);
+
+  // Define tabs dynamically based on challenge type and role
+  let tabs: readonly Tab[] = STANDARD_TABS;
+  if (isTournament) {
+    tabs = TOURNAMENT_TABS;
+  } else if (isWeightLoss) {
+    tabs = isHost ? ['Results', 'Leaderboard'] : ['Leaderboard'];
+  }
+
+  const [activeTab, setActiveTab] = useState<Tab>(
+    isTournament ? 'Fixtures' : isWeightLoss ? (isHost ? 'Results' : 'Leaderboard') : 'Submissions',
+  );
 
   if (!activeLeague) {
     return (
@@ -80,7 +94,7 @@ export function ChallengeDetailScreen() {
 
         {/* Tabs */}
         <Animated.View entering={FadeInDown.duration(300).delay(120)}>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as Tab)}>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as Tab)}>
             <Tabs.List>
               {tabs.map((tab) => (
                 <Tabs.Trigger key={tab} value={tab}>
@@ -93,7 +107,9 @@ export function ChallengeDetailScreen() {
 
         {/* Tab Content */}
         <Animated.View entering={FadeInDown.duration(300).delay(200)}>
-          {isTournament ? (
+          {activeTab === 'Results' && isWeightLoss && isHost ? (
+            <WeightLossHostResults participants={hostResultsQuery.data || []} />
+          ) : isTournament ? (
             activeTab === 'Fixtures' ? (
               <ChallengeFixturesList
                 matches={matches.data}

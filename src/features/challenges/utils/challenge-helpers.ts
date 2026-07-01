@@ -10,6 +10,8 @@ export function getChallengeTypeLabel(type: ChallengeType): string {
       return 'Sub-Team Challenge';
     case 'tournament':
       return 'Tournament';
+    case 'weight_loss':
+      return 'Weight Loss Challenge';
     default:
       return type;
   }
@@ -75,6 +77,7 @@ export function canSubmitChallenge(
 ): boolean {
   if (status !== 'active') return false;
   if (challengeType === 'tournament') return false;
+  if (challengeType === 'weight_loss') return false;
 
   // No submission yet — can submit
   if (!mySubmission) return true;

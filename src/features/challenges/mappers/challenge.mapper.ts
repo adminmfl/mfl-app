@@ -3,12 +3,20 @@ import type {
   ChallengeSubmissionDTO,
   ChallengeLeaderboardEntryDTO,
   ChallengePresetDTO,
+  WeightLogPlayerResponseDTO,
+  WeightLogHostParticipantDTO,
+  WeightLossTierDTO,
+  WeightLossConfigDTO,
 } from '../types/challenge.dto';
 import type {
   Challenge,
   ChallengeSubmission,
   ChallengeLeaderboardEntry,
   ChallengePreset,
+  WeightLogPlayerResponse,
+  WeightLogHostParticipant,
+  WeightLossTier,
+  WeightLossConfig,
 } from '../types/challenge.model';
 
 export function toChallenge(dto: ChallengeDTO): Challenge {
@@ -26,6 +34,7 @@ export function toChallenge(dto: ChallengeDTO): Challenge {
     startDate: dto.start_date,
     endDate: dto.end_date,
     status: dto.status,
+    config: toWeightLossConfig(dto.config),
     mySubmission: dto.my_submission,
     stats: dto.stats,
   };
@@ -64,5 +73,61 @@ export function toChallengePreset(dto: ChallengePresetDTO): ChallengePreset {
     description: dto.description,
     docUrl: dto.doc_url,
     challengeType: dto.challenge_type,
+  };
+}
+
+export function toWeightLossConfig(dto: WeightLossConfigDTO | null | undefined): WeightLossConfig | null {
+  if (!dto) return null;
+  return {
+    durationDays: dto.duration_days,
+    tiers: dto.tiers?.map((tier) => ({
+      thresholdPercent: tier.threshold_percent,
+      points: tier.points,
+    })),
+  };
+}
+
+export function toWeightLossTier(dto: WeightLossTierDTO | null | undefined): WeightLossTier | null {
+  if (!dto) return null;
+  return {
+    thresholdPercent: dto.threshold_percent,
+    points: dto.points,
+  };
+}
+
+export function toWeightLogPlayerResponse(dto: WeightLogPlayerResponseDTO): WeightLogPlayerResponse {
+  return {
+    logs: (dto.data?.logs ?? []).map((log) => ({
+      id: log.id,
+      leagueMemberId: log.league_member_id,
+      weight: log.weight,
+      logType: log.log_type,
+      createdAt: log.created_at,
+    })),
+    prediction: dto.data?.prediction
+      ? {
+          predictedPoints: dto.data.prediction.predicted_points,
+          currentPercentLost: dto.data.prediction.current_percent_lost,
+          matchedTier: toWeightLossTier(dto.data.prediction.matched_tier),
+        }
+      : null,
+    result: dto.data?.result
+      ? {
+          finalPoints: dto.data.result.final_points,
+          finalPercentLost: dto.data.result.final_percent_lost,
+          matchedTier: toWeightLossTier(dto.data.result.matched_tier),
+        }
+      : null,
+  };
+}
+
+export function toWeightLogHostParticipant(dto: WeightLogHostParticipantDTO): WeightLogHostParticipant {
+  return {
+    leagueMemberId: dto.league_member_id,
+    username: dto.username,
+    startWeight: dto.start_weight,
+    endWeight: dto.end_weight,
+    percentLost: dto.percent_lost,
+    points: dto.points,
   };
 }

@@ -1,4 +1,4 @@
-export type ChallengeTypeDTO = 'individual' | 'team' | 'sub_team' | 'tournament';
+export type ChallengeTypeDTO = 'individual' | 'team' | 'sub_team' | 'tournament' | 'weight_loss';
 export type ChallengeStatusDTO =
   | 'draft'
   | 'scheduled'
@@ -24,6 +24,7 @@ export interface ChallengeDTO {
   end_date: string | null;
   status: ChallengeStatusDTO;
   template_id: string | null;
+  config?: WeightLossConfigDTO | null; // TODO(weight-loss-api): confirm against live endpoint
   my_submission: any | null;
   stats: { pending: number; approved: number; rejected: number } | null;
 }
@@ -110,4 +111,59 @@ export interface UploadChallengeProofResponseDTO {
     path: string;
     bucket: string;
   };
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossTierDTO {
+  threshold_percent: number;
+  points: number;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLossConfigDTO {
+  duration_days?: number;
+  tiers?: WeightLossTierDTO[];
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogEntryDTO {
+  id: string;
+  league_member_id: string;
+  weight: number;
+  log_type: 'start' | 'progress' | 'end';
+  created_at: string;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogPlayerResponseDTO {
+  success: boolean;
+  data: {
+    logs: WeightLogEntryDTO[];
+    prediction: {
+      predicted_points: number;
+      current_percent_lost: number;
+      matched_tier: WeightLossTierDTO | null;
+    } | null;
+    result: {
+      final_points: number;
+      final_percent_lost: number;
+      matched_tier: WeightLossTierDTO | null;
+    } | null;
+  };
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogHostParticipantDTO {
+  league_member_id: string;
+  username: string;
+  start_weight: number | null;
+  end_weight: number | null;
+  percent_lost: number | null;
+  points: number | null;
+}
+
+// TODO(weight-loss-api): confirm against live endpoint
+export interface WeightLogHostResponseDTO {
+  success: boolean;
+  data: WeightLogHostParticipantDTO[];
 }

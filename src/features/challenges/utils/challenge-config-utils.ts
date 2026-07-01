@@ -22,6 +22,11 @@ export const CHALLENGE_TYPES: Array<{ value: ChallengeType; label: string; descr
     label: 'Tournament',
     description: 'Bracket-style tournament with fixtures and standings.',
   },
+  {
+    value: 'weight_loss',
+    label: 'Weight Loss',
+    description: 'Track weight loss over time. Earn points by hitting % loss tiers.',
+  },
 ];
 
 export function formatChallengeType(type: ChallengeType | string): string {
@@ -83,6 +88,7 @@ export function getStatusColors(status: ChallengeStatus): { color: string; bgCol
 
 export function isReviewEnabled(type: ChallengeType, status: ChallengeStatus): boolean {
   if (type === 'team') return status !== 'draft';
+  if (type === 'weight_loss') return false;
   return status === 'submission_closed' || status === 'published';
 }
 
@@ -92,6 +98,7 @@ export function canPublishChallenge(
   pendingCount: number,
 ): boolean {
   if (type === 'tournament') return false;
+  if (type === 'weight_loss') return status !== 'draft' && status !== 'published';
   if (type === 'team') return status !== 'draft' && status !== 'published';
   return status === 'submission_closed' && pendingCount === 0;
 }

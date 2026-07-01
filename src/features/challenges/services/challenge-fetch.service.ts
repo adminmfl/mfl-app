@@ -3,6 +3,8 @@ import type {
   ChallengesResponseDTO,
   ChallengeSubmissionsResponseDTO,
   ChallengeLeaderboardResponseDTO,
+  WeightLogPlayerResponseDTO,
+  WeightLogHostResponseDTO,
 } from '../types/challenge.dto';
 import type {
   ChallengeSubTeamDetails,
@@ -179,4 +181,25 @@ export async function fetchTournamentScores(
     teamId: score.team_id,
     score: Number(score.score ?? 0),
   }));
+}
+
+export async function fetchWeightLossLogPlayer(
+  leagueId: string,
+  challengeId: string,
+): Promise<WeightLogPlayerResponseDTO> {
+  const res = await api.get<WeightLogPlayerResponseDTO>(
+    `/api/leagues/${leagueId}/challenges/${challengeId}/weight-log`,
+  );
+  return res.data;
+}
+
+export async function fetchWeightLossLogHost(
+  leagueId: string,
+  challengeId: string,
+): Promise<WeightLogHostResponseDTO> {
+  const res = await api.get<WeightLogHostResponseDTO>(
+    `/api/leagues/${leagueId}/challenges/${challengeId}/weight-log`,
+    { params: { view: 'host' } } // TODO(weight-loss-api): confirm if 'view=host' is the right way to request host data
+  );
+  return res.data;
 }

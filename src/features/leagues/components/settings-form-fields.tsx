@@ -77,6 +77,7 @@ export function Stepper({
   min,
   max,
   disabled,
+  unit,
 }: {
   label: string;
   description?: string;
@@ -86,6 +87,7 @@ export function Stepper({
   min: number;
   max: number;
   disabled?: boolean;
+  unit?: string;
 }) {
   return (
     <View className="flex-row items-center justify-between py-3" style={{ opacity: disabled ? 0.5 : 1 }}>
@@ -107,7 +109,7 @@ export function Stepper({
           <Feather name="minus" size={18} color={value <= min ? mflColors.textMuted : mflColors.brand} />
         </Pressable>
         <AppText className="text-lg font-bold text-foreground" style={{ minWidth: 32, textAlign: 'center' }}>
-          {value}
+          {value}{unit ? ` ${unit}` : ''}
         </AppText>
         <Pressable
           onPress={onIncrement}
